@@ -8,22 +8,22 @@ This plugin requires Jussi Kalliokoski's terrific PCMData.js library, which you 
 
 ### Syntax
 
-    new Recorder(source [, bufferLen])
+    var rec = new Recorder(source [, bufferLen])
 
 Creates a recorder instance.
 
 - **source** - The node whose output you wish to capture
 - **bufferLen** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
 
-    Recorder.**record**()
-    Recorder.**stop**()
+    rec.record()
+    rec.stop()
 
 Pretty self-explanatory... **record** will begin capturing audio and **stop** will cease capturing audio. Subsequent calls to **record** will add to the current recording.
 
-    Recorder.**clear**()
+    rec.clear()
 
 This will clear the recording.
 
-    Recorder.**exportWAV**()
+    rec.exportWAV()
 
 This will open a new window with a data URI of the recording in WAV format, which the user can then save from the browser.
