@@ -16,7 +16,7 @@ Creates a recorder instance.
 - **bufferLen** (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
 
 
-    rec.record()
+    rec.record()  
     rec.stop()
 
 Pretty self-explanatory... **record** will begin capturing audio and **stop** will cease capturing audio. Subsequent calls to **record** will add to the current recording.
