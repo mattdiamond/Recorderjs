@@ -12,8 +12,9 @@ This plugin requires Jussi Kalliokoski's terrific PCMData.js library, which you 
 
 Creates a recorder instance.
 
-- **source** - The node whose output you wish to capture
-- **bufferLen** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
+- **source** The node whose output you wish to capture
+- **bufferLen** (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
+
 
     rec.record()
     rec.stop()
