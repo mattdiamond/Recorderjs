@@ -14,7 +14,7 @@
       }
     });
     var recording = false;
-    var callback = null;
+    var config = {};
 
     this.node.onaudioprocess = function(e){
       if (!recording) return;
@@ -27,8 +27,8 @@
       });
     }
 
-    this.setCallback = function(cb){
-      callback = cb;
+    this.configure = function(cfg){
+      config = cfg;
     }
 
     this.record = function(){
@@ -44,15 +44,15 @@
     }
 
     this.exportWAV = function(cb){
-      if (cb) callback = cb;
-      if (!callback) throw new Error('Callback not set');
+      if (cb) config.callback = cb;
+      if (!config.callback) throw new Error('Callback not set');
       worker.postMessage({ command: 'exportWAV' });
     }
 
     worker.onmessage = function(e){
       var waveData = e.data;
       var uri = "data:audio/wav;base64," + btoa(waveData);
-      callback(uri);
+      config.callback.call(window, uri);
     }
 
     source.connect(this.node);
