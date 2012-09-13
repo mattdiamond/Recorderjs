@@ -27,6 +27,10 @@ Pretty self-explanatory... **record** will begin capturing audio and **stop** wi
 
 This will clear the recording.
 
-    rec.exportWAV()
+    rec.exportWAV([callback])
 
-This will open a new window with a data URI of the recording in WAV format, which the user can then save from the browser.
+This will generate a data URI containing the recording in WAV format. The callback will be called with the data URI as its sole argument. If a callback is not specified, the default callback (as defined via `configure`) will be used. If no default has been set, an error will be thrown.
+
+    rec.configure(config)
+
+This will set the configuration for Recorder. As of now, the only parameter is `callback`, which may be used to set a default callback for `exportWAV`.
