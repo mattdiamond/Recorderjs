@@ -2,8 +2,9 @@
 
   var WORKER_PATH = 'js/recorderjs/recorderWorker.js';
 
-  var Recorder = function(source, bufferLen){
-    bufferLen = bufferLen || 4096;
+  var Recorder = function(source, cfg){
+    var config = cfg || {};
+    var bufferLen = config.bufferLen || 4096;
     this.context = source.context;
     this.node = this.context.createJavaScriptNode(bufferLen, 2, 2);
     var worker = new Worker(WORKER_PATH);
@@ -14,7 +15,7 @@
       }
     });
     var recording = false;
-    var config = {};
+    var currCallback = null;
 
     this.node.onaudioprocess = function(e){
       if (!recording) return;
@@ -44,15 +45,16 @@
     }
 
     this.exportWAV = function(cb){
-      if (cb) config.callback = cb;
-      if (!config.callback) throw new Error('Callback not set');
+      currCallback = cb || config.callback;
+      if (!currCallback) throw new Error('Callback not set');
       worker.postMessage({ command: 'exportWAV' });
     }
 
     worker.onmessage = function(e){
       var waveData = e.data;
       var uri = "data:audio/wav;base64," + btoa(waveData);
-      config.callback.call(window, uri);
+      currCallback(uri);
+      currCallback = null;
     }
 
     source.connect(this.node);
