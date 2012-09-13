@@ -14,8 +14,8 @@
         sampleRate: this.context.sampleRate
       }
     });
-    var recording = false;
-    var currCallback = null;
+    var recording = false,
+        currCallback;
 
     this.node.onaudioprocess = function(e){
       if (!recording) return;
@@ -54,7 +54,6 @@
       var waveData = e.data;
       var uri = "data:audio/wav;base64," + btoa(waveData);
       currCallback(uri);
-      currCallback = null;
     }
 
     source.connect(this.node);
