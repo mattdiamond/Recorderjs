@@ -1,10 +1,14 @@
 importScripts('pcmdata.min.js');
 
 var recLength = 0,
-  recBuffers = [];
+    recBuffers = [],
+    sampleRate;
 
 this.onmessage = function(e){
   switch(e.data.command){
+    case 'init':
+      init(e.data.config);
+      break;
     case 'record':
       record(e.data.buffer);
       break;
@@ -17,6 +21,10 @@ this.onmessage = function(e){
   }
 };
 
+function init(config){
+  sampleRate = config.sampleRate;
+}
+
 function record(inputBuffer){
   var bufferL = inputBuffer.getChannelData(0);
   var bufferR = inputBuffer.getChannelData(1);
@@ -28,10 +36,10 @@ function record(inputBuffer){
 function exportWAV(){
   var buffer = mergeBuffers(recBuffers, recLength);
   var waveData = PCMData.encode({
-    sampleRate: 44100,
+    sampleRate:     sampleRate,
     channelCount:   2,
     bytesPerSample: 2,    //16bit
-    data:       buffer
+    data:           buffer
   });
   this.postMessage(waveData);
 }

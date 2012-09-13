@@ -7,6 +7,12 @@
     this.context = source.context;
     this.node = this.context.createJavaScriptNode(bufferLen, 2, 2);
     var worker = new Worker(WORKER_PATH);
+    worker.postMessage({
+      command: 'init',
+      config: {
+        sampleRate: this.context.sampleRate
+      }
+    });
     var recording = false;
     var callback = null;
 
