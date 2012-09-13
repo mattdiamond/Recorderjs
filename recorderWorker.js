@@ -45,7 +45,7 @@ function exportWAV(){
   for (var i = 0; i < waveData.length; i++){
     byteArray[i] = waveData.charCodeAt(i);
   }
-  var audioBlob = new Blob([byteArray], { type: 'audio/wav'});
+  var audioBlob = new Blob([byteArray], { type: 'audio/wav' });
   this.postMessage(audioBlob);
 }
 
