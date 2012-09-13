@@ -51,9 +51,8 @@
     }
 
     worker.onmessage = function(e){
-      var waveData = e.data;
-      var uri = "data:audio/wav;base64," + btoa(waveData);
-      currCallback(uri);
+      var blob = e.data;
+      currCallback(blob);
     }
 
     source.connect(this.node);

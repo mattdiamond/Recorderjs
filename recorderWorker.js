@@ -41,7 +41,12 @@ function exportWAV(){
     bytesPerSample: 2,    //16bit
     data:           buffer
   });
-  this.postMessage(waveData);
+  var byteArray = new Uint8Array(waveData.length);
+  for (var i = 0; i < waveData.length; i++){
+    byteArray[i] = waveData.charCodeAt(i);
+  }
+  var audioBlob = new Blob([byteArray], { type: 'audio/wav'});
+  this.postMessage(audioBlob);
 }
 
 function clear(){
