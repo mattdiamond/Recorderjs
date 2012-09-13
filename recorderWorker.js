@@ -26,8 +26,8 @@ function init(config){
 }
 
 function record(inputBuffer){
-  var bufferL = inputBuffer.getChannelData(0);
-  var bufferR = inputBuffer.getChannelData(1);
+  var bufferL = inputBuffer[0];
+  var bufferR = inputBuffer[1];
   var interleaved = interleave(bufferL, bufferR);
   recBuffers.push(interleaved);
   recLength += interleaved.length;
