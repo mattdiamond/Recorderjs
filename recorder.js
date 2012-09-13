@@ -15,7 +15,7 @@
       }
     });
     var recording = false,
-        currCallback;
+      currCallback;
 
     this.node.onaudioprocess = function(e){
       if (!recording) return;
@@ -29,7 +29,11 @@
     }
 
     this.configure = function(cfg){
-      config = cfg;
+      for (var prop in cfg){
+        if (cfg.hasOwnProperty(prop)){
+          config[prop] = cfg[prop];
+        }
+      }
     }
 
     this.record = function(){
@@ -44,10 +48,14 @@
       worker.postMessage({ command: 'clear' });
     }
 
-    this.exportWAV = function(cb){
+    this.exportWAV = function(cb, type){
       currCallback = cb || config.callback;
+      type = type || config.type || 'audio/wav';
       if (!currCallback) throw new Error('Callback not set');
-      worker.postMessage({ command: 'exportWAV' });
+      worker.postMessage({
+        command: 'exportWAV',
+        type: type
+      });
     }
 
     worker.onmessage = function(e){

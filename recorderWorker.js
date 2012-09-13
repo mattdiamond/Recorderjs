@@ -1,8 +1,8 @@
 importScripts('pcmdata.min.js');
 
 var recLength = 0,
-    recBuffers = [],
-    sampleRate;
+  recBuffers = [],
+  sampleRate;
 
 this.onmessage = function(e){
   switch(e.data.command){
@@ -13,7 +13,7 @@ this.onmessage = function(e){
       record(e.data.buffer);
       break;
     case 'exportWAV':
-      exportWAV();
+      exportWAV(e.data.type);
       break;
     case 'clear':
       clear();
@@ -33,7 +33,7 @@ function record(inputBuffer){
   recLength += interleaved.length;
 }
 
-function exportWAV(){
+function exportWAV(type){
   var buffer = mergeBuffers(recBuffers, recLength);
   var waveData = PCMData.encode({
     sampleRate:     sampleRate,
@@ -45,7 +45,7 @@ function exportWAV(){
   for (var i = 0; i < waveData.length; i++){
     byteArray[i] = waveData.charCodeAt(i);
   }
-  var audioBlob = new Blob([byteArray], { type: 'audio/wav' });
+  var audioBlob = new Blob([byteArray], { type: type });
   this.postMessage(audioBlob);
 }
 
