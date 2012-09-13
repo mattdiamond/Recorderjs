@@ -29,8 +29,8 @@ This will clear the recording.
 
     rec.exportWAV([callback])
 
-This will generate a data URI containing the recording in WAV format. The callback will be called with the data URI as its sole argument. If a callback is not specified, the default callback (as defined via `configure`) will be used. If no default has been set, an error will be thrown.
+This will generate a data URI containing the recording in WAV format. The callback will be called with the data URI as its sole argument. If a callback is not specified, the default callback (as defined in `configure`) will be used. If no default has been set, an error will be thrown.
 
     rec.configure(config)
 
-This will set the configuration for Recorder. As of now, the only parameter is `callback`, which may be used to set a default callback for `exportWAV`.
+This will set the configuration for Recorder by passing in a config object. As of now, the only parameter is `callback`, which may be used to set a default callback for `exportWAV`.
