@@ -38,7 +38,7 @@
     this.exportWAV = function(){
       var buffer = mergeBuffers(recBuffers, recLength);
       var waveData = PCMData.encode({
-        sampleRate: 44100,
+        sampleRate: this.context.sampleRate,
         channelCount:   2,
         bytesPerSample: 2,    //16bit
         data:       buffer
