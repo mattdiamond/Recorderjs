@@ -2,10 +2,6 @@
 
 ## A plugin for recording/exporting the output of Web Audio API nodes
 
-### Dependencies
-
-This plugin requires Jussi Kalliokoski's terrific PCMData.js library, which you can find in original or minified form [here](https://github.com/jussi-kalliokoski/pcmdata.js/tree/master/lib).
-
 ### Syntax
 #### Constructor
     var rec = new Recorder(source [, config])
