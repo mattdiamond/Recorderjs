@@ -13,6 +13,9 @@ this.onmessage = function(e){
     case 'exportWAV':
       exportWAV(e.data.type);
       break;
+    case 'getBuffer':
+      getBuffer();
+      break;
     case 'clear':
       clear();
       break;
@@ -37,6 +40,11 @@ function exportWAV(type){
   var audioBlob = new Blob([dataview], { type: type });
 
   this.postMessage(audioBlob);
+}
+
+function getBuffer() {
+  var buffer = mergeBuffers(recBuffers, recLength)
+  this.postMessage(buffer);
 }
 
 function clear(){

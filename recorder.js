@@ -48,6 +48,11 @@
       worker.postMessage({ command: 'clear' });
     }
 
+    this.getBuffer = function(cb) {
+      currCallback = cb || config.callback;
+      worker.postMessage({ command: 'getBuffer' })
+    }
+
     this.exportWAV = function(cb, type){
       currCallback = cb || config.callback;
       type = type || config.type || 'audio/wav';

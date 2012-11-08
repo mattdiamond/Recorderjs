@@ -37,6 +37,10 @@ This will generate a Blob object containing the recording in WAV format. The cal
 
 In addition, you may specify the type of Blob to be returned (defaults to 'audio/wav').
 
+    rec.getBuffer([callback])
+
+This will pass the recorded buffer (as a Float32Array) to the callback. It can be played back by creating a new source buffer and setting this as its channel data (i.e. `newSource.buffer.getChannelData(0).set(recordedBuffer)`).
+
     rec.configure(config)
 
 This will set the configuration for Recorder by passing in a config object.
