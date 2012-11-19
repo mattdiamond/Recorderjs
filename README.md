@@ -39,7 +39,21 @@ In addition, you may specify the type of Blob to be returned (defaults to 'audio
 
     rec.getBuffer([callback])
 
-This will pass the recorded buffer (as a Float32Array) to the callback. It can be played back by creating a new source buffer and setting this as its channel data (i.e. `newSource.buffer.getChannelData(0).set(recordedBuffer)`).
+This will pass the recorded stereo buffer (as an array of two Float32Arrays, for the separate left and right channels) to the callback. It can be played back by creating a new source buffer and setting these buffers as the separate channel data:
+
+	function getBufferCallback( buffers ) {
+		var newSource = audioContext.createBufferSourceNode();
+		var newBuffer = audioContext.createBuffer( 2, buffers[0].length, audioContext.sampleRate );
+		newBuffer.getChannelData(0).set(buffers[0]);
+		newBuffer.getChannelData(1).set(buffers[1]);
+		newSource.buffer = newBuffer;
+
+		newSource.connect( audioContext.destination );
+		newSource.start(0);
+	}
+
+This sample code will play back the stereo buffer.
+
 
     rec.configure(config)
 
