@@ -1,5 +1,6 @@
 var recLength = 0,
-  recBuffers = [],
+  recBuffersL = [],
+  recBuffersR = [],
   sampleRate;
 
 this.onmessage = function(e){
@@ -27,29 +28,32 @@ function init(config){
 }
 
 function record(inputBuffer){
-  var bufferL = inputBuffer[0];
-  var bufferR = inputBuffer[1];
-  var interleaved = interleave(bufferL, bufferR);
-  recBuffers.push(interleaved);
-  recLength += interleaved.length;
+  recBuffersL.push(inputBuffer[0]);
+  recBuffersR.push(inputBuffer[1]);
+  recLength += inputBuffer[0].length;
 }
 
 function exportWAV(type){
-  var buffer = mergeBuffers(recBuffers, recLength);
-  var dataview = encodeWAV(buffer);
+  var bufferL = mergeBuffers(recBuffersL, recLength);
+  var bufferR = mergeBuffers(recBuffersR, recLength);
+  var interleaved = interleave(bufferL, bufferR);
+  var dataview = encodeWAV(interleaved);
   var audioBlob = new Blob([dataview], { type: type });
 
   this.postMessage(audioBlob);
 }
 
 function getBuffer() {
-  var buffer = mergeBuffers(recBuffers, recLength)
-  this.postMessage(buffer);
+  var buffers = [];
+  buffers.push( mergeBuffers(recBuffersL, recLength) );
+  buffers.push( mergeBuffers(recBuffersR, recLength) );
+  this.postMessage(buffers);
 }
 
 function clear(){
   recLength = 0;
-  recBuffers = [];
+  recBuffersL = [];
+  recBuffersR = [];
 }
 
 function mergeBuffers(recBuffers, recLength){
