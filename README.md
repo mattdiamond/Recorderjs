@@ -65,7 +65,7 @@ This will set the configuration for Recorder by passing in a config object.
 
 This method will force a download using the new anchor link *download* attribute. Filename defaults to 'output.wav'.
 
-### License (MIT)
+## License (MIT)
 
 Copyright © 2013 Matt Diamond
 
