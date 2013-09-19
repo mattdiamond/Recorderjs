@@ -14,6 +14,9 @@ this.onmessage = function(e){
     case 'exportWAV':
       exportWAV(e.data.type);
       break;
+    case 'exportWAVX':
+      exportWAV(e.data.type, 1);
+      break;
     case 'getBuffer':
       getBuffer();
       break;
@@ -31,13 +34,14 @@ function record(inputBuffer){
   recBuffersL.push(inputBuffer[0]);
   recBuffersR.push(inputBuffer[1]);
   recLength += inputBuffer[0].length;
+
 }
 
-function exportWAV(type){
+function exportWAV(type, compress){
   var bufferL = mergeBuffers(recBuffersL, recLength);
   var bufferR = mergeBuffers(recBuffersR, recLength);
-  var interleaved = interleave(bufferL, bufferR);
-  var dataview = encodeWAV(interleaved);
+  var interleaved = compress?interleaveX(bufferL, bufferR):interleave(bufferL, bufferR);
+  var dataview = encodeWAV(interleaved, compress);
   var audioBlob = new Blob([dataview], { type: type });
 
   this.postMessage(audioBlob);
@@ -66,8 +70,23 @@ function mergeBuffers(recBuffers, recLength){
   return result;
 }
 
+function interleaveX(inputL, inputR){
+  /* reduce file size */
+  var length = inputL.length/4;
+  var result = new Float32Array(length);
+
+  var index = 0,
+    inputIndex = 0;
+
+  while (index < length){
+      result[index++] = 0.25*(inputL[inputIndex++] + inputL[inputIndex++]+inputL[inputIndex++] + inputL[inputIndex++]);
+  }
+  return result;
+ 
+}
+
 function interleave(inputL, inputR){
-  var length = inputL.length + inputR.length;
+ var length = inputL.length + inputR.length;
   var result = new Float32Array(length);
 
   var index = 0,
@@ -79,8 +98,10 @@ function interleave(inputL, inputR){
     inputIndex++;
   }
   return result;
+ 
 }
 
+ 
 function floatTo16BitPCM(output, offset, input){
   for (var i = 0; i < input.length; i++, offset+=2){
     var s = Math.max(-1, Math.min(1, input[i]));
@@ -94,7 +115,7 @@ function writeString(view, offset, string){
   }
 }
 
-function encodeWAV(samples){
+function encodeWAV(samples, compress){
   var buffer = new ArrayBuffer(44 + samples.length * 2);
   var view = new DataView(buffer);
 
@@ -111,7 +132,7 @@ function encodeWAV(samples){
   /* sample format (raw) */
   view.setUint16(20, 1, true);
   /* channel count */
-  view.setUint16(22, 2, true);
+  view.setUint16(22, compress?1:2, true);
   /* sample rate */
   view.setUint32(24, sampleRate, true);
   /* byte rate (sample rate * block align) */
