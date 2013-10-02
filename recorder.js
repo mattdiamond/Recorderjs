@@ -77,8 +77,7 @@
     var link = window.document.createElement('a');
     link.href = url;
     link.download = filename || 'output.wav';
-    var click = document.createEvent("Event");
-    click.initEvent("click", true, true);
+    var click = new CustomEvent('click', {bubbles: true, cancelable: true});
     link.dispatchEvent(click);
   }
 
