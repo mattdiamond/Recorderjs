@@ -13,7 +13,7 @@
 
   <h1>Recorder.js simple WAV export example</h1>
 
-  <p>Make sure you are using a recent version of Google Chrome, at the moment this only works with Google Chrome Canary.</p>
+  <p>Works with recent versions of Chrome or Firefox, may work with opera too (not tested)</p>
   <p>Also before you enable microphone input either plug in headphones or turn the volume down if you want to avoid ear splitting feedback!</p>
 
   <button onclick="startRecording(this);">record</button>
@@ -34,18 +34,18 @@
   var recorder;
 
   function startUserMedia(stream) {
-    var input = audio_context.createMediaStreamSource(stream);
+    var input = audio_context.createMediaStreamSource(stream); //create an audio node.
     __log('Media stream created.');
     
-    input.connect(audio_context.destination);
+    input.connect(audio_context.destination); //connects the "input" audio node to the actual sound output. If connemmented out you can still record, but you dont get live feedback (and thus no feedback loop and loooud, pitched sound!) 
     __log('Input connected to audio context destination.');
     
-    recorder = new Recorder(input);
+    recorder = new Recorder(input); //this sets up a recorder. It dies not record yet, it needs to be started via ".record"
     __log('Recorder initialised.');
   }
 
   function startRecording(button) {
-    recorder && recorder.record();
+    recorder && recorder.record(); //this starts the recording of sound. Previously the recorder was created and set up with a input audio node (which in turn recieves an audio stream form our recording device)
     button.disabled = true;
     button.nextElementSibling.disabled = false;
     __log('Recording...');
@@ -84,9 +84,9 @@
   window.onload = function init() {
     try {
       // webkit shim
-      window.AudioContext = window.AudioContext || window.webkitAudioContext;
-      navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
-      window.URL = window.URL || window.webkitURL;
+      window.AudioContext = window.AudioContext || window.webkitAudioContext; //audio processing (Buffer, Gain, Delay etc.)
+      navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia ||navigator.webkitGetUserMedia; //get user media provides support for accessing local recording devices (webcam, mic). Gets three parameters: 1st: mediaTypes like  {audio:true}, sucessCallback – a function that gets passed a reference to the "stream", the data that comes from the recording device, 3rd an Error-callback-function
+      window.URL = window.URL || window.webkitURL; //object for creating object urls
       
       audio_context = new AudioContext;
       __log('Audio context set up.');
