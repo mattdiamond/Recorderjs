@@ -16,11 +16,11 @@
         sampleRate: this.context.sampleRate
       }
     });
-    var recording = false,
+    var isRecording = false,
       currCallback;
 
     this.node.onaudioprocess = function(e){
-      if (!recording) return;
+      if (!isRecording) return;
       worker.postMessage({
         command: 'record',
         buffer: [
@@ -38,12 +38,16 @@
       }
     };
 
+    this.isRecording = function(){
+      return isRecording;
+    };
+
     this.record = function(){
-      recording = true;
+      isRecording = true;
     };
 
     this.stop = function(){
-      recording = false;
+      isRecording = false;
     };
 
     this.clear = function(){
