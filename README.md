@@ -55,9 +55,9 @@ This will pass the recorded stereo buffer (as an array of two Float32Arrays, for
 This sample code will play back the stereo buffer.
 
 
-    rec.configure(config)
+    rec.isRecording()
 
-This will set the configuration for Recorder by passing in a config object.
+Returns a boolean indicating if the instance is actively recording or not.
 
 #### Utility Methods (static)
 
