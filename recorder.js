@@ -6,9 +6,8 @@
     var config = cfg || {};
     var bufferLen = config.bufferLen || 4096;
     var context = source.context;
-    var node = (context.createScriptProcessor ||
-                context.createJavaScriptNode).call(context,
-                                                   bufferLen, 2, 2);
+    context.createScriptProcessor = context.createScriptProcessor || context.createJavaScriptNode;
+    var node = context.createScriptProcessor(bufferLen, 2, 2);
     var worker = new Worker(config.workerPath || WORKER_PATH);
     worker.postMessage({
       command: 'init',
