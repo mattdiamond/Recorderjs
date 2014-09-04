@@ -30,14 +30,6 @@
       }
     };
 
-    this.configure = function(cfg){
-      for (var prop in cfg){
-        if (cfg.hasOwnProperty(prop)){
-          config[prop] = cfg[prop];
-        }
-      }
-    };
-
     this.isRecording = function(){
       return isRecording;
     };
