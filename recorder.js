@@ -20,14 +20,15 @@
       currCallback;
 
     this.node.onaudioprocess = function(e){
-      if (!isRecording) return;
-      worker.postMessage({
-        command: 'record',
-        buffer: [
-          e.inputBuffer.getChannelData(0),
-          e.inputBuffer.getChannelData(1)
-        ]
-      });
+      if (isRecording) {
+        worker.postMessage({
+          command: 'record',
+          buffer: [
+            e.inputBuffer.getChannelData(0),
+            e.inputBuffer.getChannelData(1)
+          ]
+        });
+      }
     };
 
     this.configure = function(cfg){
