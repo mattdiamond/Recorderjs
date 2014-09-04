@@ -5,21 +5,21 @@
   var Recorder = function(source, cfg){
     var config = cfg || {};
     var bufferLen = config.bufferLen || 4096;
-    this.context = source.context;
-    this.node = (this.context.createScriptProcessor ||
-                 this.context.createJavaScriptNode).call(this.context,
-                                                         bufferLen, 2, 2);
+    var context = source.context;
+    var node = (context.createScriptProcessor ||
+                context.createJavaScriptNode).call(context,
+                                                   bufferLen, 2, 2);
     var worker = new Worker(config.workerPath || WORKER_PATH);
     worker.postMessage({
       command: 'init',
       config: {
-        sampleRate: this.context.sampleRate
+        sampleRate: context.sampleRate
       }
     });
     var isRecording = false,
       currCallback;
 
-    this.node.onaudioprocess = function(e){
+    node.onaudioprocess = function(e){
       if (isRecording) {
         worker.postMessage({
           command: 'record',
@@ -75,8 +75,8 @@
       currCallback(blob);
     };
 
-    source.connect(this.node);
-    this.node.connect(this.context.destination);    //this should not be necessary
+    source.connect(node);
+    node.connect(context.destination);    //this should not be necessary
   };
 
   Recorder.forceDownload = function(blob, filename){
