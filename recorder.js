@@ -1,35 +1,15 @@
 var Recorder = function(source, config){
 
+  var context = source.context,
+    isRecording = false,
+    node,
+    worker,
+    currCallback;
+
   config = config || {};
   config.bufferLen = config.bufferLen || 4096;
   config.workerPath = config.workerPath || 'recorderWorker.js';
   config.type = config.type || 'audio/wav';
-
-
-  var context = source.context;
-  context.createScriptProcessor = context.createScriptProcessor || context.createJavaScriptNode;
-  var node = context.createScriptProcessor(config.bufferLen, 2, 2);
-  var worker = new Worker(config.workerPath);
-  worker.postMessage({
-    command: 'init',
-    config: {
-      sampleRate: context.sampleRate
-    }
-  });
-  var isRecording = false,
-    currCallback;
-
-  node.onaudioprocess = function(e){
-    if (isRecording) {
-      worker.postMessage({
-        command: 'record',
-        buffer: [
-          e.inputBuffer.getChannelData(0),
-          e.inputBuffer.getChannelData(1)
-        ]
-      });
-    }
-  };
 
   this.isRecording = function(){
     return isRecording;
@@ -61,9 +41,28 @@ var Recorder = function(source, config){
     });
   };
 
+  context.createScriptProcessor = context.createScriptProcessor || context.createJavaScriptNode;
+  node = context.createScriptProcessor(config.bufferLen, 2, 2);
+  worker = new Worker(config.workerPath);
+  worker.postMessage({
+    command: 'init',
+    config: { sampleRate: context.sampleRate }
+  });
+
+  node.onaudioprocess = function(e){
+    if (isRecording) {
+      worker.postMessage({
+        command: 'record',
+        buffer: [
+          e.inputBuffer.getChannelData(0),
+          e.inputBuffer.getChannelData(1)
+        ]
+      });
+    }
+  };
+
   worker.onmessage = function(e){
-    var blob = e.data;
-    currCallback(blob);
+    currCallback( e.data );
   };
 
   source.connect(node);
