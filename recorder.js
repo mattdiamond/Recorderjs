@@ -1,12 +1,15 @@
-var Recorder = function(source, cfg){
-  var WORKER_PATH = 'recorderWorker.js';
+var Recorder = function(source, config){
 
-  var config = cfg || {};
-  var bufferLen = config.bufferLen || 4096;
+  config = config || {};
+  config.bufferLen = config.bufferLen || 4096;
+  config.workerPath = config.workerPath || 'recorderWorker.js';
+  config.type = config.type || 'audio/wav';
+
+
   var context = source.context;
   context.createScriptProcessor = context.createScriptProcessor || context.createJavaScriptNode;
-  var node = context.createScriptProcessor(bufferLen, 2, 2);
-  var worker = new Worker(config.workerPath || WORKER_PATH);
+  var node = context.createScriptProcessor(config.bufferLen, 2, 2);
+  var worker = new Worker(config.workerPath);
   worker.postMessage({
     command: 'init',
     config: {
@@ -51,11 +54,10 @@ var Recorder = function(source, cfg){
 
   this.exportWAV = function(cb, type){
     currCallback = cb || config.callback;
-    type = type || config.type || 'audio/wav';
-    if (!cb) throw new Error('Callback not set');
+    if (!currCallback) throw new Error('Callback not set');
     worker.postMessage({
       command: 'exportWAV',
-      type: type
+      type: config.type
     });
   };
 
