@@ -9,7 +9,7 @@ var Recorder = function(source, config){
   config = config || {};
   config.bufferLen = config.bufferLen || 4096;
   config.workerPath = config.workerPath || 'recorderWorker.js';
-  config.type = config.type || 'audio/wav';
+  config.mimeType = config.mimeType || 'audio/wav';
 
   this.isRecording = function(){
     return isRecording;
@@ -32,11 +32,11 @@ var Recorder = function(source, config){
     worker.postMessage({ command: 'getBuffer' })
   };
 
-  this.exportWAV = function(cb, type){
+  this.exportWAV = function(cb, mimeType){
     currCallback = cb;
     worker.postMessage({
       command: 'exportWAV',
-      type: type || config.type
+      type: mimeType || config.mimeType
     });
   };
 
