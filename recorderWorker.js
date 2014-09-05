@@ -1,7 +1,8 @@
-var recLength = 0,
-  recBuffersL = [],
-  recBuffersR = [],
+var numberOfChannels,
+  recBuffers,
+  recLength,
   sampleRate;
+
 
 this.onmessage = function(e){
   switch(e.data.command){
@@ -11,8 +12,8 @@ this.onmessage = function(e){
     case 'record':
       record(e.data.buffer);
       break;
-    case 'exportWAV':
-      exportWAV(e.data.type);
+    case 'getWAVBlob':
+      getWAVBlob(e.data.type);
       break;
     case 'getBuffer':
       getBuffer();
@@ -25,57 +26,70 @@ this.onmessage = function(e){
 
 function init(config){
   sampleRate = config.sampleRate;
+  numberOfChannels = config.numberOfChannels;
+  clear();
 }
 
 function record(inputBuffer){
-  recBuffersL.push(inputBuffer[0]);
-  recBuffersR.push(inputBuffer[1]);
+  for (var i = 0; i < numberOfChannels; i++){
+    recBuffers[i].push( inputBuffer[i] );
+  }
   recLength += inputBuffer[0].length;
 }
 
-function exportWAV(type){
-  var bufferL = mergeBuffers(recBuffersL, recLength);
-  var bufferR = mergeBuffers(recBuffersR, recLength);
-  var interleaved = interleave(bufferL, bufferR);
-  var dataview = encodeWAV(interleaved);
+function getWAVBlob(type){
+  var mergedBuffers = mergeAllBuffers();
+  var interleavedSamples = interleave(mergedBuffers);
+  var dataview = encodeWAV(interleavedSamples);
   var audioBlob = new Blob([dataview], { type: type });
 
   this.postMessage(audioBlob);
 }
 
 function getBuffer() {
-  var buffers = [];
-  buffers.push( mergeBuffers(recBuffersL, recLength) );
-  buffers.push( mergeBuffers(recBuffersR, recLength) );
-  this.postMessage(buffers);
+  this.postMessage( mergeAllBuffers() );
 }
 
 function clear(){
   recLength = 0;
-  recBuffersL = [];
-  recBuffersR = [];
+  recBuffers = [];
+  for (var i = 0; i < numberOfChannels; i++){
+    recBuffers.push([]);
+  }
 }
 
-function mergeBuffers(recBuffers, recLength){
+function mergeAllBuffers(){
+  var buffers = [];
+  for (var i = 0; i < numberOfChannels; i++){
+    buffers.push( mergeBuffer(recBuffers[i]) );
+  }
+  return buffers
+}
+
+function mergeBuffer(recBuffer){
   var result = new Float32Array(recLength);
   var offset = 0;
-  for (var i = 0; i < recBuffers.length; i++){
-    result.set(recBuffers[i], offset);
-    offset += recBuffers[i].length;
+  for (var i = 0; i < recBuffer.length; i++){
+    result.set(recBuffer[i], offset);
+    offset += recBuffer[i].length;
   }
   return result;
 }
 
-function interleave(inputL, inputR){
-  var length = inputL.length + inputR.length;
+function interleave( mergedBuffers ){
+  var length = 0;
+  for (var i = 0; i < numberOfChannels; i++) {
+    length += mergedBuffers[i].length;
+  }
   var result = new Float32Array(length);
 
   var index = 0,
     inputIndex = 0;
 
   while (index < length){
-    result[index++] = inputL[inputIndex];
-    result[index++] = inputR[inputIndex];
+    for (var i = 0; i < numberOfChannels; i++) {
+      result[index++] = mergedBuffers[i][inputIndex];
+    }
     inputIndex++;
   }
   return result;
@@ -94,14 +108,16 @@ function writeString(view, offset, string){
   }
 }
 
-function encodeWAV(samples){
-  var buffer = new ArrayBuffer(44 + samples.length * 2);
+function encodeWAV(interleavedSamples){
+  var dataLength = interleavedSamples.length * 2
+  var buffer = new ArrayBuffer(44 + dataLength);
   var view = new DataView(buffer);
+  var bitsPerSample = 16;
 
   /* RIFF identifier */
   writeString(view, 0, 'RIFF');
   /* file length */
-  view.setUint32(4, 32 + samples.length * 2, true);
+  view.setUint32(4, 36 + dataLength, true);
   /* RIFF type */
   writeString(view, 8, 'WAVE');
   /* format chunk identifier */
@@ -111,21 +127,21 @@ function encodeWAV(samples){
   /* sample format (raw) */
   view.setUint16(20, 1, true);
   /* channel count */
-  view.setUint16(22, 2, true);
+  view.setUint16(22, numberOfChannels, true);
   /* sample rate */
   view.setUint32(24, sampleRate, true);
   /* byte rate (sample rate * block align) */
-  view.setUint32(28, sampleRate * 4, true);
+  view.setUint32(28, (sampleRate * bitsPerSample * numberOfChannels) / 8, true);
   /* block align (channel count * bytes per sample) */
-  view.setUint16(32, 4, true);
+  view.setUint16(32, (bitsPerSample * numberOfChannels) / 8, true);
   /* bits per sample */
-  view.setUint16(34, 16, true);
+  view.setUint16(34, bitsPerSample, true);
   /* data chunk identifier */
   writeString(view, 36, 'data');
   /* data chunk length */
-  view.setUint32(40, samples.length * 2, true);
+  view.setUint32(40, dataLength, true);
 
-  floatTo16BitPCM(view, 44, samples);
+  floatTo16BitPCM(view, 44, interleavedSamples);
 
   return view;
 }
