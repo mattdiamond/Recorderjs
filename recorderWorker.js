@@ -9,11 +9,11 @@ this.onmessage = function(e){
     case 'init':
       init(e.data.config);
       break;
-    case 'record':
-      record(e.data.buffer);
+    case 'addToBuffer':
+      addToBuffer(e.data.buffer);
       break;
-    case 'getWAVBlob':
-      getWAVBlob(e.data.type);
+    case 'getWavBlob':
+      getWavBlob(e.data.mimeType);
       break;
     case 'getBuffer':
       getBuffer();
@@ -24,30 +24,11 @@ this.onmessage = function(e){
   }
 };
 
-function init(config){
-  sampleRate = config.sampleRate;
-  numberOfChannels = config.numberOfChannels;
-  clear();
-}
-
-function record(inputBuffer){
+function addToBuffer(inputBuffer){
   for (var i = 0; i < numberOfChannels; i++){
     recBuffers[i].push( inputBuffer[i] );
   }
   recLength += inputBuffer[0].length;
-}
-
-function getWAVBlob(type){
-  var mergedBuffers = mergeAllBuffers();
-  var interleavedSamples = interleave(mergedBuffers);
-  var dataview = encodeWAV(interleavedSamples);
-  var audioBlob = new Blob([dataview], { type: type });
-
-  this.postMessage(audioBlob);
-}
-
-function getBuffer() {
-  this.postMessage( mergeAllBuffers() );
 }
 
 function clear(){
@@ -56,6 +37,46 @@ function clear(){
   for (var i = 0; i < numberOfChannels; i++){
     recBuffers.push([]);
   }
+}
+
+function getBuffer() {
+  this.postMessage( mergeAllBuffers() );
+}
+
+function getWavBlob(mimeType){
+  var mergedBuffers = mergeAllBuffers(),
+    interleavedSamples = interleave(mergedBuffers),
+    dataview = encodeWav(interleavedSamples);
+
+  this.postMessage( new Blob([dataview], { type: mimeType }) );
+}
+
+function init(config){
+  sampleRate = config.sampleRate;
+  numberOfChannels = config.numberOfChannels;
+  clear();
+}
+
+function interleave( mergedBuffers ){
+
+  var index = 0,
+    inputIndex = 0,
+    length = 0,
+    result;
+
+  for (var i = 0; i < numberOfChannels; i++) {
+    length += mergedBuffers[i].length;
+  }
+  result = new Float32Array(length);
+
+  while (index < length){
+    for (var i = 0; i < numberOfChannels; i++) {
+      result[index++] = mergedBuffers[i][inputIndex];
+    }
+    inputIndex++;
+  }
+
+  return result;
 }
 
 function mergeAllBuffers(){
@@ -76,25 +97,6 @@ function mergeBuffer(recBuffer){
   return result;
 }
 
-function interleave( mergedBuffers ){
-  var length = 0;
-  for (var i = 0; i < numberOfChannels; i++) {
-    length += mergedBuffers[i].length;
-  }
-  var result = new Float32Array(length);
-
-  var index = 0,
-    inputIndex = 0;
-
-  while (index < length){
-    for (var i = 0; i < numberOfChannels; i++) {
-      result[index++] = mergedBuffers[i][inputIndex];
-    }
-    inputIndex++;
-  }
-  return result;
-}
-
 function floatTo16BitPCM(output, offset, input){
   for (var i = 0; i < input.length; i++, offset+=2){
     var s = Math.max(-1, Math.min(1, input[i]));
@@ -108,11 +110,11 @@ function writeString(view, offset, string){
   }
 }
 
-function encodeWAV(interleavedSamples){
-  var dataLength = interleavedSamples.length * 2
-  var buffer = new ArrayBuffer(44 + dataLength);
-  var view = new DataView(buffer);
-  var bitsPerSample = 16;
+function encodeWav(interleavedSamples){
+  var dataLength = interleavedSamples.length * 2,
+    buffer = new ArrayBuffer(44 + dataLength),
+    view = new DataView(buffer),
+    bitsPerSample = 16;
 
   /* RIFF identifier */
   writeString(view, 0, 'RIFF');
@@ -140,7 +142,7 @@ function encodeWAV(interleavedSamples){
   writeString(view, 36, 'data');
   /* data chunk length */
   view.setUint32(40, dataLength, true);
-
+  /* PCM data */
   floatTo16BitPCM(view, 44, interleavedSamples);
 
   return view;
