@@ -59,8 +59,8 @@ Recorder.prototype.getWAVBlob = function(cb, mimeType){
 
 Recorder.prototype.getBuffer = function(cb) {
   var getBufferHandler = function(e){ this.callbackHandler(e, cb, getBufferHandler) });
-  thisWorker.addEventListener("message", getBufferHandler);
-  thisWorker.postMessage({ command: 'getBuffer' });
+  this.worker.addEventListener("message", getBufferHandler);
+  this.worker.postMessage({ command: 'getBuffer' });
 };
 
 Recorder.prototype.recordBuffer = function(inputBuffer){
