@@ -12,7 +12,6 @@ var Recorder = function(source, config){
   workerPath = config.workerPath || 'recorderWorker.js';
   numberOfChannels = config.numberOfChannels || 2;
   this.mimeType = config.mimeType || 'audio/wav';
-  this.downloadFilename = config.downloadFilename || 'recording.wav';
 
   this.worker = new Worker(workerPath);
   this.worker.postMessage({
