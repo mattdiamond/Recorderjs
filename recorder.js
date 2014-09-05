@@ -28,16 +28,15 @@ var Recorder = function(source, config){
   };
 
   this.getBuffer = function(cb) {
-    currCallback = cb || config.callback;
+    currCallback = cb;
     worker.postMessage({ command: 'getBuffer' })
   };
 
   this.exportWAV = function(cb, type){
-    currCallback = cb || config.callback;
-    if (!currCallback) throw new Error('Callback not set');
+    currCallback = cb;
     worker.postMessage({
       command: 'exportWAV',
-      type: config.type
+      type: type || config.type
     });
   };
 
