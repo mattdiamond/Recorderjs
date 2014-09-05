@@ -3,8 +3,7 @@ var Recorder = function(source, config){
   var context = source.context,
     isRecording = false,
     node,
-    worker,
-    currCallback;
+    worker;
 
   config = config || {};
   config.bufferLen = config.bufferLen || 4096;
@@ -28,12 +27,22 @@ var Recorder = function(source, config){
   };
 
   this.getBuffer = function(cb) {
-    currCallback = cb;
+    var getBufferHandler = function(e){
+      e.stopPropagation();
+      worker.removeEventListener("message", exportWavHandler);
+      cb(e.data);
+    };
+    worker.addEventListener("message", getBufferHandler);
     worker.postMessage({ command: 'getBuffer' })
   };
 
   this.exportWAV = function(cb, mimeType){
-    currCallback = cb;
+    var exportWavHandler = function(e){
+      e.stopPropagation();
+      worker.removeEventListener("message", exportWavHandler);
+      cb(e.data);
+    };
+    worker.addEventListener("message", exportWavHandler);
     worker.postMessage({
       command: 'exportWAV',
       type: mimeType || config.mimeType
@@ -41,7 +50,6 @@ var Recorder = function(source, config){
   };
 
   worker = new Worker(config.workerPath);
-  worker.onmessage = function(e){ currCallback( e.data ); };
   worker.postMessage({
     command: 'init',
     config: { sampleRate: context.sampleRate }
