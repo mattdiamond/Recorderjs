@@ -1,22 +1,24 @@
 var Recorder = function(source, config){
 
-  var context = source.context,
-    _this = this,
-    node;
+  var _this = this,
+    bufferLen,
+    context = source.context,
+    node,
+    workerPath;
 
   config = config || {};
-  config.bufferLen = config.bufferLen || 4096;
-  config.workerPath = config.workerPath || 'recorderWorker.js';
-  config.mimeType = config.mimeType || 'audio/wav';
+  bufferLen = config.bufferLen || 4096;
+  workerPath = config.workerPath || 'recorderWorker.js';
+  this.mimeType = config.mimeType || 'audio/wav';
 
-  this.worker = new Worker(config.workerPath);
+  this.worker = new Worker(workerPath);
   this.worker.postMessage({
     command: 'init',
     config: { sampleRate: context.sampleRate }
   });
 
   context.createScriptProcessor = context.createScriptProcessor || context.createJavaScriptNode;
-  node = context.createScriptProcessor(config.bufferLen, 2, 2);
+  node = context.createScriptProcessor(bufferLen, 2, 2);
   node.onaudioprocess = function(e){ _this.recordBuffer(e.inputBuffer); };
   source.connect(node);
   node.connect(context.destination);
@@ -45,7 +47,7 @@ Recorder.prototype.exportWAV = function(cb, mimeType){
   this.worker.addEventListener("message", exportWavHandler);
   this.worker.postMessage({
     command: 'exportWAV',
-    type: mimeType || config.mimeType
+    type: mimeType || this.mimeType
   });
 };
 
