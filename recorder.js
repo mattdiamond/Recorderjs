@@ -25,6 +25,12 @@ var Recorder = function(source, config){
   node.connect(context.destination);
 };
 
+Recorder.prototype.callbackHandler = function(e, cb, handlerRef){
+  e.stopPropagation();
+  this.worker.removeEventListener("message", handlerRef);
+  cb(e.data);
+};
+
 Recorder.prototype.clear = function(){
   this.worker.postMessage({ command: 'clear' });
 };
@@ -43,11 +49,7 @@ Recorder.prototype.downloadWAV = function(filename){
 };
 
 Recorder.prototype.getWAVBlob = function(cb, mimeType){
-  var exportWavHandler = function(e){
-    e.stopPropagation();
-    this.worker.removeEventListener("message", exportWavHandler);
-    cb(e.data);
-  };
+  var exportWavHandler = function(e){ this.callbackHandler(e, cb, exportWavHandler) });
   this.worker.addEventListener("message", exportWavHandler);
   this.worker.postMessage({
     command: 'exportWAV',
@@ -56,13 +58,9 @@ Recorder.prototype.getWAVBlob = function(cb, mimeType){
 };
 
 Recorder.prototype.getBuffer = function(cb) {
-  var getBufferHandler = function(e){
-    e.stopPropagation();
-    this.worker.removeEventListener("message", getBufferHandler);
-    cb(e.data);
-  };
-  this.worker.addEventListener("message", getBufferHandler);
-  this.worker.postMessage({ command: 'getBuffer' });
+  var getBufferHandler = function(e){ this.callbackHandler(e, cb, getBufferHandler) });
+  thisWorker.addEventListener("message", getBufferHandler);
+  thisWorker.postMessage({ command: 'getBuffer' });
 };
 
 Recorder.prototype.recordBuffer = function(inputBuffer){
