@@ -17,7 +17,7 @@ var Recorder = function(source, config){
 
   context.createScriptProcessor = context.createScriptProcessor || context.createJavaScriptNode;
   node = context.createScriptProcessor(config.bufferLen, 2, 2);
-  node.onaudioprocess = function(e){ _this.recordSample(e.inputBuffer); };
+  node.onaudioprocess = function(e){ _this.recordBuffer(e.inputBuffer); };
   source.connect(node);
   node.connect(context.destination);
 };
@@ -39,7 +39,7 @@ Recorder.prototype.clear = function(){
 Recorder.prototype.exportWAV = function(cb, mimeType){
   var exportWavHandler = function(e){
     e.stopPropagation();
-    worker.removeEventListener("message", exportWavHandler);
+    this.worker.removeEventListener("message", exportWavHandler);
     cb(e.data);
   };
   this.worker.addEventListener("message", exportWavHandler);
@@ -52,14 +52,14 @@ Recorder.prototype.exportWAV = function(cb, mimeType){
 Recorder.prototype.getBuffer = function(cb) {
   var getBufferHandler = function(e){
     e.stopPropagation();
-    worker.removeEventListener("message", getBufferHandler);
+    this.worker.removeEventListener("message", getBufferHandler);
     cb(e.data);
   };
   this.worker.addEventListener("message", getBufferHandler);
   this.worker.postMessage({ command: 'getBuffer' });
 };
 
-Recorder.prototype.recordSample = function(inputBuffer){
+Recorder.prototype.recordBuffer = function(inputBuffer){
   if (this.isRecording) {
     this.worker.postMessage({
       command: 'record',
