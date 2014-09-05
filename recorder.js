@@ -10,6 +10,7 @@ var Recorder = function(source, config){
   bufferLen = config.bufferLen || 4096;
   workerPath = config.workerPath || 'recorderWorker.js';
   this.mimeType = config.mimeType || 'audio/wav';
+  this.downloadFilename = config.downloadFilename || 'recording.wav';
 
   this.worker = new Worker(workerPath);
   this.worker.postMessage({
@@ -24,21 +25,24 @@ var Recorder = function(source, config){
   node.connect(context.destination);
 };
 
-Recorder.forceDownload = function(blob, filename){
-  var url = (URL || webkitURL).createObjectURL(blob);
-  var link = document.createElement('a');
-  link.href = url;
-  link.download = filename || 'output.wav';
-  var click = document.createEvent("Event");
-  click.initEvent("click", true, true);
-  link.dispatchEvent(click);
-};
-
 Recorder.prototype.clear = function(){
   this.worker.postMessage({ command: 'clear' });
 };
 
-Recorder.prototype.exportWAV = function(cb, mimeType){
+Recorder.prototype.downloadWAV = function(filename){
+  this.getWAVBlob( function(blob){
+    var url = (URL || webkitURL).createObjectURL(blob),
+      link = document.createElement('a'),
+      click = document.createEvent("Event");
+
+    link.href = url;
+    link.download = filename || this.downloadFilename;
+    click.initEvent("click", true, true);
+    link.dispatchEvent(click);
+  });
+};
+
+Recorder.prototype.getWAVBlob = function(cb, mimeType){
   var exportWavHandler = function(e){
     e.stopPropagation();
     this.worker.removeEventListener("message", exportWavHandler);
