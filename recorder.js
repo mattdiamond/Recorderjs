@@ -1,18 +1,18 @@
 var Recorder = function(source, config){
 
-  var _this = this,
-    bufferLen,
+  var that = this,
     context = source.context,
+    bufferLen,
+    workerPath,
     numberOfChannels,
-    node,
-    workerPath;
+    node;
 
   config = config || {};
   bufferLen = config.bufferLen || 4096;
   workerPath = config.workerPath || 'recorderWorker.js';
+  numberOfChannels = config.numberOfChannels || 2;
   this.mimeType = config.mimeType || 'audio/wav';
   this.downloadFilename = config.downloadFilename || 'recording.wav';
-  numberOfChannels = config.numberOfChannels || 2;
 
   this.worker = new Worker(workerPath);
   this.worker.postMessage({
@@ -25,7 +25,7 @@ var Recorder = function(source, config){
 
   context.createScriptProcessor = context.createScriptProcessor || context.createJavaScriptNode;
   node = context.createScriptProcessor(bufferLen, numberOfChannels, numberOfChannels);
-  node.onaudioprocess = function(e){ _this.recordBuffer(e.inputBuffer); };
+  node.onaudioprocess = function(e){ that.recordBuffer(e.inputBuffer); };
   source.connect(node);
   node.connect(context.destination);
 };
@@ -41,7 +41,8 @@ Recorder.prototype.clear = function(){
 };
 
 Recorder.prototype.downloadWAV = function(filename){
-  var _this = this;
+
+  var that = this;
   this.getWAVBlob( function(blob){
 
     var url = (URL || webkitURL).createObjectURL(blob),
@@ -49,7 +50,7 @@ Recorder.prototype.downloadWAV = function(filename){
       click = document.createEvent("Event");
 
     link.href = url;
-    link.download = filename || _this.downloadFilename;
+    link.download = filename || that.downloadFilename;
     click.initEvent("click", true, true);
     link.dispatchEvent(click);
   });
@@ -57,8 +58,8 @@ Recorder.prototype.downloadWAV = function(filename){
 
 Recorder.prototype.getWAVBlob = function(cb, mimeType){
 
-  var _this = this,
-    getWAVBlobHandler = function(e){ _this.callbackHandler(e, cb, getWAVBlobHandler); };
+  var that = this,
+    getWAVBlobHandler = function(e){ that.callbackHandler(e, cb, getWAVBlobHandler); };
 
   this.worker.addEventListener("message", getWAVBlobHandler);
   this.worker.postMessage({
@@ -69,17 +70,19 @@ Recorder.prototype.getWAVBlob = function(cb, mimeType){
 
 Recorder.prototype.getBuffer = function(cb) {
 
-  var _this = this,
-    getBufferHandler = function(e){ _this.callbackHandler(e, cb, getBufferHandler); };
+  var that = this,
+    getBufferHandler = function(e){ that.callbackHandler(e, cb, getBufferHandler); };
 
   this.worker.addEventListener("message", getBufferHandler);
   this.worker.postMessage({ command: 'getBuffer' });
 };
 
 Recorder.prototype.recordBuffer = function(inputBuffer){
+  var buffer;
+
   if (this.isRecording) {
 
-    var buffer = [];
+    buffer = [];
     for (var i = 0; i < inputBuffer.numberOfChannels; i++) {
       buffer.push( inputBuffer.getChannelData(i) );
     }
