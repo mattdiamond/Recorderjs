@@ -41,14 +41,15 @@ var Recorder = function(source, config){
     });
   };
 
-  context.createScriptProcessor = context.createScriptProcessor || context.createJavaScriptNode;
-  node = context.createScriptProcessor(config.bufferLen, 2, 2);
   worker = new Worker(config.workerPath);
+  worker.onmessage = function(e){ currCallback( e.data ); };
   worker.postMessage({
     command: 'init',
     config: { sampleRate: context.sampleRate }
   });
 
+  context.createScriptProcessor = context.createScriptProcessor || context.createJavaScriptNode;
+  node = context.createScriptProcessor(config.bufferLen, 2, 2);
   node.onaudioprocess = function(e){
     if (isRecording) {
       worker.postMessage({
@@ -60,11 +61,6 @@ var Recorder = function(source, config){
       });
     }
   };
-
-  worker.onmessage = function(e){
-    currCallback( e.data );
-  };
-
   source.connect(node);
   node.connect(context.destination);    //this should not be necessary
 };
