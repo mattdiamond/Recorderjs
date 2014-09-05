@@ -26,7 +26,7 @@ Creates a recorder instance.
     rec.startRecording()
     rec.stopRecording()
 
-Pretty self-explanatory... **startRecording** will begin capturing audio and **stop** will cease capturing audio. Subsequent calls to **startRecording** will add to the current recording.
+Pretty self-explanatory... **startRecording** will begin capturing audio and **stopRecording** will cease capturing audio. Subsequent calls to **startRecording** will add to the current recording.
 
     rec.clear()
 
