@@ -1,18 +1,22 @@
-var Recorder = function(source, config){
+var Recorder = function(config){
 
   var that = this,
-    context = source.context,
     bufferLen,
+    context,
     workerPath,
     numberOfChannels,
-    node;
+    scriptProcessorNode;
 
-  config = config || {};
+  if (!config || !config.sourceNode) {
+    throw 'Configuration object with property sourceNode is required to initialize Recorder';
+  }
+
   bufferLen = config.bufferLen || 4096;
   workerPath = config.workerPath || 'recorderWorker.js';
   numberOfChannels = config.numberOfChannels || 2;
   this.mimeType = config.mimeType || 'audio/wav';
 
+  context = config.sourceNode.context;
   this.worker = new Worker(workerPath);
   this.worker.postMessage({
     command: 'init',
@@ -23,10 +27,10 @@ var Recorder = function(source, config){
   });
 
   context.createScriptProcessor = context.createScriptProcessor || context.createJavaScriptNode;
-  node = context.createScriptProcessor(bufferLen, numberOfChannels, numberOfChannels);
-  node.onaudioprocess = function(e){ that.addToBuffer(e.inputBuffer); };
-  source.connect(node);
-  node.connect(context.destination);
+  scriptProcessorNode = context.createScriptProcessor(bufferLen, numberOfChannels, numberOfChannels);
+  scriptProcessorNode.onaudioprocess = function(e){ that.addToBuffer(e.inputBuffer); };
+  config.sourceNode.connect(scriptProcessorNode);
+  scriptProcessorNode.connect(context.destination);
 };
 
 Recorder.prototype.addToBuffer = function(inputBuffer){
