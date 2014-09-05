@@ -29,7 +29,7 @@ var Recorder = function(source, config){
   this.getBuffer = function(cb) {
     var getBufferHandler = function(e){
       e.stopPropagation();
-      worker.removeEventListener("message", exportWavHandler);
+      worker.removeEventListener("message", getBufferHandler);
       cb(e.data);
     };
     worker.addEventListener("message", getBufferHandler);
