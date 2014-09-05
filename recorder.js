@@ -59,8 +59,6 @@ Recorder.prototype.getBuffer = function(cb) {
   this.worker.postMessage({ command: 'getBuffer' });
 };
 
-Recorder.prototype.isRecording = false;
-
 Recorder.prototype.recordSample = function(inputBuffer){
   if (this.isRecording) {
     this.worker.postMessage({
@@ -73,10 +71,10 @@ Recorder.prototype.recordSample = function(inputBuffer){
   }
 };
 
-Recorder.prototype.start = function(){
+Recorder.prototype.startRecording = function(){
   this.isRecording = true;
 };
 
-Recorder.prototype.stop = function(){
+Recorder.prototype.stopRecording = function(){
   this.isRecording = false;
 };

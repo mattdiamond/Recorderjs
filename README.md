@@ -21,10 +21,10 @@ Creates a recorder instance.
 ---------
 #### Instance Methods
 
-    rec.record()
-    rec.stop()
+    rec.startRecording()
+    rec.stopRecording()
 
-Pretty self-explanatory... **record** will begin capturing audio and **stop** will cease capturing audio. Subsequent calls to **record** will add to the current recording.
+Pretty self-explanatory... **startRecording** will begin capturing audio and **stop** will cease capturing audio. Subsequent calls to **startRecording** will add to the current recording.
 
     rec.clear()
 
@@ -53,10 +53,9 @@ This will pass the recorded stereo buffer (as an array of two Float32Arrays, for
 
 This sample code will play back the stereo buffer.
 
+    rec.isRecording
 
-    rec.isRecording()
-
-Returns a boolean indicating if the instance is actively recording or not.
+is a boolean indicating if the instance is actively recording or not.
 
 #### Utility Methods (static)
 
