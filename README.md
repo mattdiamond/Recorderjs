@@ -31,10 +31,6 @@ Pretty self-explanatory... **startRecording** will begin capturing audio and **s
 
 This will clear the recording.
 
-    rec.playbackRecording()
-
-This will playback the recording as an audio object.
-
     rec.getWavBlob( callback[, mimeType])
 
 This will generate a Blob object containing the recording in WAV format. The callback will be called with the Blob as its sole argument.

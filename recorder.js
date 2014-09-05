@@ -80,12 +80,6 @@ Recorder.prototype.getBuffer = function(cb) {
   this.worker.postMessage({ command: 'getBuffer' });
 };
 
-Recorder.prototype.playbackRecording = function(){
-  this.getWavBlob( function(blob){
-    new Audio( URL.createObjectURL(blob) ).play();
-  });
-};
-
 Recorder.prototype.startRecording = function(){
   this.isRecording = true;
 };
