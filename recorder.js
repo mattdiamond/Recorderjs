@@ -49,7 +49,7 @@ Recorder.prototype.downloadWAV = function(filename){
 };
 
 Recorder.prototype.getWAVBlob = function(cb, mimeType){
-  var exportWavHandler = function(e){ this.callbackHandler(e, cb, exportWavHandler) });
+  var exportWavHandler = function(e){ this.callbackHandler(e, cb, exportWavHandler); };
   this.worker.addEventListener("message", exportWavHandler);
   this.worker.postMessage({
     command: 'exportWAV',
@@ -58,7 +58,7 @@ Recorder.prototype.getWAVBlob = function(cb, mimeType){
 };
 
 Recorder.prototype.getBuffer = function(cb) {
-  var getBufferHandler = function(e){ this.callbackHandler(e, cb, getBufferHandler) });
+  var getBufferHandler = function(e){ this.callbackHandler(e, cb, getBufferHandler); };
   this.worker.addEventListener("message", getBufferHandler);
   this.worker.postMessage({ command: 'getBuffer' });
 };
