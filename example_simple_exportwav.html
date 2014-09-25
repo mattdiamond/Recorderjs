@@ -36,9 +36,10 @@
   function startUserMedia(stream) {
     var input = audio_context.createMediaStreamSource(stream);
     __log('Media stream created.');
-    
-    input.connect(audio_context.destination);
-    __log('Input connected to audio context destination.');
+
+    // Uncomment if you want the audio to feedback directly
+    //input.connect(audio_context.destination);
+    //__log('Input connected to audio context destination.');
     
     recorder = new Recorder(input);
     __log('Recorder initialised.');
