@@ -4,11 +4,11 @@
 
 ### Syntax
 #### Constructor
-    var rec = new Recorder(config)
+    var rec = new Recorder()
 
 Creates a recorder instance.
 
-- **config** - A configuration object (see **config** section below)
+- **config** - An optional configuration object (see **config** section below)
 
 ---------
 #### Config
@@ -23,10 +23,16 @@ Creates a recorder instance.
 #### Instance Methods
 
     rec.startRecording()
+
+**startRecording** will begin capturing audio.
+
     rec.pauseRecording()
+
+**pauseRecording** will keep the stream and monitoring alive, but will not be recording the buffers. Subsequent calls to **startRecording** will add to the current recording.
+
     rec.stopRecording()
 
-Pretty self-explanatory... **startRecording** will begin capturing audio. **pauseRecording** will keep the stream and monitoring alive, but will not be recording the buggers. **stopRecording** will cease capturing audio and disable the mic input stream. Subsequent calls to **startRecording** will add to the current recording.
+**stopRecording** will cease capturing audio and disable the monitoring mic input stream. Subsequent calls to **startRecording** will require authorization to access the input stream again before adding to the current recording.
 
     rec.clear()
 
