@@ -4,7 +4,7 @@
 
 ### Syntax
 #### Constructor
-    var rec = new Recorder()
+    var rec = new Recorder([config])
 
 Creates a recorder instance.
 
@@ -32,16 +32,16 @@ Creates a recorder instance.
 
     rec.stopRecording()
 
-**stopRecording** will cease capturing audio and disable the monitoring mic input stream. Subsequent calls to **startRecording** will require authorization to access the input stream again before adding to the current recording.
+**stopRecording** will cease capturing audio and disable the monitoring and mic input stream. Subsequent calls to **startRecording** will require authorization to access the input stream again before adding to the current recording.
 
     rec.clear()
 
-This will clear the recording.
+This will clear the data buffers of any recorded data.
 
     rec.enableMonitoring()
     rec.disableMonitoring()
 
-This will enable and disable the live monitoring of your mic input.
+This will enable and disable the live monitoring of your mic input. Headphones are recommended if enabling monitoring to avoid feedback noise.
 
     rec.getWavBlob( callback[, mimeType])
 
