@@ -1,4 +1,4 @@
-var Recorder = function(config){
+var Recorder = function( config ){
 
   var that = this;
 
@@ -14,28 +14,32 @@ var Recorder = function(config){
   config.mimeType = config.mimeType || 'audio/wav';
   this.config = config;
 
-  this.initCallbackQueue = [];
-  this.worker = new Worker(config.workerPath);
-
   this.audioContext = new AudioContext();
-  this.audioContext.createScriptProcessor = this.audioContext.createScriptProcessor || this.audioContext.createJavaScriptNode;
-  this.scriptProcessorNode = this.audioContext.createScriptProcessor(config.bufferLen, config.numberOfChannels, config.numberOfChannels);
-  this.scriptProcessorNode.onaudioprocess = function(e){ that.addToBuffer(e.inputBuffer); };
-  this.scriptProcessorNode.connect(this.audioContext.destination);
+  this.scriptProcessorNode = this.audioContext.createScriptProcessor( config.bufferLen, config.numberOfChannels, config.numberOfChannels );
+  this.scriptProcessorNode.onaudioprocess = function( e ){ that.addToBuffer( e.inputBuffer ); };
+  this.scriptProcessorNode.connect( this.audioContext.destination );
 
-  this.pauseRecording();
-  this.initStream( function(){
-    that.worker.postMessage({
-      command: 'init',
-      config: {
-        sampleRate: that.audioContext.sampleRate,
-        numberOfChannels: that.config.numberOfChannels
-      }
-    });
+  this.worker = new Worker( config.workerPath );
+  this.worker.postMessage({
+    command: 'init',
+    config: {
+      sampleRate: this.audioContext.sampleRate,
+      numberOfChannels: config.numberOfChannels
+    }
   });
+
+  this.initCallbackQueue = [];
+  this.pauseRecording();
+  this.initStream();
 };
 
-Recorder.prototype.addToBuffer = function(inputBuffer){
+Recorder.isRecordingSupported = function(){
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
+  navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+  return navigator.getUserMedia && window.AudioContext;
+};
+
+Recorder.prototype.addToBuffer = function( inputBuffer ){
 
   var buffer;
   if (!this.isPaused) {
@@ -52,10 +56,10 @@ Recorder.prototype.addToBuffer = function(inputBuffer){
   }
 };
 
-Recorder.prototype.workerCallbackHandler = function(e, cb, handlerRef){
-  if (!e.hasBeenCaptured) {
+Recorder.prototype.workerCallbackHandler = function( e, cb, handlerRef ){
+  if ( !e.hasBeenCaptured ) {
     e.hasBeenCaptured = true;
-    this.worker.removeEventListener("message", handlerRef);
+    this.worker.removeEventListener( "message", handlerRef );
     cb(e.data);
   }
 };
@@ -66,61 +70,62 @@ Recorder.prototype.clear = function(){
 
 Recorder.prototype.disableMonitoring = function(){
   if (this.isInitialized) {
-    this.sourceNode.disconnect(this.audioContext.destination);
+    this.sourceNode.disconnect( this.audioContext.destination );
   }
 };
 
 Recorder.prototype.enableMonitoring = function(){
   var that = this;
   this.initStream(function(){
-    that.sourceNode.connect(that.audioContext.destination);
+    that.sourceNode.connect( that.audioContext.destination );
   });
 };
 
-Recorder.prototype.getWavBlob = function(cb, mimeType){
+Recorder.prototype.getWavBlob = function( cb, mimeType ){
 
   var that = this,
-    getWavBlobHandler = function(e){ that.workerCallbackHandler(e, cb, getWavBlobHandler); };
+    getWavBlobHandler = function( e ){ that.workerCallbackHandler( e, cb, getWavBlobHandler ); };
 
-  this.worker.addEventListener("message", getWavBlobHandler);
+  this.worker.addEventListener( "message", getWavBlobHandler );
   this.worker.postMessage({
     command: 'getWavBlob',
     mimeType: mimeType || this.config.mimeType
   });
 };
 
-Recorder.prototype.getBuffer = function(cb) {
+Recorder.prototype.getBuffer = function( cb ) {
 
   var that = this,
-    getBufferHandler = function(e){ that.workerCallbackHandler(e, cb, getBufferHandler); };
+    getBufferHandler = function( e ){ that.workerCallbackHandler( e, cb, getBufferHandler ); };
 
-  this.worker.addEventListener("message", getBufferHandler);
+  this.worker.addEventListener( "message", getBufferHandler );
   this.worker.postMessage({ command: 'getBuffer' });
 };
 
-Recorder.prototype.initStream = function(success){
+Recorder.prototype.initStream = function( success ){
 
-  if (this.isInitialized) {
+  success = success || function(){};
+  
+  if ( this.isInitialized ) {
     success();
   }
 
   else {
-    this.initCallbackQueue.push(success);
+    this.initCallbackQueue.push( success );
 
-    if (!this.isInitializing) {
+    if ( !this.isInitializing ) {
       this.isInitializing = true;
-      success = success || function(){};
 
       var that = this;
-      var gotAudioStream = function(stream) {
+      var gotAudioStream = function( stream ) {
         that.stream = stream;
-        that.sourceNode = that.audioContext.createMediaStreamSource(stream);
-        that.sourceNode.connect(that.scriptProcessorNode);
+        that.sourceNode = that.audioContext.createMediaStreamSource( stream );
+        that.sourceNode.connect( that.scriptProcessorNode );
 
         that.isInitializing = false;
         that.isInitialized = true;
 
-        if (that.config.enableMonitoring) {
+        if ( that.config.enableMonitoring ) {
           that.enableMonitoring();
         }
 
@@ -132,6 +137,10 @@ Recorder.prototype.initStream = function(success){
       navigator.getUserMedia( { audio: true }, gotAudioStream, function(e){ throw e } );
     }
   }
+};
+
+Recorder.prototype.isRecording = function(){
+  return !this.isPaused;
 };
 
 Recorder.prototype.pauseRecording = function(){
@@ -148,13 +157,7 @@ Recorder.prototype.stopRecording = function(){
   if (this.isInitialized) {
     this.stream.stop();
     this.disableMonitoring();
-    this.sourceNode.disconnect(this.scriptProcessorNode);
+    this.sourceNode.disconnect( this.scriptProcessorNode );
     this.isInitialized = false;
   }
-};
-
-Recorder.isRecordingSupported = function(){
-  window.AudioContext = window.AudioContext || window.webkitAudioContext;
-  navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-  return navigator.getUserMedia && window.AudioContext;
 };
