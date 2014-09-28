@@ -56,14 +56,6 @@ Recorder.prototype.addToBuffer = function( inputBuffer ){
   }
 };
 
-Recorder.prototype.workerCallbackHandler = function( e, cb, handlerRef ){
-  if ( !e.hasBeenCaptured ) {
-    e.hasBeenCaptured = true;
-    this.worker.removeEventListener( "message", handlerRef );
-    cb(e.data);
-  }
-};
-
 Recorder.prototype.clear = function(){
   this.worker.postMessage({ command: 'clear' });
 };
@@ -75,9 +67,8 @@ Recorder.prototype.disableMonitoring = function(){
 };
 
 Recorder.prototype.enableMonitoring = function(){
-  var that = this;
   this.initStream(function(){
-    that.sourceNode.connect( that.audioContext.destination );
+    this.sourceNode.connect( this.audioContext.destination );
   });
 };
 
@@ -104,10 +95,11 @@ Recorder.prototype.getBuffer = function( cb ) {
 
 Recorder.prototype.initStream = function( success ){
 
+  var that;
   success = success || function(){};
   
   if ( this.isInitialized ) {
-    success();
+    success.call( this );
   }
 
   else {
@@ -115,26 +107,12 @@ Recorder.prototype.initStream = function( success ){
 
     if ( !this.isInitializing ) {
       this.isInitializing = true;
-
-      var that = this;
-      var gotAudioStream = function( stream ) {
-        that.stream = stream;
-        that.sourceNode = that.audioContext.createMediaStreamSource( stream );
-        that.sourceNode.connect( that.scriptProcessorNode );
-
-        that.isInitializing = false;
-        that.isInitialized = true;
-
-        if ( that.config.enableMonitoring ) {
-          that.enableMonitoring();
-        }
-
-        while ( that.initCallbackQueue.length ) {
-          that.initCallbackQueue.shift()();
-        }
-      };
-
-      navigator.getUserMedia( { audio: true }, gotAudioStream, function(e){ throw e } );
+      that = this;
+      navigator.getUserMedia(
+        { audio: true },
+        function( stream ){ that.onStreamInit( stream ); }, 
+        function( e ){ throw e; }
+      );
     }
   }
 };
@@ -143,13 +121,29 @@ Recorder.prototype.isRecording = function(){
   return !this.isPaused;
 };
 
+Recorder.prototype.onStreamInit = function( stream ){
+  this.stream = stream;
+  this.sourceNode = this.audioContext.createMediaStreamSource( stream );
+  this.sourceNode.connect( this.scriptProcessorNode );
+
+  this.isInitializing = false;
+  this.isInitialized = true;
+
+  if ( this.config.enableMonitoring ) { 
+    this.enableMonitoring();
+  }
+
+  while ( this.initCallbackQueue.length ) {
+    this.initCallbackQueue.shift()();
+  }
+};
+
 Recorder.prototype.pauseRecording = function(){
   this.isPaused = true;
 };
 
 Recorder.prototype.startRecording = function(){
-  var that = this;
-  this.initStream( function(){ that.isPaused = false; } );
+  this.initStream( function(){ this.isPaused = false; } );
 };
 
 Recorder.prototype.stopRecording = function(){
@@ -159,5 +153,13 @@ Recorder.prototype.stopRecording = function(){
     this.disableMonitoring();
     this.sourceNode.disconnect( this.scriptProcessorNode );
     this.isInitialized = false;
+  }
+};
+
+Recorder.prototype.workerCallbackHandler = function( e, cb, handlerRef ){
+  if ( !e.hasBeenCaptured ) {
+    e.hasBeenCaptured = true;
+    this.worker.removeEventListener( "message", handlerRef );
+    cb( e.data );
   }
 };
