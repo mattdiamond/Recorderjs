@@ -95,7 +95,17 @@
       alert('No web audio support in this browser!');
     }
     
-    navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
+    var audioOpts = {
+        mandatory: {
+          googEchoCancellation: false,
+          googAutoGainControl: false,
+          googNoiseSuppression: false,
+          googHighpassFilter: false
+        },
+        optional: []
+    };
+    
+    navigator.getUserMedia({audio: audioOpts}, startUserMedia, function(e) {
       __log('No live audio input: ' + e);
     });
   };
