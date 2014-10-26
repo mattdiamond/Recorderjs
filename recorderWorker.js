@@ -11,8 +11,8 @@ this.onmessage = function(e){
     case 'record':
       record(e.data.buffer);
       break;
-    case 'exportWAV':
-      exportWAV(e.data.type);
+    case 'exportAudio':
+      exportAudio(e.data.type);
       break;
     case 'getBuffer':
       getBuffer();
@@ -33,7 +33,7 @@ function record(inputBuffer){
   recLength += inputBuffer[0].length;
 }
 
-function exportWAV(type){
+function exportAudio(type){
   var bufferL = mergeBuffers(recBuffersL, recLength);
   var bufferR = mergeBuffers(recBuffersR, recLength);
   var interleaved = interleave(bufferL, bufferR);

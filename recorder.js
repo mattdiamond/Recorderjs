@@ -1,6 +1,7 @@
 (function(window){
 
-  var WORKER_PATH = 'recorderWorker.js';
+  var WORKER_WAV_PATH = 'recorderWorker.js';
+  var WORKER_MP3_PATH = 'recorderWorkerMP3.js';
 
   var Recorder = function(source, cfg){
     var config = cfg || {};
@@ -9,7 +10,7 @@
     this.node = (this.context.createScriptProcessor ||
                  this.context.createJavaScriptNode).call(this.context,
                                                          bufferLen, 2, 2);
-    var worker = new Worker(config.workerPath || WORKER_PATH);
+    var worker = new Worker(config.workerPath || WORKER_WAV_PATH);
     worker.postMessage({
       command: 'init',
       config: {
@@ -55,17 +56,17 @@
       worker.postMessage({ command: 'getBuffer' })
     }
 
-    this.exportWAV = function(cb, type){
+    this.exportAudio = function(cb, type) {
       currCallback = cb || config.callback;
       type = type || config.type || 'audio/wav';
       if (!currCallback) throw new Error('Callback not set');
       worker.postMessage({
-        command: 'exportWAV',
+        command: 'exportAudio',
         type: type
       });
     }
 
-    worker.onmessage = function(e){
+    worker.onmessage = function(e) {
       var blob = e.data;
       currCallback(blob);
     }
