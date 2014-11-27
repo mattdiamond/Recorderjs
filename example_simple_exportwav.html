@@ -24,7 +24,7 @@
   
   <h2>Log</h2>
   <pre id="log"></pre>
-
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
   <script>
   function __log(e, data) {
     log.innerHTML += "\n" + e + " " + (data || '');
@@ -64,8 +64,25 @@
     recorder.clear();
   }
 
+  function uploadBlob(blob){
+    var fd = new FormData();
+    fd.append('fname', 'foo.wav');
+    fd.append('data', blob);
+    $.ajax({
+        type: 'POST',
+        url: 'http://192.168.3.238:5000/audio?fn=',
+        data: fd,
+        processData: false,
+        contentType: false
+    }).done(function(data) {
+        console.log(data);
+    });
+    console.log(fd);
+  }
+  
   function createDownloadLink() {
-    recorder && recorder.exportWAV(function(blob) {
+    recorder && recorder.exportWAVX(function(blob) {
+    
       var url = URL.createObjectURL(blob);
       var li = document.createElement('li');
       var au = document.createElement('audio');
@@ -74,11 +91,16 @@
       au.controls = true;
       au.src = url;
       hf.href = url;
+      console.log(blob.size + '/' + blob.type +'/'+  url );
+      
+
       hf.download = new Date().toISOString() + '.wav';
+      console.log(hf.download);
       hf.innerHTML = hf.download;
       li.appendChild(au);
       li.appendChild(hf);
       recordingslist.appendChild(li);
+
     });
   }
 
