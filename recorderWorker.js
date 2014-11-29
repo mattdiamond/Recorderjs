@@ -1,7 +1,12 @@
 var recLength = 0,
   recBuffersL = [],
   recBuffersR = [],
-  sampleRate;
+  sampleRate,
+  encodingInProgress=false,
+  recBuffersLTemp = [],       
+  recBuffersRTemp = [],      
+  recLengthTemp = 0;    
+  
 
 this.onmessage = function(e){
   switch(e.data.command){
@@ -28,12 +33,19 @@ function init(config){
 }
 
 function record(inputBuffer){
-  recBuffersL.push(inputBuffer[0]);
-  recBuffersR.push(inputBuffer[1]);
-  recLength += inputBuffer[0].length;
+    if(encodingInProgress){
+        recBuffersLTemp.push(inputBuffer[0]);
+        recBuffersRTemp.push(inputBuffer[1]);
+        recLengthTemp += inputBuffer[0].length;        
+    }else{
+        recBuffersL.push(inputBuffer[0]);
+        recBuffersR.push(inputBuffer[1]);
+        recLength += inputBuffer[0].length;
+    }
 }
 
 function exportWAV(type){
+  encodingInProgress=true;
   var bufferL = mergeBuffers(recBuffersL, recLength);
   var bufferR = mergeBuffers(recBuffersR, recLength);
   var interleaved = interleave(bufferL, bufferR);
@@ -51,9 +63,13 @@ function getBuffer() {
 }
 
 function clear(){
-  recLength = 0;
-  recBuffersL = [];
-  recBuffersR = [];
+  recLength = recLengthTemp;
+  recBuffersL = recBuffersLTemp;
+  recBuffersR = recBuffersRTemp;
+  recLengthTemp = 0;
+  recBuffersLTemp = [];
+  recBuffersRTemp = [];
+  encodingInProgress=false;
 }
 
 function mergeBuffers(recBuffers, recLength){
