@@ -33,13 +33,20 @@ var Recorder = function( config ){
 };
 
 Recorder.AudioContext = window.AudioContext || window.webkitAudioContext;
-Recorder.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+Recorder.getUserMedia = function( options, success, failure ) {
+  if ( navigator.getUserMedia ) { navigator.getUserMedia(options, success, failure); }
+  else if ( navigator.webkitGetUserMedia ) { navigator.webkitGetUserMedia(options, success, failure); }
+  else if ( navigator.mozGetUserMedia ) { navigator.mozGetUserMedia(options, success, failure); }
+  else if ( navigator.msGetUserMedia ) { navigator.msGetUserMedia(options, success, failure); }
+  else { throw "Recording is not supported in this browser"; }
+};
+
 Recorder.isRecordingSupported = function(){
-  return Recorder.AudioContext && Recorder.getUserMedia;
+  return Recorder.AudioContext && ( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia );
 };
 
 Recorder.prototype.addToBuffer = function( inputBuffer ){
-
   var buffer;
   if (!this.isPaused) {
 
@@ -74,10 +81,8 @@ Recorder.prototype.enableMonitoring = function(){
 };
 
 Recorder.prototype.getWavBlob = function( cb, mimeType ){
-
   var that = this;
   var getWavBlobHandler = function( e ){ that.workerCallbackHandler( e, cb, getWavBlobHandler ); };
-
   this.worker.addEventListener( "message", getWavBlobHandler );
   this.worker.postMessage({
     command: 'getWavBlob',
@@ -86,10 +91,8 @@ Recorder.prototype.getWavBlob = function( cb, mimeType ){
 };
 
 Recorder.prototype.getBuffer = function( cb ) {
-
   var that = this;
   var getBufferHandler = function( e ){ that.workerCallbackHandler( e, cb, getBufferHandler ); };
-
   this.worker.addEventListener( "message", getBufferHandler );
   this.worker.postMessage({ command: 'getBuffer' });
 };
@@ -136,7 +139,6 @@ Recorder.prototype.onStreamInit = function( stream ){
   this.stream = stream;
   this.sourceNode = this.audioContext.createMediaStreamSource( stream );
   this.sourceNode.connect( this.scriptProcessorNode );
-
   this.isInitializing = false;
   this.isInitialized = true;
 
