@@ -13,7 +13,7 @@
 
   <h1>Recorder.js simple WAV export example</h1>
 
-  <p>Make sure you are using a recent version of Google Chrome, at the moment this only works with Google Chrome Canary.</p>
+  <p>Make sure you are using a recent version of Google Chrome</p>
   <p>Also before you enable microphone input either plug in headphones or turn the volume down if you want to avoid ear splitting feedback!</p>
 
   <button onclick="startRecording(this);">record</button>
@@ -26,54 +26,56 @@
   <pre id="log"></pre>
 
   <script>
-  function __log(e, data) {
-    log.innerHTML += "\n" + e + " " + (data || '');
-  }
-
-  var recorder;
-
-  function startRecording(button) {
-    recorder && recorder.startRecording();
-    button.disabled = true;
-    button.nextElementSibling.disabled = false;
-    __log('Recording...');
-  }
-
-  function stopRecording(button) {
-    recorder && recorder.stopRecording();
-    button.disabled = true;
-    button.previousElementSibling.disabled = false;
-    __log('Stopped recording.');
-    
-    // create WAV download link using audio data blob
-    createDownloadLink();
-    
-    recorder.clear();
-  }
-
-  function createDownloadLink() {
-    recorder && recorder.getWavBlob(function(blob) {
-      var url = URL.createObjectURL(blob);
-      var li = document.createElement('li');
-      var au = document.createElement('audio');
-      var hf = document.createElement('a');
-      
-      au.controls = true;
-      au.src = url;
-      hf.href = url;
-      hf.download = new Date().toISOString() + '.wav';
-      hf.innerHTML = hf.download;
-      li.appendChild(au);
-      li.appendChild(hf);
-      recordingslist.appendChild(li);
-    });
-  }
-
-  window.onload = function init() {
-    if ( Recorder.isRecordingSupported() ) {
-      recorder = new Recorder();
+    function __log(e, data) {
+      log.innerHTML += "\n" + e + " " + (data || '');
     }
-  };
+
+    var recorder;
+
+    function startRecording(button) {
+      recorder && recorder.startRecording();
+      button.disabled = true;
+      button.nextElementSibling.disabled = false;
+      __log('Recording...');
+    }
+
+    function stopRecording(button) {
+      recorder && recorder.stopRecording();
+      button.disabled = true;
+      button.previousElementSibling.disabled = false;
+      __log('Stopped recording.');
+      
+      // create WAV download link using audio data blob
+      createDownloadLink();
+      
+      recorder.clear();
+    }
+
+    function createDownloadLink() {
+      recorder && recorder.getWavBlob(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var li = document.createElement('li');
+        var au = document.createElement('audio');
+        var hf = document.createElement('a');
+        
+        au.controls = true;
+        au.src = url;
+        hf.href = url;
+        hf.download = new Date().toISOString() + '.wav';
+        hf.innerHTML = hf.download;
+        li.appendChild(au);
+        li.appendChild(hf);
+        recordingslist.appendChild(li);
+      });
+    }
+
+    window.onload = function init() {
+      if ( Recorder.isRecordingSupported() ) {
+        recorder = new Recorder({ 
+          enableMonitoring: true
+        });
+      }
+    };
   </script>
 
   <script src="recorder.js"></script>
