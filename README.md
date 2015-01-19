@@ -17,6 +17,8 @@ Creates a recorder instance.
 - **workerPath** - (*optional*) Path to recorder.js worker script. Defaults to 'recorderWorker.js'
 - **bufferLength** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
 - **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 2
+- **sampleRate** - (*optional*) The sample rate to record at. Defaults to audio device native sample rate. If different than the audio device rate, the audio will be resampled using a linear interpolation algorithm.
+- **bitDepth** - (*optional*) The bit depth to record at. Defaults to 16. Supported values are 8, 16, 24, 32. No dither is added when reducing bit rate.
 
 ---------
 #### Instance Methods
@@ -42,28 +44,19 @@ This will clear the data buffers of any recorded data.
 
 This will enable and disable the live monitoring of your mic input. Headphones are recommended if enabling monitoring to avoid feedback noise.
 
-    rec.getWavBlob( callback[, mimeType])
+    rec.getWav( callback[, mimeType])
 
 This will generate a Blob object containing the recording in WAV format. The callback will be called with the Blob as its sole argument.
 
 In addition, you may specify the mime type of Blob to be returned (defaults to "audio/wav").
 
-    rec.getBuffer( callback )
+    rec.get( callback )
 
-This will pass the recorded stereo buffer (as an array of Float32Arrays for the separate channels) to the callback. It can be played back by creating a new source buffer and setting these buffers as the separate channel data:
+This will pass the recorded audio as an array of Uint8Arrays for each channel to the callback.
 
-	function getBufferCallback( buffers ) {
-		var newSource = audioContext.createBufferSource();
-		var newBuffer = audioContext.createBuffer( 2, buffers[0].length, audioContext.sampleRate );
-		newBuffer.getChannelData(0).set(buffers[0]);
-		newBuffer.getChannelData(1).set(buffers[1]);
-		newSource.buffer = newBuffer;
+    rec.getInterleaved( callback )
 
-		newSource.connect( audioContext.destination );
-		newSource.start(0);
-	}
-
-This sample code will play back the stereo buffer.
+This will pass the recorded audio as one Uint8Array with channels interleaved to the callback.
 
 ---------
 #### Static Methods

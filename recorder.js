@@ -6,64 +6,53 @@ var Recorder = function( config ){
     throw "Recording is not supported in this browser";
   }
 
+  this.audioContext = new Recorder.AudioContext();
+
   config = config || {};
   config.bufferLength = config.bufferLength || 4096;
   config.enableMonitoring = config.enableMonitoring || false;
   config.numberOfChannels = config.numberOfChannels || 2;
+  config.bitDepth = config.bitDepth || 16;
+  config.sampleRate = config.sampleRate || this.audioContext.sampleRate;
   config.workerPath = config.workerPath || 'recorderWorker.js';
   this.config = config;
 
-  this.audioContext = new Recorder.AudioContext();
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( config.bufferLength, config.numberOfChannels, config.numberOfChannels );
-  this.scriptProcessorNode.onaudioprocess = function( e ){ that.addToBuffer( e.inputBuffer ); };
+  this.scriptProcessorNode.onaudioprocess = function( e ){ that.recordPCM( e.inputBuffer ); };
   this.scriptProcessorNode.connect( this.audioContext.destination );
 
-  this.worker = new Worker( config.workerPath );
-  this.worker.postMessage({
-    command: 'init',
-    config: {
-      sampleRate: this.audioContext.sampleRate,
-      numberOfChannels: config.numberOfChannels
-    }
-  });
-
-  this.initCallbackQueue = [];
+  this.resetWorker();
   this.pauseRecording();
+  this.initCallbackQueue = [];
   this.initStream();
 };
 
 Recorder.AudioContext = window.AudioContext || window.webkitAudioContext;
 
 Recorder.getUserMedia = function( options, success, failure ) {
-  if ( navigator.getUserMedia ) { navigator.getUserMedia(options, success, failure); }
-  else if ( navigator.webkitGetUserMedia ) { navigator.webkitGetUserMedia(options, success, failure); }
-  else if ( navigator.mozGetUserMedia ) { navigator.mozGetUserMedia(options, success, failure); }
-  else if ( navigator.msGetUserMedia ) { navigator.msGetUserMedia(options, success, failure); }
-  else { throw "Recording is not supported in this browser"; }
+  if ( navigator.getUserMedia ) { navigator.getUserMedia( options, success, failure ); }
+  else if ( navigator.webkitGetUserMedia ) { navigator.webkitGetUserMedia( options, success, failure ); }
+  else if ( navigator.mozGetUserMedia ) { navigator.mozGetUserMedia( options, success, failure ); }
+  else if ( navigator.msGetUserMedia ) { navigator.msGetUserMedia( options, success, failure ); }
+  else { throw "getUserMedia is not supported in this browser"; }
 };
 
 Recorder.isRecordingSupported = function(){
   return Recorder.AudioContext && ( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia );
 };
 
-Recorder.prototype.addToBuffer = function( inputBuffer ){
-  var buffer;
-  if (!this.isPaused) {
-
-    buffer = [];
-    for (var i = 0; i < inputBuffer.numberOfChannels; i++) {
-      buffer.push( inputBuffer.getChannelData(i) );
-    }
-
-    this.worker.postMessage({
-      command: 'addToBuffer',
-      buffer: buffer
-    });
-  }
-};
+Recorder.prototype.addHandler = function( cb ) {
+  var that = this;
+  var handler = function( e ){
+    e.stopImmediatePropagation();
+    that.worker.removeEventListener( "message", handler );
+    cb.call( that, e.data );
+  };
+  this.worker.addEventListener( "message", handler );
+}
 
 Recorder.prototype.clear = function(){
-  this.worker.postMessage({ command: 'clear' });
+  this.resetWorkers();
 };
 
 Recorder.prototype.disableMonitoring = function(){
@@ -80,38 +69,32 @@ Recorder.prototype.enableMonitoring = function(){
   });
 };
 
-Recorder.prototype.getWavBlob = function( cb, mimeType ){
-  var that = this;
-  var getWavBlobHandler = function( e ){ that.workerCallbackHandler( e, cb, getWavBlobHandler ); };
-  this.worker.addEventListener( "message", getWavBlobHandler );
-  this.worker.postMessage({
-    command: 'getWavBlob',
-    mimeType: mimeType || 'audio/wav'
+Recorder.prototype.get = function( callback ) {
+  this.addHandler( callback );
+  this.worker.postMessage({ 
+    command: "get"
   });
 };
 
-Recorder.prototype.getBuffer = function( cb ) {
-  var that = this;
-  var getBufferHandler = function( e ){ that.workerCallbackHandler( e, cb, getBufferHandler ); };
-  this.worker.addEventListener( "message", getBufferHandler );
-  this.worker.postMessage({ command: 'getBuffer' });
+Recorder.prototype.getInterleaved = function( callback ) {
+  this.addHandler( callback );
+  this.worker.postMessage({ 
+    command: "getInterleaved"
+  });
+};
+
+Recorder.prototype.getWav = function( callback, mimeType ) {
+  this.addHandler( function( data ){
+    callback( new Blob( [data], { type: mimeType || "audio/wav" } ) );
+  });
+  this.worker.postMessage({ 
+    command: "getWav"
+  });
 };
 
 Recorder.prototype.initStream = function( success ){
 
-  var that;
-  var audioOptions = {
-    mandatory: {
-      googEchoCancellation: false,
-      googAutoGainControl: false,
-      googNoiseSuppression: false,
-      googHighpassFilter: false
-    },
-    optional: []
-  };
-
   success = success || function(){};
-  
   if ( this.isInitialized ) {
     success.call( this );
   }
@@ -120,10 +103,19 @@ Recorder.prototype.initStream = function( success ){
     this.initCallbackQueue.push( success );
 
     if ( !this.isInitializing ) {
+      var that = this;
       this.isInitializing = true;
-      that = this;
+
       Recorder.getUserMedia(
-        { audio: audioOptions },
+        { audio: {
+            mandatory: {
+              googEchoCancellation: false,
+              googAutoGainControl: false,
+              googNoiseSuppression: false,
+              googHighpassFilter: false
+            },
+            optional: []
+        }},
         function( stream ){ that.onStreamInit( stream ); }, 
         function( e ){ throw e; }
       );
@@ -147,12 +139,42 @@ Recorder.prototype.onStreamInit = function( stream ){
   }
 
   while ( this.initCallbackQueue.length ) {
-    this.initCallbackQueue.shift()();
+    this.initCallbackQueue.shift().call( this );
   }
 };
 
 Recorder.prototype.pauseRecording = function(){
   this.isPaused = true;
+};
+
+Recorder.prototype.recordPCM = function( inputBuffer ){
+  if (!this.isPaused) {
+
+    var channels = [];
+    for (var i = 0; i < inputBuffer.numberOfChannels; i++) {
+      channels[i] = inputBuffer.getChannelData(i);
+    }
+
+    this.worker.postMessage({
+      command: "record",
+      channels: channels
+    });
+  }
+};
+
+Recorder.prototype.resetWorker = function(){
+  if ( this.worker ) { 
+    this.worker.terminate();
+  }
+  this.worker = new Worker( this.config.workerPath );
+  this.worker.postMessage({ 
+    command: "init",
+    numberOfChannels: this.config.numberOfChannels,
+    inputSampleRate: this.audioContext.sampleRate,
+    outputSampleRate: this.config.sampleRate,
+    bufferLength: this.config.bufferLength,
+    bitDepth: this.config.bitDepth
+  });
 };
 
 Recorder.prototype.startRecording = function(){
@@ -166,13 +188,5 @@ Recorder.prototype.stopRecording = function(){
     this.sourceNode.disconnect( this.audioContext.destination );
     this.sourceNode.disconnect( this.scriptProcessorNode );
     this.isInitialized = false;
-  }
-};
-
-Recorder.prototype.workerCallbackHandler = function( e, cb, handlerRef ){
-  if ( !e.hasBeenCaptured ) {
-    e.hasBeenCaptured = true;
-    this.worker.removeEventListener( "message", handlerRef );
-    cb( e.data );
   }
 };
