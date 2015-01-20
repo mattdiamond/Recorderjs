@@ -16,9 +16,9 @@ Creates a recorder instance.
 - **enableMonitoring** - (*optional*) If you want the hear the recorder input live. Defaults to false
 - **workerPath** - (*optional*) Path to recorder.js worker script. Defaults to 'recorderWorker.js'
 - **bufferLength** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
-- **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 2
-- **sampleRate** - (*optional*) The sample rate to record at. Defaults to audio device native sample rate. If different than the audio device rate, the audio will be resampled using a linear interpolation algorithm.
-- **bitDepth** - (*optional*) The bit depth to record at. Defaults to 16. Supported values are 8, 16, 24, 32. No dither is added when reducing bit depth. Note that all bit depths record signed integer samples except for bitDepth of 8 which records unsigned integer samples.
+- **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 1. More than two channels are supported if your audio device allows, but has not been tested.
+- **sampleRate** - (*optional*) The sample rate to record at. Defaults to audio device native sample rate. If different than the audio device rate, the audio will be resampled using linear interpolation.
+- **bitDepth** - (*optional*) The bit depth to record at. Defaults to 16. Supported values are 8, 16, 24, 32. No dither is added when reducing bit depth. Audio samples are recorded as signed integer values except for bit size of 8 which records unsigned integer samples.
 
 ---------
 #### Instance Methods
@@ -52,11 +52,11 @@ In addition, you may specify the mime type of Blob to be returned (defaults to "
 
     rec.get( callback )
 
-This will pass the recorded audio as an array of Uint8Arrays for each channel to the callback.
+This will pass the recorded audio as an array of Uint8Arrays for each channel to the callback. If bit depth is greater than 8, then the samples will be spread across multiple indices.
 
     rec.getInterleaved( callback )
 
-This will pass the recorded audio as one Uint8Array with channels interleaved to the callback.
+This will pass the recorded audio as one Uint8Array with channels interleaved to the callback. If bit depth is greater than 8, then the samples will be spread across multiple indices.
 
 ---------
 #### Static Methods
