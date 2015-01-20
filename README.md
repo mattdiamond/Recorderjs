@@ -18,7 +18,7 @@ Creates a recorder instance.
 - **bufferLength** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
 - **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 2
 - **sampleRate** - (*optional*) The sample rate to record at. Defaults to audio device native sample rate. If different than the audio device rate, the audio will be resampled using a linear interpolation algorithm.
-- **bitDepth** - (*optional*) The bit depth to record at. Defaults to 16. Supported values are 8, 16, 24, 32. No dither is added when reducing bit depth.
+- **bitDepth** - (*optional*) The bit depth to record at. Defaults to 16. Supported values are 8, 16, 24, 32. No dither is added when reducing bit depth. Note that all bit depths record signed integer samples except for bitDepth of 8 which records unsigned integer samples.
 
 ---------
 #### Instance Methods
