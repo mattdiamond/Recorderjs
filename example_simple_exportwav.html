@@ -52,7 +52,7 @@
     }
 
     function createDownloadLink() {
-      recorder && recorder.getWavBlob(function(blob) {
+      recorder && recorder.getWav(function(blob) {
         var url = URL.createObjectURL(blob);
         var li = document.createElement('li');
         var au = document.createElement('audio');
@@ -71,9 +71,7 @@
 
     window.onload = function init() {
       if ( Recorder.isRecordingSupported() ) {
-        recorder = new Recorder({ 
-          enableMonitoring: true
-        });
+        recorder = new Recorder();
       }
     };
   </script>
