@@ -13,7 +13,7 @@ this.onmessage = function( e ){
 
     case 'record':
       for (var channel = 0; channel < numberOfChannels; channel++) {
-        audioData[ channel ].push( bitCrush( resample( e.data.channels[ channel ] ) ) );
+        audioData[ channel ].push( bitReduce( resample( e.data.channels[ channel ] ) ) );
       }
       break;
 
@@ -37,7 +37,7 @@ this.onmessage = function( e ){
   }
 };
 
-function bitCrush( data ){
+function bitReduce( data ){
 
   var outputData = new Uint8Array( resampledBufferLength * bytesPerSample );
   var outputIndex = 0;
@@ -73,6 +73,9 @@ function bitCrush( data ){
       case 1:
         outputData[ outputIndex++ ] = (sample+1) * 128;
         break;
+
+      default:
+        throw "Only 8, 16, 24 and 32 bits per sample are supported";
     }
   }
 
@@ -120,10 +123,6 @@ function init( config ){
   resampledBufferLength = Math.round( (bufferLength * outputSampleRate) / inputSampleRate );
   resampleRatio = (bufferLength-1) / (resampledBufferLength-1);
 
-  if ( bitDepth%8 ) {
-    throw "Only 8, 16, 24 and 32 bits per sample are supported";
-  }
-
   if ( outputSampleRate === inputSampleRate ) {
     resample = function( data ){ return data; };
   }
@@ -149,8 +148,8 @@ function interleave( data ){
           case 3: interleavedData[ interleavedIndex+2 ] = data[ channel ][ blockIndex ][ byteIndex+2 ];
           case 2: interleavedData[ interleavedIndex+1 ] = data[ channel ][ blockIndex ][ byteIndex+1 ];
           case 1: interleavedData[ interleavedIndex ] = data[ channel ][ blockIndex ][ byteIndex ];
+          default: interleavedIndex += bytesPerSample;
         }
-        interleavedIndex += bytesPerSample;
       }
       byteIndex += bytesPerSample;
     }
