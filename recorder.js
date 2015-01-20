@@ -52,7 +52,7 @@ Recorder.prototype.addHandler = function( cb ) {
 }
 
 Recorder.prototype.clear = function(){
-  this.resetWorkers();
+  this.resetWorker();
 };
 
 Recorder.prototype.disableMonitoring = function(){
