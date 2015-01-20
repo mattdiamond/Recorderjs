@@ -71,7 +71,12 @@
 
     window.onload = function init() {
       if ( Recorder.isRecordingSupported() ) {
-        recorder = new Recorder();
+        recorder = new Recorder({
+          enableMonitoring: false,
+          numberOfChannels: 1,
+          bitDepth: 8,
+          sampleRate: 16000
+        });
       }
     };
   </script>
