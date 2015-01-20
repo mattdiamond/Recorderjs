@@ -88,6 +88,7 @@ function getWav( data ){
 
   wav.set( header );
   wav.set( interleavedData, header.byteLength );
+
   return wav;
 }
 

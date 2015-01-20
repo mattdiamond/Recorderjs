@@ -108,13 +108,13 @@ Recorder.prototype.initStream = function( success ){
 
       Recorder.getUserMedia(
         { audio: {
+            optional: [],
             mandatory: {
               googEchoCancellation: false,
               googAutoGainControl: false,
               googNoiseSuppression: false,
               googHighpassFilter: false
-            },
-            optional: []
+            }
         }},
         function( stream ){ that.onStreamInit( stream ); }, 
         function( e ){ throw e; }

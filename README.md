@@ -4,9 +4,9 @@
 
 ### Syntax
 #### Constructor
-    var rec = new Recorder([config])
+    var rec = new Recorder([config]);
 
-Creates a recorder instance. Instantiating the object will prompt the user for permission to access the audio input stream.
+Creates a recorder instance. Instantiating an instance will prompt the user for permission to access the audio input stream.
 
 - **config** - An optional configuration object (see **config** section below)
 
@@ -44,7 +44,7 @@ This will clear the data buffers of any recorded data.
 
 This will enable and disable the live monitoring of your mic input. Headphones are recommended if enabling monitoring to avoid feedback noise.
 
-    rec.getWav( callback[, mimeType])
+    rec.getWav( callback[, mimeType] )
 
 This will generate a Blob object containing the recording in WAV format. The callback will be called with the Blob as its sole argument.
 
