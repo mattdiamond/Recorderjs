@@ -6,7 +6,7 @@
 #### Constructor
     var rec = new Recorder([config])
 
-Creates a recorder instance.
+Creates a recorder instance. Instantiating the object will prompt the user for permission to access the audio input stream.
 
 - **config** - An optional configuration object (see **config** section below)
 
