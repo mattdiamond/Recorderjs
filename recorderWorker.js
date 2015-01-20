@@ -10,7 +10,6 @@ var audioData = [],
 
 this.onmessage = function( e ){
   switch( e.data.command ){
-
     case 'record':
       for (var channel = 0; channel < numberOfChannels; channel++) {
         audioData[ channel ].push( bitReduce( resample( e.data.channels[ channel ] ) ) );
@@ -38,7 +37,6 @@ this.onmessage = function( e ){
 };
 
 function bitReduce( data ){
-
   var outputData = new Uint8Array( resampledBufferLength * bytesPerSample );
   var outputIndex = 0;
 
@@ -87,6 +85,7 @@ function getWav( data ){
   var dataLength = interleavedData.byteLength;
   var header = getWavHeader( dataLength );
   var wav = new Uint8Array( header.byteLength + dataLength );
+
   wav.set( header );
   wav.set( interleavedData, header.byteLength );
   return wav;
@@ -133,7 +132,6 @@ function init( config ){
 }
 
 function interleave( data ){
-
   var numBlocks = data[0].length;
   var blockSize = resampledBufferLength * bytesPerSample;
   var interleavedData = new Uint8Array( numBlocks * numberOfChannels * blockSize );
