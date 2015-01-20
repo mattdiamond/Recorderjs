@@ -52,22 +52,22 @@ function bitReduce( data ){
       case 4:
         sample = sample * 2147483648;
         outputData[ outputIndex++ ] = sample;
-        outputData[ outputIndex++ ] = sample >>> 8;
-        outputData[ outputIndex++ ] = sample >>> 16;
-        outputData[ outputIndex++ ] = sample >>> 24;
+        outputData[ outputIndex++ ] = sample >> 8;
+        outputData[ outputIndex++ ] = sample >> 16;
+        outputData[ outputIndex++ ] = sample >> 24;
         break;
 
       case 3:
         sample = sample * 8388608;
         outputData[ outputIndex++ ] = sample;
-        outputData[ outputIndex++ ] = sample >>> 8;
-        outputData[ outputIndex++ ] = sample >>> 16;
+        outputData[ outputIndex++ ] = sample >> 8;
+        outputData[ outputIndex++ ] = sample >> 16;
         break;
 
       case 2:
         sample = sample * 32768;
         outputData[ outputIndex++ ] = sample;
-        outputData[ outputIndex++ ] = sample >>> 8;
+        outputData[ outputIndex++ ] = sample >> 8;
         break;
 
       case 1:
