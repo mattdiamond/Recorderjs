@@ -41,15 +41,15 @@ Recorder.isRecordingSupported = function(){
   return Recorder.AudioContext && ( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia );
 };
 
-Recorder.prototype.addHandler = function( cb ) {
+Recorder.prototype.addHandler = function( callback ) {
   var that = this;
   var handler = function( e ){
     e.stopImmediatePropagation();
     that.worker.removeEventListener( "message", handler );
-    cb.call( that, e.data );
+    callback.call( that, e.data );
   };
   this.worker.addEventListener( "message", handler );
-}
+};
 
 Recorder.prototype.clear = function(){
   this.resetWorker();
@@ -163,7 +163,7 @@ Recorder.prototype.recordPCM = function( inputBuffer ){
 };
 
 Recorder.prototype.resetWorker = function(){
-  if ( this.worker ) { 
+  if ( this.worker ) {
     this.worker.terminate();
   }
   this.worker = new Worker( this.config.workerPath );

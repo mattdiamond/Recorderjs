@@ -10,6 +10,7 @@ var audioData = [],
 
 this.onmessage = function( e ){
   switch( e.data.command ){
+
     case 'record':
       for (var channel = 0; channel < numberOfChannels; channel++) {
         audioData[ channel ].push( bitReduce( resample( e.data.channels[ channel ] ) ) );
@@ -120,7 +121,7 @@ function init( config ){
   bitDepth = config.bitDepth;
   bufferLength = config.bufferLength;
   bytesPerSample = bitDepth / 8;
-  resampledBufferLength = Math.round( (bufferLength * outputSampleRate) / inputSampleRate );
+  resampledBufferLength = Math.round( bufferLength * outputSampleRate / inputSampleRate );
   resampleRatio = (bufferLength-1) / (resampledBufferLength-1);
 
   if ( outputSampleRate === inputSampleRate ) {
@@ -172,6 +173,6 @@ function resample( data ){
 
 function writeString( view, offset, string ){
   for ( var i = 0; i < string.length; i++ ){
-    view.setUint8(offset + i, string.charCodeAt(i));
+    view.setUint8( offset + i, string.charCodeAt(i) );
   }
 }
