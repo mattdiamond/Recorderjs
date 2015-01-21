@@ -165,7 +165,7 @@ function resample( data ){
   for ( var i = 0; i < resampledBufferLength-1; i++ ) {
     var ir = i*resampleRatio;
     var op = Math.floor(ir);
-    resampledData[i] = data[op] + (data[op+1]-data[op]) * (ir%1);
+    resampledData[i] = data[op] + (data[op+1]-data[op]) * (ir-op);
   }
 
   return resampledData;
