@@ -1,0 +1,16 @@
+{
+  "name": "Recorderjs",
+  "description": "Web Audio API recorder project.",
+  "version": "0.1.0",
+  "keywords": [
+    "js",
+    "front-end",
+    "web",
+    "web audio api"
+  ],
+  "homepage": "https://github.com/mattdiamond/Recorderjs",
+  "main": [
+    "recorder.js",
+    "recorderWorker.js"
+  ]  
+}
