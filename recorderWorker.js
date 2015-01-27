@@ -26,19 +26,6 @@ var audioData = [],
   outputSampleRate,
   resampledBufferLength;
 
-crcTable = (function(){
-  var c;
-  var crcTable = [];
-  for (var n = 0; n < 256; n++) {
-    c = n;
-    for (var k = 0; k < 8; k++) {
-      c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
-    }
-    crcTable[n] = c;
-  }
-  return crcTable;
-})();
-
 this.onmessage = function( e ){
   switch( e.data.command ){
 
@@ -179,7 +166,13 @@ function getOggPage( pagePackets, granulePosition, pagePacketSize, pageIndex, he
   writeString( view, 0, 'OggS' ); // Capture Pattern starts all page headers
   view.setUint8( 4, 0, true ); // Version
   view.setUint8( 5, headerType, true ); // 1 = continuation, 2 = beginning of stream, 4 = end of stream
-  view.setUint32( 6, granulePosition, true ); // Number of samples at 48000 Hz in page
+
+  // Number of samples upto and including this page at 48000 Hz into 64 bits
+  view.setUint32( 6, granulePosition, true );
+  if ( granulePosition > 4294967296 || granulePosition < 0 ) {
+    view.setUint32( 10, Math.floor( granulePosition/4294967296 ), true );
+  }
+
   view.setUint32( 14, 0, true ); // Bitstream serial number
   view.setUint32( 18, pageIndex, true ); // Page sequence number
   view.setUint8( 26, numberOfPackets, true ); // Number of Packets in page.
@@ -240,6 +233,20 @@ function init( config ){
   interleavedAndResampledBuffer = new Float32Array( interleavedAndResampledBufferLength );
   initEncoder();
   initDecoder();
+  initCRCTable();
+}
+
+function initCRCTable(){
+  var c;
+  crcTable = [];
+
+  for (var n = 0; n < 256; n++) {
+    c = n;
+    for (var k = 0; k < 8; k++) {
+      c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+    }
+    crcTable[n] = c;
+  }
 }
 
 function initDecoder(){
