@@ -12,8 +12,6 @@ var Recorder = function( config ){
   config.bufferLength = config.bufferLength || 4096;
   config.enableMonitoring = config.enableMonitoring || false;
   config.numberOfChannels = config.numberOfChannels || 1;
-  config.bitDepth = config.bitDepth || 16;
-  config.sampleRate = config.sampleRate || this.audioContext.sampleRate;
   config.workerPath = config.workerPath || 'recorderWorker.js';
   this.config = config;
 
@@ -76,16 +74,25 @@ Recorder.prototype.get = function( callback ) {
   });
 };
 
-Recorder.prototype.getInterleaved = function( callback ) {
+Recorder.prototype.getInterleavedPCM = function( callback ) {
   this.addHandler( callback );
   this.worker.postMessage({ 
-    command: "getInterleaved"
+    command: "getInterleavedPCM"
   });
 };
 
 Recorder.prototype.getWav = function( callback, mimeType ) {
   this.addHandler( function( data ){
     callback( new Blob( [data], { type: mimeType || "audio/wav" } ) );
+  });
+  this.worker.postMessage({ 
+    command: "getWav"
+  });
+};
+
+Recorder.prototype.getOgg = function( callback, mimeType ) {
+  this.addHandler( function( data ){
+    callback( new Blob( [data], { type: mimeType || "audio/ogg" } ) );
   });
   this.worker.postMessage({ 
     command: "getWav"
@@ -171,9 +178,7 @@ Recorder.prototype.resetWorker = function(){
     command: "init",
     numberOfChannels: this.config.numberOfChannels,
     inputSampleRate: this.audioContext.sampleRate,
-    outputSampleRate: this.config.sampleRate,
-    bufferLength: this.config.bufferLength,
-    bitDepth: this.config.bitDepth
+    bufferLength: this.config.bufferLength
   });
 };
 
