@@ -100,12 +100,15 @@ function getOgg( data ){
   var pagePacketsSize = 0;
   var packetIndex = 0;
   var totalFileSize = 0;
+  var page;
 
-  var oggHeader = getOggIdHeader( oggPages.length );
-  var oggComment = getOggCommentHeader( oggPages.length );
-  totalFileSize += oggHeader.length + oggComment.length;
-  oggPages.push( oggHeader );
-  oggPages.push( oggComment );
+  page = getOggIdHeader( oggPages.length );
+  totalFileSize += page.length
+  oggPages.push( page );
+
+  page = getOggCommentHeader( oggPages.length );
+  totalFileSize += page.length;
+  oggPages.push( page );
 
   while ( packetIndex < data.length ) {
 
@@ -113,8 +116,7 @@ function getOgg( data ){
     pagePackets.push( data[ packetIndex ] );
 
     if ( packetIndex === (data.length - 1) || (pagePackets.length === 255) || (pagePacketsSize + data[ packetIndex+1 ].length) > 65536 ) {
-      var headerType = (packetIndex === (data.length - 1)) ? 4 : 0;
-      var page = getOggPage( pagePackets, encoderBufferLength * pagePackets.length, pagePacketsSize, oggPages.length, headerType );
+      page = getOggPage( pagePackets, encoderBufferLength * pagePackets.length, pagePacketsSize, oggPages.length, 0 );
       totalFileSize += page.length;
       oggPages.push( page );
       pagePacketsSize = 0;
@@ -123,6 +125,10 @@ function getOgg( data ){
 
     packetIndex++;
   }
+
+  page = getOggPage( [], -1, 0, oggPages.length, 4 );
+  totalFileSize += page.length;
+  oggPages.push( page );
 
   var oggFile = new Uint8Array( totalFileSize );
   var oggFileOffset = 0;
@@ -147,7 +153,7 @@ function getOggIdHeader( pageIndex ){
   view.setUint16( 16, 0, true ); // output gain
   view.setUint8( 18, 0, true ); // channel map 0 = mono or stereo
 
-  return getOggPage( [packet], -1, packet.length, pageIndex, 2 );
+  return getOggPage( [packet], 0, packet.length, pageIndex, 2 );
 }
 
 function getOggCommentHeader( pageIndex ){
@@ -160,10 +166,10 @@ function getOggCommentHeader( pageIndex ){
   view.setUint32( 8, vendor.length, true ); // Vendor Length
   writeString( view, 12, vendor ); // Vendor name
 
-  return getOggPage( [packet], -1, packet.length, pageIndex, 0 );
+  return getOggPage( [packet], 0, packet.length, pageIndex, 0 );
 }
 
-function getOggPage( pagePackets, granule, pagePacketSize, pageIndex, headerType ){
+function getOggPage( pagePackets, granulePosition, pagePacketSize, pageIndex, headerType ){
   var numberOfPackets = pagePackets.length;
   var packetOffset = 27 + numberOfPackets;
   var pageBuffer = new ArrayBuffer( packetOffset + pagePacketSize );
@@ -173,8 +179,7 @@ function getOggPage( pagePackets, granule, pagePacketSize, pageIndex, headerType
   writeString( view, 0, 'OggS' ); // Capture Pattern starts all page headers
   view.setUint8( 4, 0, true ); // Version
   view.setUint8( 5, headerType, true ); // 1 = continuation, 2 = beginning of stream, 4 = end of stream
-  view.setUint32( 6, granule >> 32, true ); // Number of samples at 48000 Hz in page or -1. second 32 bits
-  view.setUint32( 10, granule, true ); // Number of samples at 48000 Hz in page or -1. first 32 bits
+  view.Int16( 6, granulePosition, true ); // Number of samples at 48000 Hz in page
   view.setUint32( 14, 0, true ); // Bitstream serial number
   view.setUint32( 18, pageIndex, true ); // Page sequence number
   view.setUint8( 26, numberOfPackets, true ); // Number of Packets in page.

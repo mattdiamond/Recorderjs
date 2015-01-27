@@ -76,7 +76,9 @@ Will return a boolean value indicating if the browser supports recording.
 
 Opus tags are not supported.
 
-only single channel encoding is working at the moment.
+Stereo encoding is not supported.
+
+Packets sized greater than 255 bytes not supported.
 
 ## License (MIT)
 
