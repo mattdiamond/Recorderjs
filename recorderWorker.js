@@ -109,13 +109,13 @@ function getOgg( data ){
 
   while ( packetIndex < data.length ) {
 
-    pagePacketsSize += data[ packetIndex ].byteLength;
+    pagePacketsSize += data[ packetIndex ].length;
     pagePackets.push( data[ packetIndex ] );
 
-    if ( packetIndex === (data.length - 1) || (pagePacketsSize + data[ packetIndex+1 ].byteLength) > 65536 ) {
+    if ( packetIndex === (data.length - 1) || (pagePackets.length === 255) || (pagePacketsSize + data[ packetIndex+1 ].length) > 65536 ) {
       var headerType = (packetIndex === (data.length - 1)) ? 4 : 0;
       var page = getOggPage( pagePackets, encoderBufferLength * pagePackets.length, pagePacketsSize, oggPages.length, headerType );
-      totalFileSize += page.byteLength;
+      totalFileSize += page.length;
       oggPages.push( page );
       pagePacketsSize = 0;
       pagePackets = [];
@@ -128,7 +128,7 @@ function getOgg( data ){
   var oggFileOffset = 0;
   for ( var i = 0; i < oggPages.length; i++ ) {
     oggFile.set( oggPages[i], oggFileOffset );
-    oggFileOffset += oggPages[i].byteLength;
+    oggFileOffset += oggPages[i].length;
   }
 
   return oggFile;
@@ -172,7 +172,7 @@ function getOggPage( pagePackets, granule, pagePacketSize, pageIndex, headerType
 
   writeString( view, 0, 'OggS' ); // Capture Pattern starts all page headers
   view.setUint8( 4, 0, true ); // Version
-  view.setUint8( 5, headerType, true ); // 0 = continuation, 1 = beginning of stream, 2 = end of stream
+  view.setUint8( 5, headerType, true ); // 1 = continuation, 2 = beginning of stream, 4 = end of stream
   view.setUint32( 6, granule >> 32, true ); // Number of samples at 48000 Hz in page or -1. second 32 bits
   view.setUint32( 10, granule, true ); // Number of samples at 48000 Hz in page or -1. first 32 bits
   view.setUint32( 14, 0, true ); // Bitstream serial number

@@ -95,7 +95,7 @@ Recorder.prototype.getOgg = function( callback, mimeType ) {
     callback( new Blob( [data], { type: mimeType || "audio/ogg" } ) );
   });
   this.worker.postMessage({ 
-    command: "getWav"
+    command: "getOgg"
   });
 };
 
