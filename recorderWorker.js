@@ -101,6 +101,8 @@ function getOgg( data ){
   var packetIndex = 0;
   var totalFileSize = 0;
   var page;
+  var headerType;
+  var granulePosition = 0;
 
   page = getOggIdHeader( oggPages.length );
   totalFileSize += page.length
@@ -116,7 +118,9 @@ function getOgg( data ){
     pagePackets.push( data[ packetIndex ] );
 
     if ( packetIndex === (data.length - 1) || (pagePackets.length === 255) || (pagePacketsSize + data[ packetIndex+1 ].length) > 65536 ) {
-      page = getOggPage( pagePackets, encoderBufferLength * pagePackets.length, pagePacketsSize, oggPages.length, 0 );
+      headerType = (packetIndex === (data.length - 1)) ? 4 : 0;
+      granulePosition += encoderBufferLengthPerChannel * pagePackets.length;
+      page = getOggPage( pagePackets, granulePosition, pagePacketsSize, oggPages.length, headerType );
       totalFileSize += page.length;
       oggPages.push( page );
       pagePacketsSize = 0;
@@ -125,10 +129,6 @@ function getOgg( data ){
 
     packetIndex++;
   }
-
-  page = getOggPage( [], -1, 0, oggPages.length, 4 );
-  totalFileSize += page.length;
-  oggPages.push( page );
 
   var oggFile = new Uint8Array( totalFileSize );
   var oggFileOffset = 0;
@@ -141,15 +141,15 @@ function getOgg( data ){
 }
 
 function getOggIdHeader( pageIndex ){
-  var packetBuffer = new ArrayBuffer( 28 );
+  var packetBuffer = new ArrayBuffer( 19 );
   var view = new DataView( packetBuffer );
   var packet = new Uint8Array( packetBuffer );
 
   writeString( view, 0, 'OpusHead' ); // Magic Signature
   view.setUint8( 8, 1, true ); // Version
   view.setUint8( 9, numberOfChannels, true ); // Channel count
-  view.setUint16( 10, 0, true ); // pre-skip
-  view.setUint32( 12, outputSampleRate, true ); // original sample rate
+  view.setUint16( 10, 3840, true ); // pre-skip (80ms)
+  view.setUint32( 12, inputSampleRate, true ); // original sample rate
   view.setUint16( 16, 0, true ); // output gain
   view.setUint8( 18, 0, true ); // channel map 0 = mono or stereo
 
@@ -179,7 +179,7 @@ function getOggPage( pagePackets, granulePosition, pagePacketSize, pageIndex, he
   writeString( view, 0, 'OggS' ); // Capture Pattern starts all page headers
   view.setUint8( 4, 0, true ); // Version
   view.setUint8( 5, headerType, true ); // 1 = continuation, 2 = beginning of stream, 4 = end of stream
-  view.Int16( 6, granulePosition, true ); // Number of samples at 48000 Hz in page
+  view.setUint32( 6, granulePosition, true ); // Number of samples at 48000 Hz in page
   view.setUint32( 14, 0, true ); // Bitstream serial number
   view.setUint32( 18, pageIndex, true ); // Page sequence number
   view.setUint8( 26, numberOfPackets, true ); // Number of Packets in page.
