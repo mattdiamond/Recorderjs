@@ -185,15 +185,17 @@ function getOggIdPage( pageIndex ){
 
 function getOggCommentPage( pageIndex ){
   var vendor = "Recorder.js";
-  var segmentDataBuffer = new ArrayBuffer( 12 + vendor.length );
+  var vendorLength = vendor.length;
+  var segmentDataBuffer = new ArrayBuffer( 16 + vendorLength );
   var segmentDataView = new DataView( segmentDataBuffer );
   var segmentData = new Uint8Array( segmentDataBuffer );
   var segmentTable = new Uint8Array(1);
 
   segmentTable[0] = segmentData.length;
   writeString( segmentDataView, 0, 'OpusTags' ); // Magic Signature
-  segmentDataView.setUint32( 8, vendor.length, true ); // Vendor Length
+  segmentDataView.setUint32( 8, vendorLength, true ); // Vendor Length
   writeString( segmentDataView, 12, vendor ); // Vendor name
+  segmentDataView.setUint32( 12 + vendorLength, 0, true ); // User Comment List Length
 
   return getOggPage( 0, 0, pageIndex, segmentTable, segmentData );
 }
