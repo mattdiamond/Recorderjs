@@ -81,40 +81,78 @@ function crc32( data ) {
   return (crc ^ (-1)) >>> 0;
 };
 
+function segmentPackets( packets ) {
+  var segmentTable = new Uint8Array( 255 );
+  var segmentTableIndex = 0;
+  var segmentData = new Uint8Array( 65025 );
+  var segmentDataIndex = 0;
+  var granulePosition = 0;
+  var headerType = 0;
+  var lastPositiveGranulePosition = 0;
+  var output = [];
+
+  var pageComplete = function(){
+
+    output.push({
+      segmentTable: new Uint8Array( segmentTable.subarray(0, segmentTableIndex) ),
+      segmentData: new Uint8Array( segmentData.subarray(0, segmentDataIndex) ),
+      headerType: headerType,
+      granulePosition: lastPositiveGranulePosition === granulePosition ? -1 : granulePosition
+    });
+
+    segmentTableIndex = 0;
+    segmentDataIndex = 0;
+    lastPositiveGranulePosition = output[output.length-1].granulePosition === -1 ? lastPositiveGranulePosition : granulePosition;
+  };
+
+  for ( var i = 0; i < packets.length; i++ ) {
+
+    var packetLength = packets[i].length
+    var remainingPacketLength = packetLength;
+    var packetIndex = 0;
+
+    while ( remainingPacketLength >= 0 ) {
+
+      if ( segmentTableIndex === 255 ) {
+        pageComplete();
+        headerType = ( remainingPacketLength >= 255 ) ? 1 : 0;
+      }
+
+      var dataLength = Math.min( remainingPacketLength, 255 );
+      segmentData.set( packets[i].subarray( packetIndex, dataLength ), segmentDataIndex );
+      segmentTable[ segmentTableIndex++ ] = dataLength;
+      packetIndex += dataLength;
+      segmentDataIndex += dataLength;
+      remainingPacketLength -= 255;
+    }
+
+    granulePosition += encoderBufferLengthPerChannel;
+  }
+
+  headerType += 4;
+  pageComplete();
+
+  return output;
+}
+
 function getOgg( data ){
   var oggPages = [];
-  var pagePackets = [];
-  var pagePacketsSize = 0;
-  var packetIndex = 0;
-  var totalFileSize = 0;
   var page;
-  var headerType;
-  var granulePosition = 0;
+  var segmentData = segmentPackets( data );
+  var totalFileSize = 0;
 
-  page = getOggIdHeader( oggPages.length );
+  page = getOggIdPage( oggPages.length );
   totalFileSize += page.length
   oggPages.push( page );
 
-  page = getOggCommentHeader( oggPages.length );
+  page = getOggCommentPage( oggPages.length );
   totalFileSize += page.length;
   oggPages.push( page );
 
-  while ( packetIndex < data.length ) {
-
-    pagePacketsSize += data[ packetIndex ].length;
-    pagePackets.push( data[ packetIndex ] );
-
-    if ( packetIndex === (data.length - 1) || (pagePackets.length === 255) || (pagePacketsSize + data[ packetIndex+1 ].length) > 65536 ) {
-      headerType = (packetIndex === (data.length - 1)) ? 4 : 0;
-      granulePosition += encoderBufferLengthPerChannel * pagePackets.length;
-      page = getOggPage( pagePackets, granulePosition, pagePacketsSize, oggPages.length, headerType );
-      totalFileSize += page.length;
-      oggPages.push( page );
-      pagePacketsSize = 0;
-      pagePackets = [];
-    }
-
-    packetIndex++;
+  for ( var i = 0; i < segmentData.length; i++ ) {
+    page = getOggPage( segmentData[i].headerType, segmentData[i].granulePosition, oggPages.length, segmentData[i].segmentTable, segmentData[i].segmentData );
+    totalFileSize += page.length;
+    oggPages.push( page );
   }
 
   var oggFile = new Uint8Array( totalFileSize );
@@ -127,63 +165,62 @@ function getOgg( data ){
   return oggFile;
 }
 
-function getOggIdHeader( pageIndex ){
-  var packetBuffer = new ArrayBuffer( 19 );
-  var view = new DataView( packetBuffer );
-  var packet = new Uint8Array( packetBuffer );
+function getOggIdPage( pageIndex ){
+  var segmentDataBuffer = new ArrayBuffer( 19 );
+  var segmentDataView = new DataView( segmentDataBuffer );
+  var segmentData = new Uint8Array( segmentDataBuffer );
+  var segmentTable = new Uint8Array(1);
 
-  writeString( view, 0, 'OpusHead' ); // Magic Signature
-  view.setUint8( 8, 1, true ); // Version
-  view.setUint8( 9, numberOfChannels, true ); // Channel count
-  view.setUint16( 10, 3840, true ); // pre-skip (80ms)
-  view.setUint32( 12, inputSampleRate, true ); // original sample rate
-  view.setUint16( 16, 0, true ); // output gain
-  view.setUint8( 18, 0, true ); // channel map 0 = mono or stereo
+  segmentTable[0] = segmentData.length;
+  writeString( segmentDataView, 0, 'OpusHead' ); // Magic Signature
+  segmentDataView.setUint8( 8, 1, true ); // Version
+  segmentDataView.setUint8( 9, numberOfChannels, true ); // Channel count
+  segmentDataView.setUint16( 10, 3840, true ); // pre-skip (80ms)
+  segmentDataView.setUint32( 12, inputSampleRate, true ); // original sample rate
+  segmentDataView.setUint16( 16, 0, true ); // output gain
+  segmentDataView.setUint8( 18, 0, true ); // channel map 0 = mono or stereo
 
-  return getOggPage( [packet], 0, packet.length, pageIndex, 2 );
+  return getOggPage( 2, 0, pageIndex, segmentTable, segmentData );
 }
 
-function getOggCommentHeader( pageIndex ){
+function getOggCommentPage( pageIndex ){
   var vendor = "Recorder.js";
-  var packetBuffer = new ArrayBuffer( 12 + vendor.length );
-  var view = new DataView( packetBuffer );
-  var packet = new Uint8Array( packetBuffer );
+  var segmentDataBuffer = new ArrayBuffer( 12 + vendor.length );
+  var segmentDataView = new DataView( segmentDataBuffer );
+  var segmentData = new Uint8Array( segmentDataBuffer );
+  var segmentTable = new Uint8Array(1);
 
-  writeString( view, 0, 'OpusTags' ); // Magic Signature
-  view.setUint32( 8, vendor.length, true ); // Vendor Length
-  writeString( view, 12, vendor ); // Vendor name
+  segmentTable[0] = segmentData.length;
+  writeString( segmentDataView, 0, 'OpusTags' ); // Magic Signature
+  segmentDataView.setUint32( 8, vendor.length, true ); // Vendor Length
+  writeString( segmentDataView, 12, vendor ); // Vendor name
 
-  return getOggPage( [packet], 0, packet.length, pageIndex, 0 );
+  return getOggPage( 0, 0, pageIndex, segmentTable, segmentData );
 }
 
-function getOggPage( pagePackets, granulePosition, pagePacketSize, pageIndex, headerType ){
-  var numberOfPackets = pagePackets.length;
-  var packetOffset = 27 + numberOfPackets;
-  var pageBuffer = new ArrayBuffer( packetOffset + pagePacketSize );
-  var view = new DataView( pageBuffer );
+function getOggPage( headerType, granulePosition, pageIndex, segmentTable, segmentData ){
+  var numberOfSegments = segmentTable.length;
+  var pageBuffer = new ArrayBuffer(  27 + numberOfSegments + segmentData.length );
+  var pageBufferView = new DataView( pageBuffer );
   var page = new Uint8Array( pageBuffer );
 
-  writeString( view, 0, 'OggS' ); // Capture Pattern starts all page headers
-  view.setUint8( 4, 0, true ); // Version
-  view.setUint8( 5, headerType, true ); // 1 = continuation, 2 = beginning of stream, 4 = end of stream
+  writeString( pageBufferView, 0, 'OggS' ); // Capture Pattern starts all page headers
+  pageBufferView.setUint8( 4, 0, true ); // Version
+  pageBufferView.setUint8( 5, headerType, true ); // 1 = continuation, 2 = beginning of stream, 4 = end of stream
 
   // Number of samples upto and including this page at 48000 Hz into 64 bits
-  view.setUint32( 6, granulePosition, true );
+  pageBufferView.setUint32( 6, granulePosition, true );
   if ( granulePosition > 4294967296 || granulePosition < 0 ) {
-    view.setUint32( 10, Math.floor( granulePosition/4294967296 ), true );
+    pageBufferView.setUint32( 10, Math.floor( granulePosition/4294967296 ), true );
   }
 
-  view.setUint32( 14, 0, true ); // Bitstream serial number
-  view.setUint32( 18, pageIndex, true ); // Page sequence number
-  view.setUint8( 26, numberOfPackets, true ); // Number of Packets in page.
+  pageBufferView.setUint32( 14, 0, true ); // Bitstream serial number
+  pageBufferView.setUint32( 18, pageIndex, true ); // Page sequence number
+  pageBufferView.setUint8( 26, numberOfSegments, true ); // Number of segments in page.
+  page.set( segmentTable, 27 ); // Segment Table
+  page.set( segmentData, 27 + numberOfSegments ); // Segment Data
+  pageBufferView.setUint32( 22, crc32( page ), true ); // Checksum
 
-  for ( var i = 0; i < numberOfPackets; i++ ) {
-    view.setUint8( 27 + i, pagePackets[i].length, true ); // Update segment table
-    page.set( pagePackets[i], packetOffset ); // Add Packet
-    packetOffset += pagePackets[i].length;
-  }
-
-  view.setUint32( 22, crc32( page ), true ); // Checksum
   return page;
 }
 
