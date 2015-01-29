@@ -1,7 +1,7 @@
 # Recorder.js
 
 ## A plugin for recording/exporting the output of Web Audio API nodes
-## This is a experimental version which encodes the audio using libopus ver 1.1.1-beta compiled with emscripten. Please see known issues below
+#### This is a experimental version which encodes the audio using libopus ver 1.1 compiled with emscripten. Please see known issues below
 
 ### Syntax
 #### Constructor
@@ -74,11 +74,10 @@ Will return a boolean value indicating if the browser supports recording.
 ---------
 #### Known Issues
 
-Opus tags are not supported.
+Ogg tags are not supported.
 
-Stereo encoding is not supported.
+Stereo encoding is not working.
 
-Packets sized greater than 255 bytes not supported.
 
 ## License (MIT)
 
