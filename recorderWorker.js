@@ -4,7 +4,7 @@ var audioData = [],
   bitDepth,
   bufferLength,
   bytesPerSample,
-  crcTable,
+  checksumTable,
   decoder,
   decoderBufferPointer,
   decoderBuffer,
@@ -73,12 +73,12 @@ function clearEncoderBuffer() {
   }
 }
 
-function crc32( data ) {
-  var crc = 0 ^ (-1);
+function checksum( data ) {
+  var crc = 0;
   for ( var i = 0; i < data.length; i++ ) {
-      crc = (crc >>> 8) ^ crcTable[(crc ^ data[i]) & 0xFF];
+    crc = (crc << 8) ^ checksumTable[ ((crc>>>24) & 0xff) ^ (data[i] & 0xff) ];
   }
-  return (crc ^ (-1)) >>> 0;
+  return crc >>> 0;
 }       
 
 function segmentPackets( packets ) {
@@ -221,7 +221,7 @@ function getOggPage( headerType, granulePosition, pageIndex, segmentTable, segme
   pageBufferView.setUint8( 26, numberOfSegments, true ); // Number of segments in page.
   page.set( segmentTable, 27 ); // Segment Table
   page.set( segmentData, 27 + numberOfSegments ); // Segment Data
-  pageBufferView.setUint32( 22, crc32( page ), true ); // Checksum
+  pageBufferView.setUint32( 22, checksum( page ), true ); // Checksum
 
   return page;
 }
@@ -272,18 +272,17 @@ function init( config ){
   interleavedAndResampledBuffer = new Float32Array( interleavedAndResampledBufferLength );
   initEncoder();
   initDecoder();
-  initCRCTable();
+  initChecksumTable();
 }
 
-function initCRCTable(){
-  var c;
-  crcTable = [];
-  for ( var n = 0; n < 256; n++ ) {
-    c = n;
-    for ( var k = 0; k < 8; k++ ) {
-      c = ((c&1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+function initChecksumTable(){
+  checksumTable = [];
+  for ( var i = 0; i < 256; i++ ) {
+    var r = i << 24;
+    for ( var j = 0; j < 8; j++ ) {
+      r = ((r & 0x80000000) != 0) ? ((r << 1) ^ 0x04c11db7) : (r << 1);
     }
-    crcTable[n] = c;
+    checksumTable[i] = (r & 0xffffffff);
   }
 }
 
