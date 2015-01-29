@@ -75,11 +75,11 @@ function clearEncoderBuffer() {
 
 function crc32( data ) {
   var crc = 0 ^ (-1);
-  for (var i = 0; i < data.length; i++) {
-    crc = (crc >>> 8) ^ crcTable[(crc ^ data[i]) & 0xFF];
+  for ( var i = 0; i < data.length; i++ ) {
+      crc = (crc >>> 8) ^ crcTable[(crc ^ data[i]) & 0xFF];
   }
   return (crc ^ (-1)) >>> 0;
-};
+}       
 
 function segmentPackets( packets ) {
   var segmentTable = new Uint8Array( 255 );
@@ -278,11 +278,10 @@ function init( config ){
 function initCRCTable(){
   var c;
   crcTable = [];
-
-  for (var n = 0; n < 256; n++) {
+  for ( var n = 0; n < 256; n++ ) {
     c = n;
-    for (var k = 0; k < 8; k++) {
-      c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+    for ( var k = 0; k < 8; k++ ) {
+      c = ((c&1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
     }
     crcTable[n] = c;
   }
