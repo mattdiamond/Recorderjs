@@ -11,6 +11,10 @@
   this.bytesPerSample = this.bitDepth / 8;
   this.resampledBufferLength = Math.round( this.bufferLength * this.outputSampleRate / this.inputSampleRate );
   this.resampleRatio = (this.bufferLength-1) / (this.resampledBufferLength-1);
+
+  if ( this.numberOfChannels === 1 && this.outputSampleRate === this.inputSampleRate ) {
+    this.resampleAndInterleave = function( buffers ) { return buffers[0]; };
+  }
 };
 
 WavePCM.prototype.bitReduce = function( floatData ){
