@@ -60,9 +60,9 @@ This will generate a Blob object containing the opus encoded recording in an Ogg
 
 In addition, you may specify the mime type of Blob to be returned (defaults to "audio/ogg").
 
-    rec.get( callback, type )
+    rec.get( format, callback )
 
-This will return the recorded audio of type (supported values are "wav" or "ogg") as a Uint8Array to the callback. If the type is not supported an error will be thrown
+This will return the recorded audio in format (supported values are "wav" or "ogg") as a Uint8Array to the callback. If the format type is not supported an error will be thrown.
 
 
 ---------
