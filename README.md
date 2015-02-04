@@ -2,7 +2,7 @@
 
 A library for recording/exporting the output of Web Audio API nodes.
 
-This is a experimental version which encodes the audio using libopus ver 1.1 compiled with emscripten. Please see known issues below.
+This is a experimental version which supports encoding the audio using libopus ver 1.1 compiled with emscripten.
 
 ### Syntax
 #### Constructor
@@ -16,9 +16,12 @@ Creates a recorder instance. Instantiating an instance will prompt the user for 
 #### Config
 
 - **enableMonitoring** - (*optional*) If you want the hear the recorder input live. Defaults to false
-- **workerPath** - (*optional*) Path to recorder.js worker script. Defaults to 'recorderWorker.js'
+- **bitDepth** - (*optional*) Specifies the bitdepth to record at. Defaults to 16. Supported values are 8, 16, 24, 32. If recordOpus is true, this value will be ignored.
 - **bufferLength** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
-- **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 1. More than two channels are supported if your audio device allows, but has not been tested.
+- **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 1. More than two channels has not been tested.
+- **recordOpus** - (*optional*) Specifies if recorder should record using the opus encoder. Defaults to true.
+- **sampleRate** - (*optional*) Specifies the sample rate to record at. Defaults to device sample rate. If different than native rate, the audio will be resampled using a linear interpolation algorithm.  If recordOpus is true, this value will be ignored.
+- **workerPath** - (*optional*) Path to recorder.js worker script. Defaults to 'recorderWorker.js'
 
 
 ---------
@@ -53,17 +56,14 @@ In addition, you may specify the mime type of Blob to be returned (defaults to "
 
     rec.getOgg( callback[, mimeType] )
 
-This will generate a Blob object containing the opus encoded recording in an Ogg container. The callback will be called with the Blob as its sole argument.
+This will generate a Blob object containing the opus encoded recording in an Ogg container. The callback will be called with the Blob as its sole argument. If audio was recorded as Wave, an error will be thrown
 
 In addition, you may specify the mime type of Blob to be returned (defaults to "audio/ogg").
 
-    rec.get( callback )
+    rec.get( callback, type )
 
-This will return the recorded audio as an array of Uint8Arrays packets of encoded audio data to the callback.
+This will return the recorded audio of type (supported values are "wav" or "ogg") as a Uint8Array to the callback. If the type is not supported an error will be thrown
 
-    rec.getInterleaved( callback )
-
-This will return the recorded audio decoded into one Uint16Array with channels interleaved to the callbacl. 
 
 ---------
 #### Static Methods
@@ -72,12 +72,6 @@ This will return the recorded audio decoded into one Uint16Array with channels i
 
 Will return a boolean value indicating if the browser supports recording.
 
----------
-#### Known Issues
-
-Ogg tags are not supported.
-
-Stereo encoding is not working.
 
 
 ## License (MIT)

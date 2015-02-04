@@ -9,14 +9,17 @@ var Recorder = function( config ){
   this.audioContext = new Recorder.AudioContext();
 
   config = config || {};
+  config.bitDepth = config.bitDepth || 16; // Only respected if recording PCM
   config.bufferLength = config.bufferLength || 4096;
   config.enableMonitoring = config.enableMonitoring || false;
   config.numberOfChannels = config.numberOfChannels || 1;
+  config.recordOpus = (config.recordOpus === false) ? false : true;
+  config.sampleRate = config.sampleRate || this.audioContext.sampleRate;
   config.workerPath = config.workerPath || 'recorderWorker.js';
   this.config = config;
 
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( config.bufferLength, config.numberOfChannels, config.numberOfChannels );
-  this.scriptProcessorNode.onaudioprocess = function( e ){ that.recordPCM( e.inputBuffer ); };
+  this.scriptProcessorNode.onaudioprocess = function( e ){ that.recordBuffers( e.inputBuffer ); };
   this.scriptProcessorNode.connect( this.audioContext.destination );
 
   this.resetWorker();
@@ -67,40 +70,27 @@ Recorder.prototype.enableMonitoring = function(){
   });
 };
 
-Recorder.prototype.get = function( callback ) {
+Recorder.prototype.get = function( format, callback ) {
   this.addHandler( callback );
   this.worker.postMessage({ 
-    command: "get"
-  });
-};
-
-Recorder.prototype.getInterleavedPCM = function( callback ) {
-  this.addHandler( callback );
-  this.worker.postMessage({ 
-    command: "getInterleavedPCM"
+    command: "get",
+    format: format
   });
 };
 
 Recorder.prototype.getWav = function( callback, mimeType ) {
-  this.addHandler( function( data ){
+  this.get( "wav", function( data ){
     callback( new Blob( [data], { type: mimeType || "audio/wav" } ) );
-  });
-  this.worker.postMessage({ 
-    command: "getWav"
   });
 };
 
 Recorder.prototype.getOgg = function( callback, mimeType ) {
-  this.addHandler( function( data ){
+  this.get( "ogg", function( data ){
     callback( new Blob( [data], { type: mimeType || "audio/ogg" } ) );
-  });
-  this.worker.postMessage({ 
-    command: "getOgg"
   });
 };
 
 Recorder.prototype.initStream = function( success ){
-
   success = success || function(){};
   if ( this.isInitialized ) {
     success.call( this );
@@ -154,17 +144,17 @@ Recorder.prototype.pauseRecording = function(){
   this.isPaused = true;
 };
 
-Recorder.prototype.recordPCM = function( inputBuffer ){
+Recorder.prototype.recordBuffers = function( inputBuffer ){
   if (!this.isPaused) {
 
-    var channels = [];
+    var buffers = [];
     for (var i = 0; i < inputBuffer.numberOfChannels; i++) {
-      channels[i] = inputBuffer.getChannelData(i);
+      buffers[i] = inputBuffer.getChannelData(i);
     }
 
     this.worker.postMessage({
-      command: "record",
-      channels: channels
+      command: "recordBuffers",
+      buffers: buffers
     });
   }
 };
@@ -176,9 +166,12 @@ Recorder.prototype.resetWorker = function(){
   this.worker = new Worker( this.config.workerPath );
   this.worker.postMessage({ 
     command: "init",
-    numberOfChannels: this.config.numberOfChannels,
+    bitDepth: this.config.bitDepth,
+    bufferLength: this.config.bufferLength,
     inputSampleRate: this.audioContext.sampleRate,
-    bufferLength: this.config.bufferLength
+    numberOfChannels: this.config.numberOfChannels,
+    outputSampleRate: this.config.sampleRate,
+    recordOpus: this.config.recordOpus
   });
 };
 
