@@ -86,7 +86,7 @@ WavePCM.prototype.getHeader = function( dataLength ) {
   var view = new DataView( header );
 
   view.setUint32( 0, 1380533830, false ); // RIFF identifier 'RIFF'
-  view.setUint32( 4, 36 + dataLength, true ); // file length
+  view.setUint32( 4, 36 + dataLength, true ); // file length minus RIFF identifier length and file description length
   view.setUint32( 8, 1463899717, false ); // RIFF type 'WAVE'
   view.setUint32( 12, 1718449184, false ); // format chunk identifier 'fmt '
   view.setUint32( 16, 16, true ); // format chunk length 
@@ -134,4 +134,4 @@ WavePCM.prototype.resampleAndInterleave = function( buffers ) {
   }
 
   return outputData;
-}
+};
