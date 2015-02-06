@@ -1,11 +1,10 @@
  var WavePCM = function( config ){
 
-  config = config || {};
   this.inputSampleRate = config.inputSampleRate;
-  this.bufferLength = config.bufferLength || 4096;
-  this.bitDepth = config.bitDepth || 16;
-  this.numberOfChannels = config.numberOfChannels || 1;
-  this.outputSampleRate = config.outputSampleRate || 44100;
+  this.bufferLength = config.bufferLength;
+  this.bitDepth = config.bitDepth;
+  this.numberOfChannels = config.numberOfChannels;
+  this.outputSampleRate = config.outputSampleRate;
 
   this.recordedBuffers = [];
   this.bytesPerSample = this.bitDepth / 8;

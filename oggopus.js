@@ -2,8 +2,7 @@ importScripts( 'libopus.js', 'wavepcm.js' );
 
 var OggOpus = function( config ){
 
-  config = config || {};
-  this.numberOfChannels = config.numberOfChannels || 1;
+  this.numberOfChannels = config.numberOfChannels;
   this.inputSampleRate = config.inputSampleRate;
   this.outputSampleRate = config.outputSampleRate = 48000;
   this.bitDepth = config.bitDepth = 16;
@@ -95,35 +94,22 @@ OggOpus.prototype.getCommentPage = function( pageIndex ){
   return this.getPage( 0, 0, pageIndex, segmentTable, segmentData );
 };
 
-OggOpus.prototype.getFile = function( segmentedPackets ){
-  var oggPages = [];
-  var page;
-  var totalFileSize = 0;
+OggOpus.prototype.getFile = function( pageData ){
+  var lastPage = pageData[ pageData.length-1 ];
+  var oggFile = new Uint8Array( lastPage.fileOffset + lastPage.segmentTable.length + lastPage.segmentData.length + 27 );
+  var oggPageIndex = 0;
 
-  page = this.getIdPage( oggPages.length );
-  totalFileSize += page.length
-  oggPages.push( page );
-  page = this.getCommentPage( oggPages.length );
-  totalFileSize += page.length;
-  oggPages.push( page );
+  oggFile.set( this.getIdPage( oggPageIndex++ ) );
+  oggFile.set( this.getCommentPage( oggPageIndex++ ), 47 );
 
-  for ( var i = 0; i < segmentedPackets.length; i++ ) {
-    page = this.getPage( 
-      segmentedPackets[i].headerType,
-      segmentedPackets[i].granulePosition,
-      oggPages.length,
-      segmentedPackets[i].segmentTable,
-      segmentedPackets[i].segmentData
-    );
-    totalFileSize += page.length;
-    oggPages.push( page );
-  }
-
-  var oggFile = new Uint8Array( totalFileSize );
-  var oggFileOffset = 0;
-  for ( var i = 0; i < oggPages.length; i++ ) {
-    oggFile.set( oggPages[i], oggFileOffset );
-    oggFileOffset += oggPages[i].length;
+  for ( var i = 0; i < pageData.length; i++ ) {
+    oggFile.set( this.getPage(
+      pageData[i].headerType,
+      pageData[i].granulePosition,
+      oggPageIndex++,
+      pageData[i].segmentTable,
+      pageData[i].segmentData
+    ), pageData[i].fileOffset );
   }
 
   return oggFile;
@@ -217,15 +203,18 @@ OggOpus.prototype.segmentPackets = function( packets ) {
   var headerType = 0;
   var lastPositiveGranulePosition = 0;
   var segmentedPackets = [];
+  var fileOffset = 99; // size of comment and id page
   var pageComplete = function(){
 
     segmentedPackets.push({
       segmentTable: new Uint8Array( segmentTable.subarray(0, segmentTableIndex) ),
       segmentData: new Uint8Array( segmentData.subarray(0, segmentDataIndex) ),
       headerType: headerType,
-      granulePosition: (lastPositiveGranulePosition === granulePosition) ? -1 : granulePosition
+      granulePosition: (lastPositiveGranulePosition === granulePosition) ? -1 : granulePosition,
+      fileOffset: fileOffset
     });
 
+    fileOffset += 27 + segmentTableIndex + segmentDataIndex;
     segmentTableIndex = 0;
     segmentDataIndex = 0;
     if ( segmentedPackets[segmentedPackets.length-1].granulePosition !== -1 ) {
