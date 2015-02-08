@@ -6,6 +6,8 @@
     var config = cfg || {};
     var bufferLen = config.bufferLen || 4096;
     var numChannels = config.numChannels || 2;
+    var recordingCallback = config.recordingCallback || function(){};
+
     this.context = source.context;
     this.node = (this.context.createScriptProcessor ||
                  this.context.createJavaScriptNode).call(this.context,
@@ -24,8 +26,11 @@
     this.node.onaudioprocess = function(e){
       if (!recording) return;
       var buffer = [];
+      var channelData;
       for (var channel = 0; channel < numChannels; channel++){
-          buffer.push(e.inputBuffer.getChannelData(channel));
+          channelData = e.inputBuffer.getChannelData(channel)
+          buffer.push(channelData);
+          recordingCallback(channelData);
       }
       worker.postMessage({
         command: 'record',
