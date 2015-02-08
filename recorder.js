@@ -57,6 +57,16 @@
       currCallback = cb || config.callback;
       worker.postMessage({ command: 'getBuffer' })
     }
+    
+    this.getAudioBuffer = function (cb, context) {
+        var ctx = context || this.context
+        this.getBuffer(function (buffers) {
+            var newBuffer = ctx.createBuffer(2, buffers[0].length, ctx.sampleRate);
+            newBuffer.getChannelData(0).set(buffers[0]);
+            newBuffer.getChannelData(1).set(buffers[1]);
+            cb(newBuffer)
+        })
+    }
 
     this.exportWAV = function(cb, type){
       currCallback = cb || config.callback;

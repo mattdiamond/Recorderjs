@@ -53,6 +53,21 @@ This will pass the recorded stereo buffer (as an array of two Float32Arrays, for
 	}
 
 This sample code will play back the stereo buffer.
+More simply:
+
+    rec.getAudioBuffer([callback])
+
+This will pass the recorded AudioBuffer to the callback.
+
+	function getAudioBufferCallback( buffer ) {
+		var newSource = audioContext.createBufferSource();
+		newSource.buffer = newBuffer;
+		newSource.connect( audioContext.destination );
+		newSource.start(0);
+	}
+
+This sample code will also play back the stereo buffer.
+
 
 
     rec.configure(config)
