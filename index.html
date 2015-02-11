@@ -66,7 +66,7 @@
     button.nextElementSibling.disabled = false;
       window.setTimeout(function () {
         stopRecording(document.getElementById('stop'));
-      }, 3000);
+      }, 3200);
   }
 
   function stopRecording(button) {
@@ -80,24 +80,38 @@
     // create WAV download link using audio data blob
     //createDownloadLink();
     exportBuffer();
-    __log('clear start');
-    recorder.clear();
-    __log('clear end');
   }
       
   function exportBuffer() {
     __log('getBuffer start');
+    recorder.setLength(audio_context.sampleRate * 3);
+    
     recorder && recorder.getBuffer(function (buffers) {
         __log('getBuffer end');
-        var buffer = audio_context.createBuffer(2, buffers[0].length, audio_context.sampleRate);
-        buffer.getChannelData(0).set(buffers[0]);
-        buffer.getChannelData(1).set(buffers[1]);
+        
+        var seconds = 3;
         var latency = (bufferLen / audio_context.sampleRate) * 2;
-        __log('getBuffer duration: ' + buffer.duration);
-        __log('getBuffer bufferLen: ' + bufferLen);
+        var maxlength = audio_context.sampleRate * seconds;
+        var buffer = audio_context.createBuffer(2, maxlength, audio_context.sampleRate);
+        buffer.getChannelData(0).set(buffers[0].subarray(0, maxlength));
+        buffer.getChannelData(1).set(buffers[1].subarray(0, maxlength));
+        
         __log('getBuffer sampleRate: ' + audio_context.sampleRate);
+        __log('getBuffer bufferLen: ' + bufferLen);
         __log('getBuffer latency: ' + latency);
-        __log('getBuffer total: ' + (buffer.duration + latency));
+        
+        __log('getBuffer current length: ' + buffers[0].length);
+        __log('getBuffer current duration: ' + buffers[0].length / audio_context.sampleRate);
+        
+        __log('getBuffer desired length: ' + maxlength);
+        __log('getBuffer desired duration: ' + seconds);
+        
+        __log('getBuffer final length: ' + buffer.length);
+        __log('getBuffer final duration: ' + buffer.duration);
+
+        __log('clear start');
+        recorder.clear();
+        __log('clear end');
     });
   }
 

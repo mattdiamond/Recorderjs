@@ -52,6 +52,11 @@
     this.clear = function(){
       worker.postMessage({ command: 'clear' });
     }
+    
+    this.setLength = function(length) {
+        console.log('setLength 0', length);
+      worker.postMessage({ command: 'setLength', length: length })
+    }
 
     this.getBuffer = function(cb) {
       currCallback = cb || config.callback;
