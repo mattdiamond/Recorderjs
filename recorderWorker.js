@@ -60,6 +60,12 @@ function getBuffer(){
   this.postMessage(buffers);
 }
 
+function setLength(length){
+    console.log('setLength 1', recLength);
+    recLength = length;
+    console.log('setLength 2', recLength);
+}
+
 function clear(){
   recLength = 0;
   recBuffers = [];
