@@ -84,11 +84,14 @@
       
   function exportBuffer() {
     __log('getBuffer start');
-    recorder.setLength(audio_context.sampleRate * 3);
+      
+    // can we override Recorder.js recording length to shorten the sample to 3 seconds exactly?
+    //recorder.setLength(audio_context.sampleRate * 3);
     
     recorder && recorder.getBuffer(function (buffers) {
         __log('getBuffer end');
         
+        // otherwise we must do it manually afterwards
         var seconds = 3;
         var latency = (bufferLen / audio_context.sampleRate) * 2;
         var maxlength = audio_context.sampleRate * seconds;

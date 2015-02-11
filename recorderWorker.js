@@ -17,6 +17,9 @@ this.onmessage = function(e){
     case 'getBuffer':
       getBuffer();
       break;
+    case 'setLength':
+      setLength(e.data.max);
+      break;
     case 'clear':
       clear();
       break;
@@ -60,10 +63,8 @@ function getBuffer(){
   this.postMessage(buffers);
 }
 
-function setLength(length){
-    console.log('setLength 1', recLength);
-    recLength = length;
-    console.log('setLength 2', recLength);
+function setLength(max){
+    recLength = max;
 }
 
 function clear(){

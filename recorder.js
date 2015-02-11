@@ -53,9 +53,8 @@
       worker.postMessage({ command: 'clear' });
     }
     
-    this.setLength = function(length) {
-        console.log('setLength 0', length);
-      worker.postMessage({ command: 'setLength', length: length })
+    this.setLength = function(max) {
+      worker.postMessage({ command: 'setLength', max: max })
     }
 
     this.getBuffer = function(cb) {
