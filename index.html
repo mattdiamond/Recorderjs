@@ -77,27 +77,28 @@
         button.disabled = true;
         button.previousElementSibling.disabled = false;
       }
+      
+    // new Recorder.js function to set recording length to shorten the sample to 3 seconds exactly
+    recorder.setLength(audio_context.sampleRate * 3);
+    
     // create WAV download link using audio data blob
-    //createDownloadLink();
+    createDownloadLink();
     exportBuffer();
   }
       
   function exportBuffer() {
     __log('getBuffer start');
-      
-    // can we override Recorder.js recording length to shorten the sample to 3 seconds exactly?
-    //recorder.setLength(audio_context.sampleRate * 3);
     
     recorder && recorder.getBuffer(function (buffers) {
         __log('getBuffer end');
-        
-        // otherwise we must do it manually afterwards
-        var seconds = 3;
+
         var latency = (bufferLen / audio_context.sampleRate) * 2;
-        var maxlength = audio_context.sampleRate * seconds;
-        var buffer = audio_context.createBuffer(2, maxlength, audio_context.sampleRate);
-        buffer.getChannelData(0).set(buffers[0].subarray(0, maxlength));
-        buffer.getChannelData(1).set(buffers[1].subarray(0, maxlength));
+        var buffer = audio_context.createBuffer(2, audio_context.sampleRate * 3, audio_context.sampleRate);
+        buffer.getChannelData(0).set(buffers[0]);
+        buffer.getChannelData(1).set(buffers[1]);
+        // or manually chop a buffers length without modifying recorder.js
+        //buffer.getChannelData(0).set(buffers[0].subarray(0, audio_context.sampleRate * 3));
+        //buffer.getChannelData(1).set(buffers[1].subarray(0, audio_context.sampleRate * 3));
         
         __log('getBuffer sampleRate: ' + audio_context.sampleRate);
         __log('getBuffer bufferLen: ' + bufferLen);
@@ -105,9 +106,6 @@
         
         __log('getBuffer current length: ' + buffers[0].length);
         __log('getBuffer current duration: ' + buffers[0].length / audio_context.sampleRate);
-        
-        __log('getBuffer desired length: ' + maxlength);
-        __log('getBuffer desired duration: ' + seconds);
         
         __log('getBuffer final length: ' + buffer.length);
         __log('getBuffer final duration: ' + buffer.duration);

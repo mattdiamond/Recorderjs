@@ -1,4 +1,5 @@
 var recLength = 0,
+    maxLength = 0,
   recBuffers = [],
   sampleRate,
   numChannels;
@@ -29,6 +30,7 @@ this.onmessage = function(e){
 function init(config){
   sampleRate = config.sampleRate;
   numChannels = config.numChannels;
+  maxLength = config.maxLength;
   initBuffers();
 }
 
@@ -42,7 +44,11 @@ function record(inputBuffer){
 function exportWAV(type){
   var buffers = [];
   for (var channel = 0; channel < numChannels; channel++){
-    buffers.push(mergeBuffers(recBuffers[channel], recLength));
+      if (maxLength) {
+        buffers.push(mergeBuffers(recBuffers[channel], recLength).subarray(0, maxLength));
+      } else {
+        buffers.push(mergeBuffers(recBuffers[channel], recLength));
+      }
   }
   if (numChannels === 2){
       var interleaved = interleave(buffers[0], buffers[1]);
@@ -58,13 +64,17 @@ function exportWAV(type){
 function getBuffer(){
   var buffers = [];
   for (var channel = 0; channel < numChannels; channel++){
-    buffers.push(mergeBuffers(recBuffers[channel], recLength));
+      if (maxLength) {
+        buffers.push(mergeBuffers(recBuffers[channel], recLength).subarray(0, maxLength));
+      } else {
+        buffers.push(mergeBuffers(recBuffers[channel], recLength));
+      }
   }
   this.postMessage(buffers);
 }
 
 function setLength(max){
-    recLength = max;
+    maxLength = max;
 }
 
 function clear(){
