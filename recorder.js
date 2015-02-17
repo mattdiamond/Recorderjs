@@ -16,6 +16,7 @@ var Recorder = function( config ){
   config.recordOpus = (config.recordOpus === false) ? false : true;
   config.sampleRate = config.sampleRate || this.audioContext.sampleRate;
   config.workerPath = config.workerPath || 'recorderWorker.js';
+  config.onReady = config.onReady || function(){};
   this.config = config;
 
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( config.bufferLength, config.numberOfChannels, config.numberOfChannels );
@@ -24,8 +25,9 @@ var Recorder = function( config ){
 
   this.resetWorker();
   this.pauseRecording();
+  this.timerIncrementInMs = config.bufferLength / this.audioContext.sampleRate * 1000;
   this.initCallbackQueue = [];
-  this.initStream();
+  this.initStream( config.onReady );
 };
 
 Recorder.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -147,6 +149,8 @@ Recorder.prototype.pauseRecording = function(){
 Recorder.prototype.recordBuffers = function( inputBuffer ){
   if (!this.isPaused) {
 
+    this.recordingTimeInMs += this.timerIncrementInMs;
+
     var buffers = [];
     for (var i = 0; i < inputBuffer.numberOfChannels; i++) {
       buffers[i] = inputBuffer.getChannelData(i);
@@ -163,6 +167,7 @@ Recorder.prototype.resetWorker = function(){
   if ( this.worker ) {
     this.worker.terminate();
   }
+  this.recordingTimeInMs = 0;
   this.worker = new Worker( this.config.workerPath );
   this.worker.postMessage({ 
     command: "init",
