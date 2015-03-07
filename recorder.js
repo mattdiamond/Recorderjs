@@ -1,10 +1,10 @@
 (function(window){
 
-  var WORKER_PATH = 'recorderWorker.js';
+  var WORKER_PATH = 'http://kmturley.github.io/Recorderjs/recorderWorker.js';
 
   var Recorder = function(source, cfg){
     var config = cfg || {};
-    var bufferLen = config.bufferLen || 4096;
+    var bufferLen = config.bufferLen || 8192; //4096
     var numChannels = config.numChannels || 2;
     this.context = source.context;
     this.node = (this.context.createScriptProcessor ||
