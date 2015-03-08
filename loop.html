@@ -134,40 +134,47 @@
                     offset = 0,
                     beforeLength = Math.round(before * this.context.sampleRate),
                     afterLength = Math.round(after * this.context.sampleRate),
-                    audioBuffer = this.context.createBuffer(2, beforeLength + buffers[0].length + afterLength, this.context.sampleRate),
-                    buffer = null;
+                    audioBuffer = this.context.createBuffer(2, beforeLength, this.context.sampleRate),
+                    audioBuffer2 = this.context.createBuffer(2, buffers[0].length, this.context.sampleRate),
+                    audioBuffer3 = this.context.createBuffer(2, afterLength, this.context.sampleRate),
+                    audioBuffer4 = this.context.createBuffer(2, beforeLength + buffers[0].length + afterLength, this.context.sampleRate),
+                    buffer = null,
+                    buffer2 = null,
+                    buffer3 = null,
+                    buffer4 = null;
                 
                 console.log('player.convertBuffer', beforeLength, buffers[0].length, afterLength);
                 
                 // fill the gaps before and after the recording with white noise
                 for (channel = 0; channel < 2; channel += 1) {
                     buffer = audioBuffer.getChannelData(channel);
+                    buffer2 = audioBuffer2.getChannelData(channel);
+                    buffer3 = audioBuffer3.getChannelData(channel);
+                    buffer4 = audioBuffer4.getChannelData(channel);
                     for (i = 0; i < beforeLength; i += 1) {
                         buffer[offset] = Math.random() * 2 - 1;
+                        buffer4[offset] = Math.random() * 2 - 1;
                         offset += 1;
                     }
-                    //buffer.set(buffers[channel], offset);
-                    //offset += buffers[channel].length;
                     for (i = 0; i < buffers[channel].length; i += 1) {
-                        buffer[offset] = buffers[channel][i];
+                        buffer2[offset] = buffers[channel][i];
+                        buffer4[offset] = buffers[channel][i];
                         offset += 1;
                     }
                     for (i = 0; i < afterLength; i += 1) {
-                        buffer[offset] = Math.random() * 2 - 1;
+                        buffer3[offset] = Math.random() * 2 - 1;
+                        buffer4[offset] = Math.random() * 2 - 1;
                         offset += 1;
                     }
                 }
                 
-                // recording without fill
-                var audioBuffer2 = this.context.createBuffer(2, buffers[0].length, this.context.sampleRate);
-                audioBuffer2.getChannelData(0).set(buffers[0]);
-                audioBuffer2.getChannelData(1).set(buffers[1]);
-                
                 // compare the result of the original and the filled versions
-                console.log('player.convertBuffer 1', audioBuffer);
-                console.log('player.convertBuffer 2', audioBuffer2);
+                console.log('player.convertBuffer before', audioBuffer);
+                console.log('player.convertBuffer middle', audioBuffer2);
+                console.log('player.convertBuffer after', audioBuffer3);
+                console.log('player.convertBuffer all', audioBuffer4);
                 
-                return audioBuffer;
+                return audioBuffer4;
             }
         };
 
