@@ -109,8 +109,8 @@
             record: function () {
                 console.log('player.record', this.context.currentTime);
                 // should start time be recorded before or after the record function?
-                this.recorder.record();
                 this.recorder.startTime = this.context.currentTime;
+                this.recorder.record();
             },
             /**
              * @method record
@@ -119,71 +119,59 @@
                 var me = this;
                 console.log('player.recordStop', this.context.currentTime);
                 this.recorder.stop();
-                this.recorder.stopTime = this.context.currentTime;
                 this.recorder.getBuffer(function (buffers) {
-                    callback(buffers, me.recorder.startTime, me.recorder.stopTime);
+                    callback(buffers);
                     me.recorder.clear();
                 });
             },
             /**
-             * @method convertBuffer
+             * @method createBuffer
              */
-            convertBuffer: function (buffers, before, after) {
-                console.log('player.convertBuffer', buffers, before, after);
+            createBuffer: function (buffers, channelTotal) {
+                var channel = 0,
+                    buffer = this.context.createBuffer(channelTotal, buffers[0].length, this.context.sampleRate);
+                for (channel = 0; channel < channelTotal; channel += 1) {
+                    buffer.getChannelData(channel).set(buffers[channel]);
+                }
+                return buffer;
+            },
+            /**
+             * @method offsetBuffer
+             */
+            offsetBuffer: function (vocalsBuffers, backingInstance, offset) {
+                console.log('player.offsetBuffer', vocalsBuffers, backingInstance, offset);
                 var i = 0,
                     channel = 0,
-                    offset = 0,
-                    beforeLength = Math.round(before * this.context.sampleRate),
-                    afterLength = Math.round(after * this.context.sampleRate),
-                    audioBuffer = this.context.createBuffer(2, beforeLength, this.context.sampleRate),
-                    audioBuffer2 = this.context.createBuffer(2, buffers[0].length, this.context.sampleRate),
-                    audioBuffer3 = this.context.createBuffer(2, afterLength, this.context.sampleRate),
-                    audioBuffer4 = this.context.createBuffer(2, beforeLength + buffers[0].length + afterLength, this.context.sampleRate),
-                    buffer = null,
-                    buffer2 = null,
-                    buffer3 = null,
-                    buffer4 = null;
-                
-                //console.log('player.convertBuffer', beforeLength, buffers[0].length, afterLength);
-                
-                // fill the gaps before and after the recording with white noise
-                for (channel = 0; channel < 2; channel += 1) {
+                    channelTotal = 2,
+                    num = 0,
+                    vocalsRecording = this.createBuffer(vocalsBuffers, channelTotal),
+                    diff = this.recorder.startTime - backingInstance.startTime + (offset / 1000),
+                    before = Math.round((diff % backingInstance.buffer.duration) * this.context.sampleRate),
+                    after = Math.round((backingInstance.buffer.duration - ((diff + vocalsRecording.duration) % backingInstance.buffer.duration)) * this.context.sampleRate),
+                    audioBuffer = this.context.createBuffer(channelTotal, before + vocalsBuffers[0].length + after, this.context.sampleRate),
+                    buffer = null;
+                for (channel = 0; channel < channelTotal; channel += 1) {
                     buffer = audioBuffer.getChannelData(channel);
-                    buffer2 = audioBuffer2.getChannelData(channel);
-                    buffer3 = audioBuffer3.getChannelData(channel);
-                    buffer4 = audioBuffer4.getChannelData(channel);
-                    for (i = 0; i < beforeLength; i += 1) {
-                        buffer[offset] = 0; //Math.random() - 0.5;
-                        buffer4[offset] = 0; //Math.random() - 0.5;
-                        offset += 1;
+                    for (i = 0; i < before; i += 1) {
+                        buffer[num] = 0;
+                        num += 1;
                     }
-                    for (i = 0; i < buffers[channel].length; i += 1) {
-                        buffer2[offset] = buffers[channel][i];
-                        buffer4[offset] = buffers[channel][i];
-                        offset += 1;
+                    for (i = 0; i < vocalsBuffers[channel].length; i += 1) {
+                        buffer[num] = vocalsBuffers[channel][i];
+                        num += 1;
                     }
-                    for (i = 0; i < afterLength; i += 1) {
-                        buffer3[offset] = 0; //Math.random() - 0.5;
-                        buffer4[offset] = 0; //Math.random() - 0.5;
-                        offset += 1;
+                    for (i = 0; i < after; i += 1) {
+                        buffer[num] = 0;
+                        num += 1;
                     }
                 }
-                
-                // compare the result of the original and the filled versions
-                console.log('player.convertBuffer before', audioBuffer);
-                console.log('player.convertBuffer middle', audioBuffer2);
-                console.log('player.convertBuffer after', audioBuffer3);
-                console.log('player.convertBuffer all', audioBuffer4);
-                
-                return audioBuffer4;
+                return audioBuffer;
             }
         };
 
         /* example additional code */
 
         var offset = -150,
-            start = 0,
-            stop = 0,
             backing = null,
             backingInstance = null,
             vocals = null,
@@ -191,14 +179,6 @@
             vocalsInstance = null;
 
         module.init();
-        
-        function calculateOffset() {
-            var num = start - backingInstance.startTime + (offset / 1000),
-                before = num % backing.duration,
-                after = backing.duration - ((num + (stop - start)) % backing.duration);
-            console.log('calculateOffset', backing.duration, (stop - start), before, after, offset);
-            return module.convertBuffer(vocalsBuffers, before, after);
-        }
 
         document.getElementById('play').addEventListener('click', function () {
             module.cue('90bpm.mp3', function (file) {
@@ -212,21 +192,18 @@
         });
 
         document.getElementById('record').addEventListener('click', function () {
+            vocals = null;
             module.record();
         });
         
         document.getElementById('recordStop').addEventListener('click', function () {
-            module.recordStop(function (buffers, startTime, stopTime) {
+            module.recordStop(function (buffers) {
                 vocalsBuffers = buffers;
-                start = startTime;
-                stop = stopTime;
+                vocals = module.offsetBuffer(vocalsBuffers, backingInstance, offset);
             });
         });
         
         document.getElementById('play2').addEventListener('click', function () {
-            if (!vocals) {
-                vocals = calculateOffset();
-            }
             vocalsInstance = module.play(vocals);
         });
 
@@ -237,7 +214,7 @@
         document.getElementById('offset').addEventListener('change', function (e) {
             offset = e.target.value;
             document.getElementById('offsetTotal').innerHTML = e.target.value;
-            vocals = calculateOffset();
+            vocals = module.offsetBuffer(vocalsBuffers, backingInstance, offset);
         });
     </script>
 </body>
