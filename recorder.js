@@ -1,6 +1,6 @@
 (function(window){
 
-  var WORKER_PATH = 'http://kmturley.github.io/Recorderjs/recorderWorker.js';
+  var WORKER_PATH = 'recorderWorker.js';
 
   var Recorder = function(source, cfg){
     var config = cfg || {};
