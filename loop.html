@@ -14,6 +14,7 @@
     <a href="#" id="recordStop">Record Stop</a>
     <a href="#" id="play2">Play</a>
     <a href="#" id="stop2">Stop</a>
+    <p>Offset <input type="range" min="-500" max="0" value="-150" id="offset" step="25" /> <span id="offsetTotal">-150</span>ms</p>
     <div id="player"></div>
     
     <script src="recorder.js"></script>
@@ -143,7 +144,7 @@
                     buffer3 = null,
                     buffer4 = null;
                 
-                console.log('player.convertBuffer', beforeLength, buffers[0].length, afterLength);
+                //console.log('player.convertBuffer', beforeLength, buffers[0].length, afterLength);
                 
                 // fill the gaps before and after the recording with white noise
                 for (channel = 0; channel < 2; channel += 1) {
@@ -152,8 +153,8 @@
                     buffer3 = audioBuffer3.getChannelData(channel);
                     buffer4 = audioBuffer4.getChannelData(channel);
                     for (i = 0; i < beforeLength; i += 1) {
-                        buffer[offset] = Math.random() * 2 - 1;
-                        buffer4[offset] = Math.random() * 2 - 1;
+                        buffer[offset] = 0; //Math.random() - 0.5;
+                        buffer4[offset] = 0; //Math.random() - 0.5;
                         offset += 1;
                     }
                     for (i = 0; i < buffers[channel].length; i += 1) {
@@ -162,8 +163,8 @@
                         offset += 1;
                     }
                     for (i = 0; i < afterLength; i += 1) {
-                        buffer3[offset] = Math.random() * 2 - 1;
-                        buffer4[offset] = Math.random() * 2 - 1;
+                        buffer3[offset] = 0; //Math.random() - 0.5;
+                        buffer4[offset] = 0; //Math.random() - 0.5;
                         offset += 1;
                     }
                 }
@@ -180,16 +181,27 @@
 
         /* example additional code */
 
-        var backing = null,
+        var offset = -150,
+            start = 0,
+            stop = 0,
+            backing = null,
             backingInstance = null,
             vocals = null,
             vocalsBuffers = null,
             vocalsInstance = null;
 
         module.init();
+        
+        function calculateOffset() {
+            var num = start - backingInstance.startTime + (offset / 1000),
+                before = num % backing.duration,
+                after = backing.duration - ((num + (stop - start)) % backing.duration);
+            console.log('calculateOffset', backing.duration, (stop - start), before, after, offset);
+            return module.convertBuffer(vocalsBuffers, before, after);
+        }
 
         document.getElementById('play').addEventListener('click', function () {
-            module.cue('https://s3.amazonaws.com/waves-app/facebook-730538623649878/aim.wav', function (file) {
+            module.cue('90bpm.mp3', function (file) {
                 backing = file;
                 backingInstance = module.play(backing);
             });
@@ -206,16 +218,26 @@
         document.getElementById('recordStop').addEventListener('click', function () {
             module.recordStop(function (buffers, startTime, stopTime) {
                 vocalsBuffers = buffers;
-                vocals = module.convertBuffer(vocalsBuffers, ((startTime - backingInstance.startTime) % backing.duration), (backing.duration - ((startTime - backingInstance.startTime + (stopTime - startTime)) % backing.duration)));
+                start = startTime;
+                stop = stopTime;
             });
         });
         
         document.getElementById('play2').addEventListener('click', function () {
+            if (!vocals) {
+                vocals = calculateOffset();
+            }
             vocalsInstance = module.play(vocals);
         });
 
         document.getElementById('stop2').addEventListener('click', function () {
             module.stop(vocalsInstance);
+        });
+        
+        document.getElementById('offset').addEventListener('change', function (e) {
+            offset = e.target.value;
+            document.getElementById('offsetTotal').innerHTML = e.target.value;
+            vocals = calculateOffset();
         });
     </script>
 </body>
