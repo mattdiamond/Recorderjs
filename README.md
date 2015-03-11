@@ -25,52 +25,51 @@ Creates a recorder instance. Instantiating an instance will prompt the user for 
 
 
 ---------
-#### Instance Properties
-
-    rec.recordTimeInMs
-
-**recordTimeInMs** is an integer with the length of the recording to date in ms.
-
-
----------
 #### Instance Methods
 
     rec.startRecording()
 
-**startRecording** will begin capturing audio.
+**startRecording** will begin capturing audio if the stream is ready.
 
     rec.pauseRecording()
 
 **pauseRecording** will keep the stream and monitoring alive, but will not be recording the buffers. Subsequent calls to **startRecording** will add to the current recording.
 
-    rec.stopRecording()
+    rec.doneRecording()
 
-**stopRecording** will cease capturing audio and disable the monitoring and mic input stream. Subsequent calls to **startRecording** will require authorization to access the input stream again before adding to the current recording.
+**doneRecording** will cease capturing audio and disable the monitoring and mic input stream. To start recording again, **initStream** will need to be called and authorization to access the input stream will be required again.
 
-    rec.clear()
+    rec.reset()
 
-This will clear the data buffers of any recorded data.
+**reset** will clear the data buffers of any recorded data and re-initalize the web worker.
 
     rec.enableMonitoring()
+
+**enableMonitoring** will pass the input stream to the destination node. Headphones are recommended if enabling monitoring to avoid feedback noise.
+
     rec.disableMonitoring()
 
-This will enable and disable the live monitoring of your mic input. Headphones are recommended if enabling monitoring to avoid feedback noise.
+**disableMonitoring will disable the live monitoring of your mic input.
 
     rec.getWav( callback[, mimeType] )
 
-This will generate a Blob object containing the recording in WAV format. The callback will be called with the Blob as its sole argument.
-
-In addition, you may specify the mime type of Blob to be returned (defaults to "audio/wav").
+**getWav** will generate a Blob object containing the recording in WAV format. The callback will be called with the Blob as its sole argument. In addition, you may specify the mime type of Blob to be returned (defaults to "audio/wav").
 
     rec.getOgg( callback[, mimeType] )
 
-This will generate a Blob object containing the opus encoded recording in an Ogg container. The callback will be called with the Blob as its sole argument. If audio was recorded as Wave, an error will be thrown
-
-In addition, you may specify the mime type of Blob to be returned (defaults to "audio/ogg").
+**getOgg** will generate a Blob object containing the opus encoded recording in an Ogg container. The callback will be called with the Blob as its sole argument. If audio was recorded as Wave, an error will be thrown. In addition, you may specify the mime type of Blob to be returned (defaults to "audio/ogg").
 
     rec.get( format, callback )
 
-This will return the recorded audio in format (supported values are "wav" or "ogg") as a Uint8Array to the callback. If the format type is not supported an error will be thrown.
+**get** will return the recorded audio in format (supported values are "wav" or "ogg") as a Uint8Array to the callback. If the format type is not supported an error will be thrown. This method will do nothing if a recording is in progress.
+
+    rec.getRecordingTime()
+
+**getRecordingTime** will return the duration of the recorded audio in ms.
+
+    rec.initStream( callback )
+
+**initStream** will initialize the input stream and call the callback on success. This is called internally when recorder is instantiated. This should only be needed if doneRecording() was called and the input stream has be terminated.
 
 
 ---------

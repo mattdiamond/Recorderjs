@@ -10,6 +10,12 @@ this.onmessage = function( e ){
       this.postMessage( data, [data.buffer] );
       break;
 
+    case 'doneRecording':
+      if ( this.recorder instanceof OggOpus ) {
+        this.recorder.encodeFinalFrame();
+      }
+      break;
+
     case 'init':
       if ( e.data.recordOpus ) {
         importScripts( 'oggopus.js' );

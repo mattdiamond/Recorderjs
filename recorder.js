@@ -22,15 +22,13 @@ var Recorder = function( config ){
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( config.bufferLength, config.numberOfChannels, config.numberOfChannels );
   this.scriptProcessorNode.onaudioprocess = function( e ){ that.recordBuffers( e.inputBuffer ); };
   this.scriptProcessorNode.connect( this.audioContext.destination );
-
-  this.resetWorker();
-  this.pauseRecording();
   this.timerIncrementInMs = config.bufferLength / this.audioContext.sampleRate * 1000;
-  this.initCallbackQueue = [];
+
+  this.reset();
   this.initStream( config.onReady );
 };
 
-Recorder.AudioContext = window.AudioContext || window.webkitAudioContext;
+Recorder.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
 
 Recorder.getUserMedia = function( options, success, failure ) {
   if ( navigator.getUserMedia ) { navigator.getUserMedia( options, success, failure ); }
@@ -54,30 +52,46 @@ Recorder.prototype.addHandler = function( callback ) {
   this.worker.addEventListener( "message", handler );
 };
 
-Recorder.prototype.clear = function(){
-  this.resetWorker();
-};
-
 Recorder.prototype.disableMonitoring = function(){
   this.config.enableMonitoring = false;
-  if (this.isInitialized) {
+  if ( this.sourceNode ) {
     this.sourceNode.disconnect( this.audioContext.destination );
+  }
+};
+
+Recorder.prototype.doneRecording = function(){
+  this.state = "stopped";
+  this.worker.postMessage({
+    command: "doneRecording"
+  });
+
+  if ( this.sourceNode ) {
+    this.sourceNode.disconnect( this.audioContext.destination );
+    this.sourceNode.disconnect( this.scriptProcessorNode );
+    this.stream.stop();
+    this.sourceNode = this.stream = undefined;
   }
 };
 
 Recorder.prototype.enableMonitoring = function(){
   this.config.enableMonitoring = true;
-  this.initStream( function(){
+  if ( this.sourceNode ) {
     this.sourceNode.connect( this.audioContext.destination );
-  });
+  }
 };
 
 Recorder.prototype.get = function( format, callback ) {
-  this.addHandler( callback );
-  this.worker.postMessage({ 
-    command: "get",
-    format: format
-  });
+  if ( this.state !== "recording" ) {
+    this.addHandler( callback );
+    this.worker.postMessage({ 
+      command: "get",
+      format: format
+    });
+  }
+};
+
+Recorder.prototype.getRecordingTime = function(){
+  return this.recordingTimeInMs;
 };
 
 Recorder.prototype.getWav = function( callback, mimeType ) {
@@ -93,61 +107,50 @@ Recorder.prototype.getOgg = function( callback, mimeType ) {
 };
 
 Recorder.prototype.initStream = function( success ){
-  success = success || function(){};
-  if ( this.isInitialized ) {
-    success.call( this );
+  if ( this.sourceNode ) {
+    return success();
   }
 
-  else {
-    this.initCallbackQueue.push( success );
-
-    if ( !this.isInitializing ) {
-      var that = this;
-      this.isInitializing = true;
-
-      Recorder.getUserMedia(
-        { audio: {
-            optional: [],
-            mandatory: {
-              googEchoCancellation: false,
-              googAutoGainControl: false,
-              googNoiseSuppression: false,
-              googHighpassFilter: false
-            }
-        }},
-        function( stream ){ that.onStreamInit( stream ); }, 
-        function( e ){ throw e; }
-      );
+  this.state = "initializing";
+  var that = this;
+  var audioOptions = { 
+    optional: [],
+    mandatory: {
+      googEchoCancellation: false,
+      googAutoGainControl: false,
+      googNoiseSuppression: false,
+      googHighpassFilter: false
     }
-  }
+  };
+
+  Recorder.getUserMedia(
+    { audio : audioOptions },
+    function( stream ){ that.onStreamInit( stream, success ); }, 
+    function( e ){ throw e; }
+  );
 };
 
-Recorder.prototype.isRecording = function(){
-  return !this.isPaused;
-};
-
-Recorder.prototype.onStreamInit = function( stream ){
+Recorder.prototype.onStreamInit = function( stream, success ){
+  this.state = "paused";
   this.stream = stream;
   this.sourceNode = this.audioContext.createMediaStreamSource( stream );
   this.sourceNode.connect( this.scriptProcessorNode );
-  this.isInitializing = false;
-  this.isInitialized = true;
 
   if ( this.config.enableMonitoring ) {
     this.sourceNode.connect( this.audioContext.destination );
   }
 
-  while ( this.initCallbackQueue.length ) {
-    this.initCallbackQueue.shift().call( this );
-  }
+  success();
 };
 
 Recorder.prototype.pauseRecording = function(){
-  this.isPaused = true;
+  if ( this.state === "recording" ){
+    this.state = "paused";
+  }
 };
 
 Recorder.prototype.recordBuffers = function( inputBuffer ){
-  if (!this.isPaused) {
+  if ( this.state === "recording" ) {
 
     this.recordingTimeInMs += this.timerIncrementInMs;
 
@@ -163,10 +166,12 @@ Recorder.prototype.recordBuffers = function( inputBuffer ){
   }
 };
 
-Recorder.prototype.resetWorker = function(){
+Recorder.prototype.reset = function(){
+
   if ( this.worker ) {
     this.worker.terminate();
   }
+
   this.recordingTimeInMs = 0;
   this.worker = new Worker( this.config.workerPath );
   this.worker.postMessage({ 
@@ -181,15 +186,7 @@ Recorder.prototype.resetWorker = function(){
 };
 
 Recorder.prototype.startRecording = function(){
-  this.initStream( function(){ this.isPaused = false; } );
-};
-
-Recorder.prototype.stopRecording = function(){
-  this.pauseRecording();
-  if ( this.isInitialized ) {
-    this.stream.stop();
-    this.sourceNode.disconnect( this.audioContext.destination );
-    this.sourceNode.disconnect( this.scriptProcessorNode );
-    this.isInitialized = false;
-  }
+  if ( this.state === "paused" ){
+    this.state = "recording";
+  };
 };
