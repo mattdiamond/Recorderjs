@@ -18,7 +18,7 @@
   <p>If recording with opus encoding, then sampleRate and bitDepth values will be forced to 16bit and 48000Hz.</p>
 
   <h2>Options</h2>
-  
+
   <div>
     <label>enableMonitoring</label>
     <input type="checkbox" id="enableMonitoring"/>
@@ -65,64 +65,60 @@
     var recorder;
 
     init.addEventListener( "click", function(){
-      screenLogger('Initializing.');
 
-      if ( recorder ) { 
-        recorder.doneRecording();
-      }
-
-      recorder = new Recorder({
+      var options = {
         enableMonitoring: enableMonitoring.checked,
         numberOfChannels: numberOfChannels.value,
         bitDepth: bitDepth.options[ bitDepth.selectedIndex ].value,
         recordOpus: recordOpus.checked,
         sampleRate: sampleRate.value,
-        onReady: function(){
-          screenLogger('Initialized.');
-          start.addEventListener("click", startRecording);
-          pause.addEventListener("click", pauseRecording);
-          done.addEventListener("click", doneRecording);
-          init.disabled = true;
-          start.disabled = false;
-        }
-      });
+        onReady: initialized
+      };
+
+      screenLogger('Initializing with options:', options);
+      recorder = new Recorder( options );
     });
 
+    function initialized(){
+      screenLogger('Initialized');
+      start.addEventListener("click", startRecording);
+      pause.addEventListener("click", pauseRecording);
+      done.addEventListener("click", doneRecording);
+      init.disabled = true;
+      start.disabled = false;
+    }
+
     function startRecording() {
-      screenLogger('Recording...');
       recorder.startRecording();
+      screenLogger('Recording...');
       start.disabled = true;
       pause.disabled = false;
       done.disabled = false;
     }
 
     function pauseRecording() {
+      recorder.pauseRecording();
       screenLogger('Recording paused.');
-      recorder.startRecording();
       start.disabled = false;
       pause.disabled = true;
       done.disabled = false;
     }
 
     function doneRecording() {
-      screenLogger('Recording complete.');
-      screenLogger('Recording time in ms:', recorder.getRecordingTime() );
+      var date = new Date().toISOstring();
       recorder.doneRecording();
-      start.disabled = true;
+      screenLogger('Recording complete.');
+      screenLogger('Recording time in ms:', recorder.getRecordingTime() );      start.disabled = true;
       pause.disabled = true;
       done.disabled = true;
       init.disabled = false;
 
       recorder.getWav( function( wavBlob ) {
-        if ( wavBlob ) {
-          createDownloadLink( wavBlob, 'recording.wav' );
-        }
+        if ( wavBlob ) createDownloadLink( wavBlob, date+'.wav' );
       });
 
       recorder.getOgg( function( oggBlob ) {
-        if ( oggBlob ) {
-          createDownloadLink( oggBlob, 'recording.ogg' );
-        }
+        if ( oggBlob ) createDownloadLink( oggBlob, date+'.ogg' );
       });
     }
 
