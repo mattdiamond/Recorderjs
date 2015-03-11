@@ -65,18 +65,15 @@
     var recorder;
 
     init.addEventListener( "click", function(){
-
-      var options = {
+      screenLogger('Initializing');
+      recorder = new Recorder({
         enableMonitoring: enableMonitoring.checked,
         numberOfChannels: numberOfChannels.value,
         bitDepth: bitDepth.options[ bitDepth.selectedIndex ].value,
         recordOpus: recordOpus.checked,
         sampleRate: sampleRate.value,
         onReady: initialized
-      };
-
-      screenLogger('Initializing with options:', options);
-      recorder = new Recorder( options );
+      });
     });
 
     function initialized(){
@@ -105,10 +102,11 @@
     }
 
     function doneRecording() {
-      var date = new Date().toISOstring();
+      var date = new Date().toISOString();
       recorder.doneRecording();
       screenLogger('Recording complete.');
-      screenLogger('Recording time in ms:', recorder.getRecordingTime() );      start.disabled = true;
+      screenLogger('Recording time in ms:', recorder.getRecordingTime() );      
+      start.disabled = true;
       pause.disabled = true;
       done.disabled = true;
       init.disabled = false;
