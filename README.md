@@ -15,12 +15,12 @@ Creates a recorder instance. Instantiating an instance will prompt the user for 
 #### Config
 
 - **enableMonitoring** - (*optional*) If you want the hear the recorder input live. Defaults to false
-- **bitDepth** - (*optional*) Specifies the bitdepth to record at. Defaults to 16. Supported values are 8, 16, 24, 32. If recordOpus is true, this value will be ignored.
+- **bitDepth** - (*optional*) Specifies the bitdepth to record at. Defaults to 16. Supported values are 8, 16, 24, 32. If recordOpus is true, this value will be forced to 16.
 - **bufferLength** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
 - **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 1. More than two channels has not been tested.
 - **onReady** - (*optional*) Callback when the stream has been initialized.
 - **recordOpus** - (*optional*) Specifies if recorder should record using the opus encoder. Defaults to true.
-- **sampleRate** - (*optional*) Specifies the sample rate to record at. Defaults to device sample rate. If different than native rate, the audio will be resampled using a linear interpolation algorithm.  If recordOpus is true, this value will be ignored.
+- **sampleRate** - (*optional*) Specifies the sample rate to record at. Defaults to device sample rate. If different than native rate, the audio will be resampled using a linear interpolation algorithm.  If recordOpus is true, this value will be forced to 48000.
 - **workerPath** - (*optional*) Path to recorder.js worker script. Defaults to 'recorderWorker.js'
 
 
