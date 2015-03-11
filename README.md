@@ -49,7 +49,7 @@ Creates a recorder instance. Instantiating an instance will prompt the user for 
 
     rec.disableMonitoring()
 
-**disableMonitoring will disable the live monitoring of your mic input.
+**disableMonitoring** will disable the live monitoring of your mic input.
 
     rec.getWav( callback[, mimeType] )
 
