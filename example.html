@@ -94,7 +94,7 @@
       recorder.startRecording();
       start.disabled = true;
       pause.disabled = false;
-      stop.disabled = false;
+      done.disabled = false;
     }
 
     function pauseRecording() {
@@ -102,7 +102,7 @@
       recorder.startRecording();
       start.disabled = false;
       pause.disabled = true;
-      stop.disabled = false;
+      done.disabled = false;
     }
 
     function doneRecording() {
@@ -111,7 +111,7 @@
       recorder.doneRecording();
       start.disabled = true;
       pause.disabled = true;
-      stop.disabled = true;
+      done.disabled = true;
       init.disabled = false;
 
       recorder.getWav( function( wavBlob ) {
