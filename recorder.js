@@ -9,7 +9,7 @@ var Recorder = function( config ){
   this.audioContext = new Recorder.AudioContext();
 
   config = config || {};
-  config.bitDepth = config.bitDepth || 16; // Only respected if recording PCM
+  config.bitDepth = config.bitDepth || 16;
   config.bufferLength = config.bufferLength || 4096;
   config.enableMonitoring = config.enableMonitoring || false;
   config.numberOfChannels = config.numberOfChannels || 1;

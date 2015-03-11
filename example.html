@@ -2,12 +2,12 @@
 
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>Live input record and playback</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Live input record and playback</title>
   <script src="recorder.js"></script>
   <style type='text/css'>
     ul { list-style: none; }
-    #recordingslist audio { display: block; margin-bottom: 10px; }
+    li { margin: 1em; }
   </style>
 </head>
 <body>
@@ -133,8 +133,8 @@
       link.innerHTML = link.download;
 
       var li = document.createElement('li');
-      li.appendChild(audio);
       li.appendChild(link);
+      li.appendChild(audio);
 
       recordingslist.appendChild(li);
     }
