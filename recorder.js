@@ -62,13 +62,15 @@
       worker.postMessage({ command: 'getBuffer' })
     }
 
-    this.exportWAV = function(cb, type){
+    this.exportWAV = function(cb, type, before, after){
       currCallback = cb || config.callback;
       type = type || config.type || 'audio/wav';
       if (!currCallback) throw new Error('Callback not set');
       worker.postMessage({
         command: 'exportWAV',
-        type: type
+        type: type,
+        before: before,
+        after: after
       });
     }
 

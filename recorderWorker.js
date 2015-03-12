@@ -1,5 +1,4 @@
 var recLength = 0,
-    maxLength = 0,
   recBuffers = [],
   sampleRate,
   numChannels;
@@ -13,13 +12,10 @@ this.onmessage = function(e){
       record(e.data.buffer);
       break;
     case 'exportWAV':
-      exportWAV(e.data.type);
+      exportWAV(e.data.type, e.data.before, e.data.after);
       break;
     case 'getBuffer':
       getBuffer();
-      break;
-    case 'setLength':
-      setLength(e.data.max);
       break;
     case 'clear':
       clear();
@@ -30,7 +26,6 @@ this.onmessage = function(e){
 function init(config){
   sampleRate = config.sampleRate;
   numChannels = config.numChannels;
-  maxLength = config.maxLength;
   initBuffers();
 }
 
@@ -41,19 +36,45 @@ function record(inputBuffer){
   recLength += inputBuffer[0].length;
 }
 
-function exportWAV(type){
-  var buffers = [];
-  for (var channel = 0; channel < numChannels; channel++){
-      if (maxLength) {
-        buffers.push(mergeBuffers(recBuffers[channel], recLength).subarray(0, maxLength));
-      } else {
-        buffers.push(mergeBuffers(recBuffers[channel], recLength));
-      }
+function exportWAV(type, before, after){
+  if (!before) { before = 0; }
+  if (!after) { after = 0; }
+    
+  var channel = 0,
+      buffers = [];
+  for (channel = 0; channel < numChannels; channel++){
+    buffers.push(mergeBuffers(recBuffers[channel], recLength));
   }
+    
+    var i = 0,
+        offset = 0,
+        newbuffers = [];
+    
+    for (channel = 0; channel < numChannels; channel += 1) {
+        offset = 0;
+        newbuffers[channel] = new Float32Array(before + recLength + after);
+        if (before > 0) {
+            for (i = 0; i < before; i += 1) {
+                newbuffers[channel].set([0], offset);
+                offset += 1;
+            }
+        }
+        newbuffers[channel].set(buffers[channel], offset);
+        offset += buffers[channel].length;
+        if (after > 0) {
+            for (i = 0; i < after; i += 1) {
+                newbuffers[channel].set([0], offset);
+                offset += 1;
+            }
+        }
+    }
+
+    console.log('exportWAV', before, buffers[0].length, after, newbuffers[0].length);
+    
   if (numChannels === 2){
-      var interleaved = interleave(buffers[0], buffers[1]);
+      var interleaved = interleave(newbuffers[0], newbuffers[1]);
   } else {
-      var interleaved = buffers[0];
+      var interleaved = newbuffers[0];
   }
   var dataview = encodeWAV(interleaved);
   var audioBlob = new Blob([dataview], { type: type });
@@ -64,17 +85,9 @@ function exportWAV(type){
 function getBuffer(){
   var buffers = [];
   for (var channel = 0; channel < numChannels; channel++){
-      if (maxLength) {
-        buffers.push(mergeBuffers(recBuffers[channel], recLength).subarray(0, maxLength));
-      } else {
-        buffers.push(mergeBuffers(recBuffers[channel], recLength));
-      }
+      buffers.push(mergeBuffers(recBuffers[channel], recLength));
   }
   this.postMessage(buffers);
-}
-
-function setLength(max){
-    maxLength = max;
 }
 
 function clear(){
