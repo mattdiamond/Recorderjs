@@ -15,6 +15,8 @@
     <a href="#" id="play2">Play</a>
     <a href="#" id="stop2">Stop</a>
     <p>Offset <input type="range" min="-500" max="0" value="-150" id="offset" step="25" /> <span id="offsetTotal">-150</span>ms</p>
+    <h1>Downloads</h1>
+    <div id="downloads"></div>
     <div id="player"></div>
     
     <script src="recorder.js"></script>
@@ -109,6 +111,7 @@
             record: function () {
                 console.log('player.record', this.context.currentTime);
                 // should start time be recorded before or after the record function?
+                this.recorder.clear();
                 this.recorder.startTime = this.context.currentTime;
                 this.recorder.record();
             },
@@ -121,7 +124,6 @@
                 this.recorder.stop();
                 this.recorder.getBuffer(function (buffers) {
                     callback(buffers);
-                    me.recorder.clear();
                 });
             },
             /**
@@ -135,6 +137,19 @@
                 }
                 return buffer;
             },
+            /**
+             * @method getOffset
+             */
+            getOffset: function (vocalsBuffers, backingInstance, offset) {
+                var vocalsRecording = this.createBuffer(vocalsBuffers, 2),
+                    diff = this.recorder.startTime - backingInstance.startTime + (offset / 1000),
+                    before = Math.round((diff % backingInstance.buffer.duration) * this.context.sampleRate),
+                    after = Math.round((backingInstance.buffer.duration - ((diff + vocalsRecording.duration) % backingInstance.buffer.duration)) * this.context.sampleRate);
+                return {
+                    before: before,
+                    after: after
+                };
+            }
             /**
              * @method offsetBuffer
              */
@@ -150,6 +165,12 @@
                     after = Math.round((backingInstance.buffer.duration - ((diff + vocalsRecording.duration) % backingInstance.buffer.duration)) * this.context.sampleRate),
                     audioBuffer = this.context.createBuffer(channelTotal, before + vocalsBuffers[0].length + after, this.context.sampleRate),
                     buffer = null;
+                
+                console.log('player.offsetBuffer', before, vocalsBuffers[0].length, after);
+                
+                window.before = before;
+                window.after = after;
+                
                 for (channel = 0; channel < channelTotal; channel += 1) {
                     buffer = audioBuffer.getChannelData(channel);
                     for (i = 0; i < before; i += 1) {
@@ -200,6 +221,40 @@
             module.recordStop(function (buffers) {
                 vocalsBuffers = buffers;
                 vocals = module.offsetBuffer(vocalsBuffers, backingInstance, offset);
+                
+                // export original recording
+                module.recorder.exportWAV(function(blob) {
+                    var url = URL.createObjectURL(blob),
+                        li = document.createElement('li'),
+                        au = document.createElement('audio'),
+                        hf = document.createElement('a');
+
+                    au.controls = true;
+                    au.src = url;
+                    hf.href = url;
+                    hf.download = new Date().toISOString() + '-original.wav';
+                    hf.innerHTML = hf.download;
+                    li.appendChild(au);
+                    li.appendChild(hf);
+                    document.getElementById('downloads').appendChild(li);
+                    
+                    // export modified/filled recording
+                    module.recorder.exportWAV(function(blob) {
+                        var url = URL.createObjectURL(blob),
+                            li = document.createElement('li'),
+                            au = document.createElement('audio'),
+                            hf = document.createElement('a');
+
+                        au.controls = true;
+                        au.src = url;
+                        hf.href = url;
+                        hf.download = new Date().toISOString() + '-modified.wav';
+                        hf.innerHTML = hf.download;
+                        li.appendChild(au);
+                        li.appendChild(hf);
+                        document.getElementById('downloads').appendChild(li);
+                    }, 'audio/wav', window.before, window.after);
+                });
             });
         });
         
