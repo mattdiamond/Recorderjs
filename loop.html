@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Recorder.js Loop</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+</head>
+<body>
+    <h1>Backing</h1>
+    <a href="#" id="play">Play</a>
+    <a href="#" id="stop">Stop</a>
+    <h1>Vocals</h1>
+    <a href="#" id="record">Record</a>
+    <a href="#" id="recordStop">Record Stop</a>
+    <a href="#" id="play2">Play</a>
+    <a href="#" id="stop2">Stop</a>
+    <p>Offset <input type="range" min="-500" max="0" value="-150" id="offset" step="25" /> <span id="offsetTotal">-150</span>ms</p>
+    <h1>Downloads</h1>
+    <div id="downloads"></div>
+    <div id="player"></div>
+    
+    <script src="recorder.js"></script>
+    <script>
+        /**
+         * Web audio record
+         * by kmturley
+         **/
+
+        var module = {
+            /**
+             * @method init
+             */
+            init: function () {
+                var me = this;
+
+                window.onload = function () {
+                    try {
+                        window.AudioContext = window.AudioContext || window.webkitAudioContext  || window.mozAudioContext || window.msAudioContext;
+                        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+                        window.URL = window.URL || window.webkitURL || window.mozURL  || window.msURL;
+                        me.context = new window.AudioContext();
+                        me.context.createGain = me.context.createGain || me.context.createGainNode;
+                    } catch (e) {
+                        window.alert('Your browser does not support WebAudio, try Google Chrome');
+                    }
+
+                    if (navigator.getUserMedia) {
+                        navigator.getUserMedia({audio: true}, function (stream) {
+                            var input = me.context.createMediaStreamSource(stream);
+                            me.recorder = new Recorder(input);
+                        }, function (e) {
+                            window.alert('Please enable your microphone to begin recording');
+                        });
+                    } else {
+                        window.alert('Your browser does not support recording, try Google Chrome');
+                    }
+                };
+            },
+            /**
+             * @method cue
+             */
+            cue: function (url, callback) {
+                console.log('player.cue', url);
+                var me = this;
+                if (this.request) {
+                    this.request.abort();
+                } else {
+                    this.request = new XMLHttpRequest();
+                }
+                this.request.open('GET', url, true);
+                this.request.responseType = 'arraybuffer';
+                this.request.onload = function () {
+                    console.log('player.cue.complete');
+                    me.context.decodeAudioData(me.request.response, function (buffer) {
+                        callback(buffer);
+                    });
+                };
+                this.request.send();
+            },
+            /**
+             * @method play
+             */
+            play: function (data) {
+                console.log('player.play', this.context.currentTime, data);
+                var me = this,
+                    source = this.context.createBufferSource(),
+                    gainNode = this.context.createGain();
+                if (!source.start) { source.start = source.noteOn; }
+                if (!source.stop) { source.stop = source.noteOff; }
+                source.connect(gainNode);
+                gainNode.connect(this.context.destination);
+                source.buffer = data;
+                source.loop = true;
+                source.startTime = this.context.currentTime;
+                source.start(0);
+                console.log('player.play.duration', source.duration);
+                return source;
+            },
+            /**
+             * @method stop
+             */
+            stop: function (source) {
+                console.log('player.stop', this.context.currentTime);
+                if (source) {
+                    source.stop(0);
+                }
+            },
+            /**
+             * @method record
+             */
+            record: function () {
+                console.log('player.record', this.context.currentTime);
+                // should start time be recorded before or after the record function?
+                this.recorder.clear();
+                this.recorder.startTime = this.context.currentTime;
+                this.recorder.record();
+            },
+            /**
+             * @method record
+             */
+            recordStop: function (callback) {
+                var me = this;
+                console.log('player.recordStop', this.context.currentTime);
+                this.recorder.stop();
+                this.recorder.getBuffer(function (buffers) {
+                    callback(buffers);
+                });
+            },
+            /**
+             * @method createBuffer
+             */
+            createBuffer: function (buffers, channelTotal) {
+                var channel = 0,
+                    buffer = this.context.createBuffer(channelTotal, buffers[0].length, this.context.sampleRate);
+                for (channel = 0; channel < channelTotal; channel += 1) {
+                    buffer.getChannelData(channel).set(buffers[channel]);
+                }
+                return buffer;
+            },
+            /**
+             * @method getOffset
+             */
+            getOffset: function (vocalsRecording, backingInstance, offset) {
+                var diff = this.recorder.startTime - backingInstance.startTime + (offset / 1000);
+                return {
+                    before: Math.round((diff % backingInstance.buffer.duration) * this.context.sampleRate),
+                    after: Math.round((backingInstance.buffer.duration - ((diff + vocalsRecording.duration) % backingInstance.buffer.duration)) * this.context.sampleRate)
+                };
+            },
+            /**
+             * @method offsetBuffer
+             */
+            offsetBuffer: function (vocalsBuffers, backingInstance, offset, before, after) {
+                console.log('player.offsetBuffer', vocalsBuffers, backingInstance, offset, before, after);
+                var i = 0,
+                    channel = 0,
+                    channelTotal = 2,
+                    num = 0,
+                    diff = this.recorder.startTime - backingInstance.startTime + (offset / 1000),
+                    audioBuffer = this.context.createBuffer(channelTotal, before + vocalsBuffers[0].length + after, this.context.sampleRate),
+                    buffer = null;
+                for (channel = 0; channel < channelTotal; channel += 1) {
+                    buffer = audioBuffer.getChannelData(channel);
+                    for (i = 0; i < before; i += 1) {
+                        buffer[num] = 0;
+                        num += 1;
+                    }
+                    for (i = 0; i < vocalsBuffers[channel].length; i += 1) {
+                        buffer[num] = vocalsBuffers[channel][i];
+                        num += 1;
+                    }
+                    for (i = 0; i < after; i += 1) {
+                        buffer[num] = 0;
+                        num += 1;
+                    }
+                }
+                return audioBuffer;
+            }
+        };
+
+        /* example additional code */
+
+        var offset = -150,
+            backing = null,
+            backingInstance = null,
+            vocals = null,
+            vocalsBuffers = null,
+            vocalsInstance = null,
+            vocalsOffset = null,
+            vocalsRecording = null;
+
+        module.init();
+
+        document.getElementById('play').addEventListener('click', function () {
+            module.cue('90bpm.wav', function (file) {
+                backing = file;
+                backingInstance = module.play(backing);
+            });
+        });
+
+        document.getElementById('stop').addEventListener('click', function () {
+            module.stop(backingInstance);
+        });
+
+        document.getElementById('record').addEventListener('click', function () {
+            vocals = null;
+            module.record();
+        });
+        
+        document.getElementById('recordStop').addEventListener('click', function () {
+            module.recordStop(function (buffers) {
+                vocalsBuffers = buffers;
+                vocalsRecording = module.createBuffer(vocalsBuffers, 2);
+                vocalsOffset = module.getOffset(vocalsRecording, backingInstance, offset);
+                vocals = module.offsetBuffer(vocalsBuffers, backingInstance, offset, vocalsOffset.before, vocalsOffset.after);
+
+                // export original recording
+                module.recorder.exportWAV(function(blob) {
+                    var url = URL.createObjectURL(blob),
+                        li = document.createElement('li'),
+                        au = document.createElement('audio'),
+                        hf = document.createElement('a');
+
+                    au.controls = true;
+                    au.src = url;
+                    hf.href = url;
+                    hf.download = new Date().toISOString() + '-original.wav';
+                    hf.innerHTML = hf.download;
+                    li.appendChild(au);
+                    li.appendChild(hf);
+                    document.getElementById('downloads').appendChild(li);
+                    
+                    // export modified/filled recording
+                    module.recorder.exportWAV(function(blob) {
+                        var url = URL.createObjectURL(blob),
+                            li = document.createElement('li'),
+                            au = document.createElement('audio'),
+                            hf = document.createElement('a');
+
+                        au.controls = true;
+                        au.src = url;
+                        hf.href = url;
+                        hf.download = new Date().toISOString() + '-modified.wav';
+                        hf.innerHTML = hf.download;
+                        li.appendChild(au);
+                        li.appendChild(hf);
+                        document.getElementById('downloads').appendChild(li);
+                    }, 'audio/wav', vocalsOffset.before, vocalsOffset.after);
+                });
+            });
+        });
+        
+        document.getElementById('play2').addEventListener('click', function () {
+            vocalsInstance = module.play(vocals);
+        });
+
+        document.getElementById('stop2').addEventListener('click', function () {
+            module.stop(vocalsInstance);
+        });
+        
+        document.getElementById('offset').addEventListener('change', function (e) {
+            offset = e.target.value;
+            document.getElementById('offsetTotal').innerHTML = e.target.value;
+            vocals = module.offsetBuffer(vocalsBuffers, backingInstance, offset);
+        });
+    </script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 
   var Recorder = function(source, cfg){
     var config = cfg || {};
-    var bufferLen = config.bufferLen || 4096;
+    var bufferLen = config.bufferLen || 8192; //4096
     var numChannels = config.numChannels || 2;
     this.context = source.context;
     this.node = (this.context.createScriptProcessor ||
@@ -52,19 +52,25 @@
     this.clear = function(){
       worker.postMessage({ command: 'clear' });
     }
+    
+    this.setLength = function(max) {
+      worker.postMessage({ command: 'setLength', max: max })
+    }
 
     this.getBuffer = function(cb) {
       currCallback = cb || config.callback;
       worker.postMessage({ command: 'getBuffer' })
     }
 
-    this.exportWAV = function(cb, type){
+    this.exportWAV = function(cb, type, before, after){
       currCallback = cb || config.callback;
       type = type || config.type || 'audio/wav';
       if (!currCallback) throw new Error('Callback not set');
       worker.postMessage({
         command: 'exportWAV',
-        type: type
+        type: type,
+        before: before,
+        after: after
       });
     }
 
