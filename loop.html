@@ -140,37 +140,25 @@
             /**
              * @method getOffset
              */
-            getOffset: function (vocalsBuffers, backingInstance, offset) {
-                var vocalsRecording = this.createBuffer(vocalsBuffers, 2),
-                    diff = this.recorder.startTime - backingInstance.startTime + (offset / 1000),
-                    before = Math.round((diff % backingInstance.buffer.duration) * this.context.sampleRate),
-                    after = Math.round((backingInstance.buffer.duration - ((diff + vocalsRecording.duration) % backingInstance.buffer.duration)) * this.context.sampleRate);
+            getOffset: function (vocalsRecording, backingInstance, offset) {
+                var diff = this.recorder.startTime - backingInstance.startTime + (offset / 1000);
                 return {
-                    before: before,
-                    after: after
+                    before: Math.round((diff % backingInstance.buffer.duration) * this.context.sampleRate),
+                    after: Math.round((backingInstance.buffer.duration - ((diff + vocalsRecording.duration) % backingInstance.buffer.duration)) * this.context.sampleRate)
                 };
-            }
+            },
             /**
              * @method offsetBuffer
              */
-            offsetBuffer: function (vocalsBuffers, backingInstance, offset) {
-                console.log('player.offsetBuffer', vocalsBuffers, backingInstance, offset);
+            offsetBuffer: function (vocalsBuffers, backingInstance, offset, before, after) {
+                console.log('player.offsetBuffer', vocalsBuffers, backingInstance, offset, before, after);
                 var i = 0,
                     channel = 0,
                     channelTotal = 2,
                     num = 0,
-                    vocalsRecording = this.createBuffer(vocalsBuffers, channelTotal),
                     diff = this.recorder.startTime - backingInstance.startTime + (offset / 1000),
-                    before = Math.round((diff % backingInstance.buffer.duration) * this.context.sampleRate),
-                    after = Math.round((backingInstance.buffer.duration - ((diff + vocalsRecording.duration) % backingInstance.buffer.duration)) * this.context.sampleRate),
                     audioBuffer = this.context.createBuffer(channelTotal, before + vocalsBuffers[0].length + after, this.context.sampleRate),
                     buffer = null;
-                
-                console.log('player.offsetBuffer', before, vocalsBuffers[0].length, after);
-                
-                window.before = before;
-                window.after = after;
-                
                 for (channel = 0; channel < channelTotal; channel += 1) {
                     buffer = audioBuffer.getChannelData(channel);
                     for (i = 0; i < before; i += 1) {
@@ -197,12 +185,14 @@
             backingInstance = null,
             vocals = null,
             vocalsBuffers = null,
-            vocalsInstance = null;
+            vocalsInstance = null,
+            vocalsOffset = null,
+            vocalsRecording = null;
 
         module.init();
 
         document.getElementById('play').addEventListener('click', function () {
-            module.cue('90bpm.mp3', function (file) {
+            module.cue('90bpm.wav', function (file) {
                 backing = file;
                 backingInstance = module.play(backing);
             });
@@ -220,8 +210,10 @@
         document.getElementById('recordStop').addEventListener('click', function () {
             module.recordStop(function (buffers) {
                 vocalsBuffers = buffers;
-                vocals = module.offsetBuffer(vocalsBuffers, backingInstance, offset);
-                
+                vocalsRecording = module.createBuffer(vocalsBuffers, 2);
+                vocalsOffset = module.getOffset(vocalsRecording, backingInstance, offset);
+                vocals = module.offsetBuffer(vocalsBuffers, backingInstance, offset, vocalsOffset.before, vocalsOffset.after);
+
                 // export original recording
                 module.recorder.exportWAV(function(blob) {
                     var url = URL.createObjectURL(blob),
@@ -253,7 +245,7 @@
                         li.appendChild(au);
                         li.appendChild(hf);
                         document.getElementById('downloads').appendChild(li);
-                    }, 'audio/wav', window.before, window.after);
+                    }, 'audio/wav', vocalsOffset.before, vocalsOffset.after);
                 });
             });
         });
