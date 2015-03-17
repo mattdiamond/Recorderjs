@@ -11,7 +11,7 @@ this.onmessage = function( e ){
       break;
 
     case 'doneRecording':
-      if ( this.recorder instanceof OggOpus ) {
+      if ( OggOpus && this.recorder instanceof OggOpus ) {
         this.recorder.encodeFinalFrame();
       }
       break;
