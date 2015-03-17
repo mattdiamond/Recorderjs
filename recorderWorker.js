@@ -11,7 +11,7 @@ this.onmessage = function( e ){
       break;
 
     case 'doneRecording':
-      if ( this.recorder && this.recorder.encodeFinalFrame ) {
+      if ( this.recorder.encodeFinalFrame ) {
         this.recorder.encodeFinalFrame();
       }
       break;
