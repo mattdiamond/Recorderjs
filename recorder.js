@@ -17,8 +17,13 @@ var Recorder = function( config ){
   config.sampleRate = config.sampleRate || this.audioContext.sampleRate;
   config.workerPath = config.workerPath || 'recorderWorker.js';
   config.onReady = config.onReady || function(){};
-  this.config = config;
 
+  if ( config.recordOpus ) {
+    config.sampleRate = 48000;
+    config.bitDepth = 16;
+  }
+
+  this.config = config;
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( config.bufferLength, config.numberOfChannels, config.numberOfChannels );
   this.scriptProcessorNode.onaudioprocess = function( e ){ that.recordBuffers( e.inputBuffer ); };
   this.scriptProcessorNode.connect( this.audioContext.destination );
@@ -66,10 +71,15 @@ Recorder.prototype.doneRecording = function(){
   });
 
   if ( this.sourceNode ) {
+    if ( this.filterNode ) {
+      this.filterNode2.disconnect( this.scriptProcessorNode );
+      this.filterNode.disconnect( this.filterNode2 );
+      this.sourceNode.disconnect( this.filterNode );
+    }
     this.sourceNode.disconnect( this.audioContext.destination );
     this.sourceNode.disconnect( this.scriptProcessorNode );
     this.stream.stop();
-    this.sourceNode = this.stream = undefined;
+    this.sourceNode = this.filterNode = this.filterNode2 = this.stream = undefined;
   }
 };
 
@@ -134,7 +144,23 @@ Recorder.prototype.onStreamInit = function( stream, success ){
   this.state = "paused";
   this.stream = stream;
   this.sourceNode = this.audioContext.createMediaStreamSource( stream );
-  this.sourceNode.connect( this.scriptProcessorNode );
+
+  // -24db / octave buttersworth to avoid aliasing when resampling
+  if ( this.config.sampleRate < this.audioContext.sampleRate ) {
+    this.filterNode = this.audioContext.createBiquadFilter();
+    this.filterNode2 = this.audioContext.createBiquadFilter();
+    this.filterNode.type = this.filterNode2.type = "lowpass";
+    this.filterNode.frequency.value = this.filterNode2.frequency.value = this.config.sampleRate / 2;
+    this.filterNode.Q.value = 1.30657;
+    this.filterNode2.Q.value = 0.54120;
+    this.sourceNode.connect( this.filterNode );
+    this.filterNode.connect( this.filterNode2 );
+    this.filterNode2.connect( this.scriptProcessorNode );
+  }
+
+  else {
+    this.sourceNode.connect( this.scriptProcessorNode );
+  }
 
   if ( this.config.enableMonitoring ) {
     this.sourceNode.connect( this.audioContext.destination );
