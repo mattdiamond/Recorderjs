@@ -6,8 +6,6 @@ var Recorder = function( config ){
     throw "Recording is not supported in this browser";
   }
 
-  this.audioContext = new Recorder.AudioContext();
-
   config = config || {};
   config.bitDepth = config.bitDepth || 16;
   config.bufferLength = config.bufferLength || 4096;
@@ -34,7 +32,8 @@ var Recorder = function( config ){
   this.initStream( config.onReady );
 };
 
-Recorder.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
+Recorder.AudioContextConstructor = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
+Recorder.audioContext = new Recorder.AudioContextConstructor();
 
 Recorder.getUserMedia = function( options, success, failure ) {
   if ( navigator.getUserMedia ) { navigator.getUserMedia( options, success, failure ); }
@@ -45,7 +44,7 @@ Recorder.getUserMedia = function( options, success, failure ) {
 };
 
 Recorder.isRecordingSupported = function(){
-  return Recorder.AudioContext && ( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia );
+  return Recorder.audioContext && ( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia );
 };
 
 Recorder.prototype.addHandler = function( callback ) {
