@@ -154,7 +154,7 @@ Recorder.prototype.onStreamInit = function( stream, success ){
     this.filterNode = this.audioContext.createBiquadFilter();
     this.filterNode2 = this.audioContext.createBiquadFilter();
     this.filterNode.type = this.filterNode2.type = "lowpass";
-    this.filterNode.frequency.value = this.filterNode2.frequency.value = this.config.sampleRate / 3;
+    this.filterNode.frequency.value = this.filterNode2.frequency.value = this.config.sampleRate / 2.5;
     this.filterNode.Q.value = 1.30657;
     this.filterNode2.Q.value = 0.54120;
     this.sourceNode.connect( this.filterNode );
