@@ -36,6 +36,11 @@
   </div>
 
   <div>
+    <label>disableFilter</label>
+    <input type="checkbox" id="disableFilter"/>
+  </div>
+
+  <div>
     <label>numberOfChannels</label>
     <input id="numberOfChannels" type="number" value="1" />
   </div>
@@ -73,6 +78,7 @@
         bitDepth: bitDepth.options[ bitDepth.selectedIndex ].value,
         recordOpus: recordOpus.checked,
         sampleRate: sampleRate.value,
+        disableFilter: disableFilter.checked, 
         onReady: initialized
       });
     });
