@@ -11,6 +11,7 @@ var Recorder = function( config ){
   config = config || {};
   config.bitDepth = config.bitDepth || 16;
   config.bufferLength = config.bufferLength || 4096;
+  config.disableFilter = config.disableFilter || false;
   config.enableMonitoring = config.enableMonitoring || false;
   config.numberOfChannels = config.numberOfChannels || 1;
   config.recordOpus = (config.recordOpus === false) ? false : true;
@@ -72,12 +73,15 @@ Recorder.prototype.doneRecording = function(){
 
   if ( this.sourceNode ) {
     if ( this.filterNode ) {
+      this.filterNode2.disconnect( this.audioContext.destination );
       this.filterNode2.disconnect( this.scriptProcessorNode );
       this.filterNode.disconnect( this.filterNode2 );
       this.sourceNode.disconnect( this.filterNode );
     }
-    this.sourceNode.disconnect( this.audioContext.destination );
-    this.sourceNode.disconnect( this.scriptProcessorNode );
+    else {
+      this.sourceNode.disconnect( this.audioContext.destination );
+      this.sourceNode.disconnect( this.scriptProcessorNode );
+    }
     this.stream.stop();
     this.sourceNode = this.filterNode = this.filterNode2 = this.stream = undefined;
   }
@@ -145,8 +149,8 @@ Recorder.prototype.onStreamInit = function( stream, success ){
   this.stream = stream;
   this.sourceNode = this.audioContext.createMediaStreamSource( stream );
 
-  // -24db / octave buttersworth to avoid aliasing when resampling
-  if ( this.config.sampleRate < this.audioContext.sampleRate ) {
+  // -24db / octave buttersworth to reduce aliasing noise
+  if ( !this.config.disableFilter && this.config.sampleRate < this.audioContext.sampleRate ) {
     this.filterNode = this.audioContext.createBiquadFilter();
     this.filterNode2 = this.audioContext.createBiquadFilter();
     this.filterNode.type = this.filterNode2.type = "lowpass";
@@ -156,14 +160,16 @@ Recorder.prototype.onStreamInit = function( stream, success ){
     this.sourceNode.connect( this.filterNode );
     this.filterNode.connect( this.filterNode2 );
     this.filterNode2.connect( this.scriptProcessorNode );
+    if ( this.config.enableMonitoring ) {
+      this.filterNode2.connect( this.audioContext.destination );
+    }
   }
 
   else {
     this.sourceNode.connect( this.scriptProcessorNode );
-  }
-
-  if ( this.config.enableMonitoring ) {
-    this.sourceNode.connect( this.audioContext.destination );
+    if ( this.config.enableMonitoring ) {
+      this.sourceNode.connect( this.audioContext.destination );
+    }
   }
 
   success();
