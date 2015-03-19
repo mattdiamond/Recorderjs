@@ -151,12 +151,13 @@ Recorder.prototype.onStreamInit = function( stream, success ){
 
   // -24db / octave butterworth to reduce aliasing noise
   if ( !this.config.disableFilter && this.config.sampleRate < this.audioContext.sampleRate ) {
+    var nyquistRate = this.config.sampleRate / 2;
     this.filterNode = this.audioContext.createBiquadFilter();
     this.filterNode2 = this.audioContext.createBiquadFilter();
     this.filterNode.type = this.filterNode2.type = "lowpass";
-    this.filterNode.frequency.value = this.filterNode2.frequency.value = this.config.sampleRate / 2.5;
-    this.filterNode.Q.value = 1.30657;
-    this.filterNode2.Q.value = 0.54120;
+    this.filterNode.frequency.value = this.filterNode2.frequency.value = nyquistRate - Math.pow( 10, Math.log(nyquistRate) - Math.log(nyquistRate/0.7071) * 0.2 );
+    this.filterNode.Q.value = 0.54120;
+    this.filterNode2.Q.value = 1.30657;
     this.sourceNode.connect( this.filterNode );
     this.filterNode.connect( this.filterNode2 );
     this.filterNode2.connect( this.scriptProcessorNode );
