@@ -12,8 +12,7 @@ var Recorder = function( config ){
   config.enableMonitoring = config.enableMonitoring || false;
   config.numberOfChannels = config.numberOfChannels || 1;
   config.recordOpus = (config.recordOpus === false) ? false : true;
-  config.sampleRate = config.sampleRate || this.sampleRate;
-  config.workerPath = config.workerPath || 'recorderWorker.js';
+  config.sampleRate = config.sampleRate || this.audioContext.sampleRate;
 
   if ( config.recordOpus ) {
     config.sampleRate = 48000;
@@ -21,7 +20,7 @@ var Recorder = function( config ){
   }
 
   this.config = config;
-  this.worker = new Worker( this.config.workerPath );
+  this.worker = new Worker( config.workerPath || 'recorderWorker.js' );
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( config.bufferLength, config.numberOfChannels, config.numberOfChannels );
   this.scriptProcessorNode.onaudioprocess = function( e ){ that.recordBuffers( e.inputBuffer ); };
   this.scriptProcessorNode.connect( this.audioContext.destination );
@@ -140,7 +139,7 @@ Recorder.prototype.onStreamInit = function( stream ){;
   this.sourceEndNode = this.sourceNode;
 
   // 4th order butterworth filter to reduce aliasing noise
-  if ( this.config.sampleRate < this.sampleRate ) {
+  if ( this.config.sampleRate < this.audioContext.sampleRate ) {
     var nyquistRate = this.config.sampleRate / 2;
     this.filterNode = this.audioContext.createBiquadFilter();
     this.filterNode2 = this.audioContext.createBiquadFilter();
