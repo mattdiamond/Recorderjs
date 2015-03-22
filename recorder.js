@@ -28,7 +28,7 @@ var Recorder = function( config ){
   this.scriptProcessorNode.connect( this.audioContext.destination );
 
   this.reset();
-  this.initStream( config.onReady );
+  this.initStream();
 };
 
 Recorder.AudioContextConstructor = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
