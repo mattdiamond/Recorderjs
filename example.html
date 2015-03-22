@@ -59,6 +59,7 @@
   <button id="init">init</button>
   <button id="start" disabled>record</button>
   <button id="pause" disabled>pause</button>
+  <button id="reset" disabled>reset</button>
   <button id="done" disabled>done</button>
   
   <h2>Recordings</h2>
@@ -77,6 +78,7 @@
       init.disabled = true;
       start.disabled = false;
       pause.disabled = false;
+      reset.disabled = false;
       done.disabled = false;
 
       recorder = new Recorder({
@@ -90,6 +92,7 @@
 
       start.addEventListener("click", function(){ recorder.startRecording(); });
       pause.addEventListener("click", function(){ recorder.pauseRecording(); });
+      pause.addEventListener("click", function(){ recorder.reset(); });
       done.addEventListener("click", doneRecording );
 
       recorder.addEventListener( "stateChange", function(e){
