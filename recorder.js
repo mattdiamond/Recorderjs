@@ -13,9 +13,8 @@ var Recorder = function( config ){
   config.enableMonitoring = config.enableMonitoring || false;
   config.numberOfChannels = config.numberOfChannels || 1;
   config.recordOpus = (config.recordOpus === false) ? false : true;
-  config.sampleRate = config.sampleRate || this.audioContext.sampleRate;
+  config.sampleRate = config.sampleRate || this.sampleRate;
   config.workerPath = config.workerPath || 'recorderWorker.js';
-  config.onReady = config.onReady || function(){};
 
   if ( config.recordOpus ) {
     config.sampleRate = 48000;
@@ -23,10 +22,10 @@ var Recorder = function( config ){
   }
 
   this.config = config;
+  this.worker = new Worker( this.config.workerPath );
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( config.bufferLength, config.numberOfChannels, config.numberOfChannels );
   this.scriptProcessorNode.onaudioprocess = function( e ){ that.recordBuffers( e.inputBuffer ); };
   this.scriptProcessorNode.connect( this.audioContext.destination );
-  this.timerIncrementInMs = config.bufferLength / this.audioContext.sampleRate * 1000;
 
   this.reset();
   this.initStream( config.onReady );
@@ -46,7 +45,11 @@ Recorder.isRecordingSupported = function(){
   return Recorder.AudioContextConstructor && ( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia );
 };
 
-Recorder.prototype.addHandler = function( callback ) {
+Recorder.prototype.addEventListener = function( type, listener, useCapture ){
+  this.worker.addEventListener( type, listener, useCapture );
+};
+
+Recorder.prototype.addWorkerCallback = function( callback ) {
   var that = this;
   var handler = function( e ){
     e.stopImmediatePropagation();
@@ -60,52 +63,45 @@ Recorder.prototype.audioContext = new Recorder.AudioContextConstructor();
 
 Recorder.prototype.disableMonitoring = function(){
   this.config.enableMonitoring = false;
-  if ( this.sourceNode ) {
-    this.sourceNode.disconnect( this.audioContext.destination );
+  if ( this.sourceEndNode ) {
+    this.sourceEndNode.disconnect( this.audioContext.destination );
   }
 };
 
 Recorder.prototype.doneRecording = function(){
-  this.state = "stopped";
   this.worker.postMessage({
     command: "doneRecording"
   });
 
   if ( this.sourceNode ) {
     if ( this.filterNode ) {
-      this.filterNode2.disconnect( this.audioContext.destination );
-      this.filterNode2.disconnect( this.scriptProcessorNode );
       this.filterNode.disconnect( this.filterNode2 );
       this.sourceNode.disconnect( this.filterNode );
     }
-    else {
-      this.sourceNode.disconnect( this.audioContext.destination );
-      this.sourceNode.disconnect( this.scriptProcessorNode );
-    }
+    this.sourceEndNode.disconnect( this.scriptProcessorNode );
+    this.sourceEndNode.disconnect( this.audioContext.destination );
     this.stream.stop();
-    this.sourceNode = this.filterNode = this.filterNode2 = this.stream = undefined;
+    this.sourceNode = this.sourceEndNode = this.filterNode = this.filterNode2 = this.stream = undefined;
   }
+
+  this.updateState( "stopped" );
 };
 
 Recorder.prototype.enableMonitoring = function(){
   this.config.enableMonitoring = true;
-  if ( this.sourceNode ) {
-    this.sourceNode.connect( this.audioContext.destination );
+  if ( this.sourceEndNode ) {
+    this.sourceEndNode.connect( this.audioContext.destination );
   }
 };
 
 Recorder.prototype.get = function( format, callback ) {
   if ( this.state !== "recording" ) {
-    this.addHandler( callback );
+    this.addWorkerCallback( callback );
     this.worker.postMessage({ 
       command: "get",
       format: format
     });
   }
-};
-
-Recorder.prototype.getRecordingTime = function(){
-  return this.recordingTimeInMs;
 };
 
 Recorder.prototype.getWav = function( callback, mimeType ) {
@@ -120,12 +116,8 @@ Recorder.prototype.getOgg = function( callback, mimeType ) {
   });
 };
 
-Recorder.prototype.initStream = function( success ){
-  if ( this.sourceNode ) {
-    return success();
-  }
-
-  this.state = "initializing";
+Recorder.prototype.initStream = function(){
+  this.updateState( "initializing" );
   var that = this;
   var audioOptions = { 
     optional: [],
@@ -139,75 +131,68 @@ Recorder.prototype.initStream = function( success ){
 
   Recorder.getUserMedia(
     { audio : audioOptions },
-    function( stream ){ that.onStreamInit( stream, success ); }, 
+    function( stream ){ that.onStreamInit( stream ); }, 
     function( e ){ throw e; }
   );
 };
 
-Recorder.prototype.onStreamInit = function( stream, success ){
-  this.state = "paused";
+Recorder.prototype.onStreamInit = function( stream ){;
   this.stream = stream;
   this.sourceNode = this.audioContext.createMediaStreamSource( stream );
+  this.sourceEndNode = this.sourceNode;
 
-  // -24db / octave butterworth to reduce aliasing noise
-  if ( !this.config.disableFilter && this.config.sampleRate < this.audioContext.sampleRate ) {
+  // 4th order butterworth low pass filter to reduce aliasing noise
+  if ( !this.config.disableFilter && this.config.sampleRate < this.sampleRate ) {
     var nyquistRate = this.config.sampleRate / 2;
     this.filterNode = this.audioContext.createBiquadFilter();
     this.filterNode2 = this.audioContext.createBiquadFilter();
     this.filterNode.type = this.filterNode2.type = "lowpass";
-    this.filterNode.frequency.value = this.filterNode2.frequency.value = nyquistRate - Math.pow( 10, Math.log(nyquistRate) / Math.LN10 - Math.log(nyquistRate/0.7071) * 0.2 / Math.LN10 );
+    this.filterNode.frequency.value = nyquistRate - Math.pow( 10, Math.log(nyquistRate) / Math.LN10 - Math.log(nyquistRate/0.7071) * 0.2 / Math.LN10 );
+    this.filterNode2.frequency.value = this.filterNode.frequency.value;
     this.filterNode.Q.value = 0.54120;
     this.filterNode2.Q.value = 1.30657;
     this.sourceNode.connect( this.filterNode );
     this.filterNode.connect( this.filterNode2 );
     this.filterNode2.connect( this.scriptProcessorNode );
-    if ( this.config.enableMonitoring ) {
-      this.filterNode2.connect( this.audioContext.destination );
-    }
+    this.sourceEndNode = this.filterNode2;
   }
 
-  else {
-    this.sourceNode.connect( this.scriptProcessorNode );
-    if ( this.config.enableMonitoring ) {
-      this.sourceNode.connect( this.audioContext.destination );
-    }
+  this.sourceEndNode.connect( this.scriptProcessorNode );
+  if ( this.config.enableMonitoring ) {
+    this.sourceEndNode.connect( this.audioContext.destination );
   }
 
-  success();
+  this.updateState( "paused" );
 };
 
 Recorder.prototype.pauseRecording = function(){
   if ( this.state === "recording" ){
-    this.state = "paused";
+    this.updateState( "paused" );
   }
 };
 
 Recorder.prototype.recordBuffers = function( inputBuffer ){
   if ( this.state === "recording" ) {
 
-    this.recordingTimeInMs += this.timerIncrementInMs;
-
     var buffers = [];
-    for (var i = 0; i < inputBuffer.numberOfChannels; i++) {
+    for ( var i = 0; i < inputBuffer.numberOfChannels; i++ ) {
       buffers[i] = inputBuffer.getChannelData(i);
     }
 
-    this.worker.postMessage({
-      command: "recordBuffers",
-      buffers: buffers
-    });
+    this.worker.postMessage({ command: "recordBuffers", buffers: buffers });
+    this.recordingTime += inputBuffer.duration;
+    this.worker.dispatchEvent( new CustomEvent( 'recordingTimeChange', { "detail": this.recordingTime } ) );
   }
 };
 
+Recorder.prototype.removeEventListener = function( type, listener, useCapture ){
+  this.worker.removeEventListener( type, listener, useCapture );
+};
+
 Recorder.prototype.reset = function(){
-
-  if ( this.worker ) {
-    this.worker.terminate();
-  }
-
-  this.recordingTimeInMs = 0;
-  this.worker = new Worker( this.config.workerPath );
-  this.worker.postMessage({ 
+  this.recordingTime = 0;
+  this.worker.dispatchEvent( new CustomEvent( 'recordingTimeChange', { "detail": this.recordingTime } ) );
+  this.worker.postMessage({
     command: "init",
     bitDepth: this.config.bitDepth,
     bufferLength: this.config.bufferLength,
@@ -220,6 +205,11 @@ Recorder.prototype.reset = function(){
 
 Recorder.prototype.startRecording = function(){
   if ( this.state === "paused" ){
-    this.state = "recording";
+    this.updateState( "recording" );
   };
+};
+
+Recorder.prototype.updateState = function( state ){
+  this.state = state;
+  this.worker.dispatchEvent( new CustomEvent( 'stateChange', { "detail": this.state } ) );
 };

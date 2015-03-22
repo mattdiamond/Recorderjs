@@ -71,48 +71,39 @@
     var recorder;
 
     init.addEventListener( "click", function(){
+
       screenLogger('Initializing');
+
+      init.disabled = true;
+      start.disabled = false;
+      pause.disabled = false;
+      done.disabled = false;
+
       recorder = new Recorder({
         enableMonitoring: enableMonitoring.checked,
         numberOfChannels: numberOfChannels.value,
         bitDepth: bitDepth.options[ bitDepth.selectedIndex ].value,
         recordOpus: recordOpus.checked,
         sampleRate: sampleRate.value,
-        disableFilter: disableFilter.checked, 
-        onReady: initialized
+        disableFilter: disableFilter.checked
+      });
+
+      start.addEventListener("click", function(){ recorder.startRecording(); });
+      pause.addEventListener("click", function(){ recorder.pauseRecording(); });
+      done.addEventListener("click", doneRecording );
+
+      recorder.addEventListener( "stateChange", function(e){
+        screenLogger('Recorder state changed to ' + e.detail);
+      });
+
+      recorder.addEventListener( "recordingTimeChange", function(e){
+        screenLogger('Buffer recorded. New recording length: ' + e.detail);
       });
     });
-
-    function initialized(){
-      screenLogger('Initialized');
-      start.addEventListener("click", startRecording);
-      pause.addEventListener("click", pauseRecording);
-      done.addEventListener("click", doneRecording);
-      init.disabled = true;
-      start.disabled = false;
-    }
-
-    function startRecording() {
-      recorder.startRecording();
-      screenLogger('Recording...');
-      start.disabled = true;
-      pause.disabled = false;
-      done.disabled = false;
-    }
-
-    function pauseRecording() {
-      recorder.pauseRecording();
-      screenLogger('Recording paused.');
-      start.disabled = false;
-      pause.disabled = true;
-      done.disabled = false;
-    }
 
     function doneRecording() {
       var date = new Date().toISOString();
       recorder.doneRecording();
-      screenLogger('Recording complete.');
-      screenLogger('Recording time in ms:', recorder.getRecordingTime() );      
       start.disabled = true;
       pause.disabled = true;
       done.disabled = true;

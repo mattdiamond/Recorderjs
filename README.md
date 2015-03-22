@@ -19,7 +19,6 @@ Creates a recorder instance. Instantiating an instance will prompt the user for 
 - **bufferLength** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
 - **disableFilter** - (*optional*) Will disable the low pass filter when resampling. Can be used if experiencing performance issues. Defaults to false.
 - **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 1. More than two channels has not been tested.
-- **onReady** - (*optional*) Callback when the stream has been initialized.
 - **recordOpus** - (*optional*) Specifies if recorder should record using the opus encoder. Defaults to true.
 - **sampleRate** - (*optional*) Specifies the sample rate to record at. Defaults to device sample rate. If different than native rate, the audio will be resampled using a linear interpolation algorithm.  If recordOpus is true, this value will be forced to 48000.
 - **workerPath** - (*optional*) Path to recorder.js worker script. Defaults to 'recorderWorker.js'
@@ -27,6 +26,14 @@ Creates a recorder instance. Instantiating an instance will prompt the user for 
 
 ---------
 #### Instance Methods
+
+    rec.addEventListener( type, listener[, useCapture] )
+
+**addEventListener** will add an event listener to the web worker. Custom events are "stateChange" and "recordingTimeChange"
+
+    rec.removeEventListener( type, listener[, useCapture] )
+
+**addEventListener** will remove an event listener from the web worker.
 
     rec.startRecording()
 
@@ -42,7 +49,7 @@ Creates a recorder instance. Instantiating an instance will prompt the user for 
 
     rec.reset()
 
-**reset** will clear the data buffers of any recorded data and re-initalize the web worker.
+**reset** will clear the data buffers of any recorded data.
 
     rec.enableMonitoring()
 
@@ -66,7 +73,7 @@ Creates a recorder instance. Instantiating an instance will prompt the user for 
 
     rec.getRecordingTime()
 
-**getRecordingTime** will return the duration of the recorded audio in ms.
+**getRecordingTime** will return the duration of the recorded audio in seconds.
 
     rec.initStream( callback )
 
