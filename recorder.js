@@ -26,7 +26,6 @@ var Recorder = function( config ){
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( config.bufferLength, config.numberOfChannels, config.numberOfChannels );
   this.scriptProcessorNode.onaudioprocess = function( e ){ that.recordBuffers( e.inputBuffer ); };
   this.scriptProcessorNode.connect( this.audioContext.destination );
-
   this.reset();
   this.initStream();
 };
