@@ -36,11 +36,6 @@
   </div>
 
   <div>
-    <label>disableFilter</label>
-    <input type="checkbox" id="disableFilter"/>
-  </div>
-
-  <div>
     <label>numberOfChannels</label>
     <input id="numberOfChannels" type="number" value="1" />
   </div>
@@ -86,8 +81,7 @@
         numberOfChannels: numberOfChannels.value,
         bitDepth: bitDepth.options[ bitDepth.selectedIndex ].value,
         recordOpus: recordOpus.checked,
-        sampleRate: sampleRate.value,
-        disableFilter: disableFilter.checked
+        sampleRate: sampleRate.value
       });
 
       start.addEventListener("click", function(){ recorder.startRecording(); });

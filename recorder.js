@@ -9,7 +9,6 @@ var Recorder = function( config ){
   config = config || {};
   config.bitDepth = config.bitDepth || 16;
   config.bufferLength = config.bufferLength || 4096;
-  config.disableFilter = config.disableFilter || false;
   config.enableMonitoring = config.enableMonitoring || false;
   config.numberOfChannels = config.numberOfChannels || 1;
   config.recordOpus = (config.recordOpus === false) ? false : true;
@@ -140,8 +139,8 @@ Recorder.prototype.onStreamInit = function( stream ){;
   this.sourceNode = this.audioContext.createMediaStreamSource( stream );
   this.sourceEndNode = this.sourceNode;
 
-  // 4th order butterworth low pass filter to reduce aliasing noise
-  if ( !this.config.disableFilter && this.config.sampleRate < this.sampleRate ) {
+  // 4th order butterworth filter to reduce aliasing noise
+  if ( this.config.sampleRate < this.sampleRate ) {
     var nyquistRate = this.config.sampleRate / 2;
     this.filterNode = this.audioContext.createBiquadFilter();
     this.filterNode2 = this.audioContext.createBiquadFilter();
