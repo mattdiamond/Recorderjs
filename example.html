@@ -96,11 +96,11 @@
       done.addEventListener("click", doneRecording );
 
       recorder.addEventListener( "stateChange", function(e){
-        screenLogger('Recorder state changed to ' + e.detail);
+        screenLogger('Recorder is in state ' + e.detail);
       });
 
       recorder.addEventListener( "recordingTimeChange", function(e){
-        screenLogger('Buffer recorded. New recording length: ' + e.detail);
+        screenLogger('Recorded ' + e.detail + ' seconds');
       });
     });
 
