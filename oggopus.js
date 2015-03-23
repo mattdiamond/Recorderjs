@@ -4,8 +4,8 @@ var OggOpus = function( config ){
 
   this.numberOfChannels = config.numberOfChannels;
   this.inputSampleRate = config.inputSampleRate;
-  this.outputSampleRate = config.outputSampleRate = 48000;
-  this.bitDepth = config.bitDepth = 16;
+  this.outputSampleRate = config.outputSampleRate;
+  this.bitDepth = config.bitDepth;
   this.encoderApplication = config.encoderApplication || 2049; // 2048 = Voice, 2049 = Full Band Audio, 2051 = Restricted Low Delay
   this.encoderFrameSize = config.encoderFrameSize || 20; // 20ms frame
   this.samplesPerChannelPerPacket = this.outputSampleRate * this.encoderFrameSize / 1000;

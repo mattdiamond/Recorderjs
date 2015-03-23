@@ -19,7 +19,8 @@ Creates a recorder instance. Instantiating an instance will prompt the user for 
 - **bufferLength** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
 - **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 1. More than two channels has not been tested.
 - **recordOpus** - (*optional*) Specifies if recorder should record using the opus encoder. Defaults to true.
-- **sampleRate** - (*optional*) Specifies the sample rate to record at. Defaults to device sample rate. If different than native rate, the audio will be resampled using a linear interpolation algorithm.  If recordOpus is true, this value will be forced to 48000.
+- **sampleRate** - (*optional*) Specifies the sample rate to record at. Defaults to device sample rate. If different than native rate, the audio will be resampled using a linear interpolation algorithm. If recordOpus is true, this value will default to 48000.
+The Opus encoder will throw an error if the value is not 8000, 12000, 16000, 24000, 48000.
 - **workerPath** - (*optional*) Path to recorder.js worker script. Defaults to 'recorderWorker.js'
 
 

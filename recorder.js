@@ -7,19 +7,14 @@ var Recorder = function( config ){
   }
 
   config = config || {};
-  config.bitDepth = config.bitDepth || 16;
+  config.recordOpus = config.recordOpus === false ? false : true;
+  config.bitDepth = (config.recordOpus ? 16 : config.bitDepth) || 16;
   config.bufferLength = config.bufferLength || 4096;
   config.enableMonitoring = config.enableMonitoring || false;
   config.numberOfChannels = config.numberOfChannels || 1;
-  config.recordOpus = (config.recordOpus === false) ? false : true;
-  config.sampleRate = config.sampleRate || this.audioContext.sampleRate;
-
-  if ( config.recordOpus ) {
-    config.sampleRate = 48000;
-    config.bitDepth = 16;
-  }
-
+  config.sampleRate = config.sampleRate || (config.recordOpus ? 48000 : this.audioContext.sampleRate);
   this.config = config;
+
   this.worker = new Worker( config.workerPath || 'recorderWorker.js' );
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( config.bufferLength, config.numberOfChannels, config.numberOfChannels );
   this.scriptProcessorNode.onaudioprocess = function( e ){ that.recordBuffers( e.inputBuffer ); };
@@ -196,7 +191,8 @@ Recorder.prototype.reset = function(){
     inputSampleRate: this.audioContext.sampleRate,
     numberOfChannels: this.config.numberOfChannels,
     outputSampleRate: this.config.sampleRate,
-    recordOpus: this.config.recordOpus
+    recordOpus: this.config.recordOpus,
+    encoderApplication: this.config.encoderApplication
   });
 };
 
