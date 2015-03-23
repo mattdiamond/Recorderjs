@@ -1,6 +1,6 @@
 # Recorder.js
 
-A library for recording/exporting the output of Web Audio API nodes. This is a version which supports encoding the audio using libopus ver 1.1 compiled with emscripten.
+A library for recording/exporting the output of Web Audio API nodes. This is a version which supports encoding the audio using libopus ver 1.1.1 beta compiled with emscripten.
 
 ### Syntax
 #### Constructor
