@@ -9,7 +9,12 @@
   this.recordedBuffers = [];
   this.bytesPerSample = this.bitDepth / 8;
   this.resampledBufferLength = Math.round( this.bufferLength * this.outputSampleRate / this.inputSampleRate );
-  this.resampleRatio = (this.bufferLength-1) / (this.resampledBufferLength-1);
+  this.resampleRatio = this.bufferLength / this.resampledBufferLength;
+
+  this.lastSample = [];
+  for ( var i = 0; i < this.numberOfChannels; i++ ){
+    this.lastSample[i] = 0;
+  }
 
   if ( this.numberOfChannels === 1 && this.outputSampleRate === this.inputSampleRate ) {
     this.resampleAndInterleave = function( buffers ) { return buffers[0]; };
@@ -119,17 +124,19 @@ WavePCM.prototype.recordBuffers = function( buffers ){
 WavePCM.prototype.resampleAndInterleave = function( buffers ) {
   var outputData = new Float32Array( this.resampledBufferLength * this.numberOfChannels );
 
-  for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
-    outputData[ this.resampledBufferLength - this.numberOfChannels + channel ] = buffers[ channel ][ this.bufferLength-1 ];
-  }
-
-  for (var i = 0; i < this.resampledBufferLength - 1; i++ ) {
-    var ir = i*this.resampleRatio;
-    var op = Math.floor(ir);
+  for ( var i = 0; i < this.resampledBufferLength - 1; i++ ) {
+    var resampleValue = (this.resampleRatio - 1) + (i * this.resampleRatio);
+    var samplePoint = Math.ceil( resampleValue );
+    var linearRatio = resampleValue - (samplePoint - 1);
     for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
       var channelData = buffers[ channel ];
-      outputData[i*this.numberOfChannels+channel] = channelData[op] + (channelData[op+1]-channelData[op]) * (ir-op);
+      var interpolationValue = channelData[samplePoint-1] || this.lastSample[channel];
+      outputData[i*this.numberOfChannels+channel] = interpolationValue + linearRatio * (channelData[samplePoint] - interpolationValue);
     }
+  }
+
+  for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
+    this.lastSample[channel] = outputData[ this.resampledBufferLength-1 ] = channelData[ this.bufferLength-1 ];
   }
 
   return outputData;
