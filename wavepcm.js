@@ -9,7 +9,7 @@
   this.recordedBuffers = [];
   this.bytesPerSample = this.bitDepth / 8;
   this.resampledBufferLength = Math.round( this.bufferLength * this.outputSampleRate / this.inputSampleRate );
-  this.resampleRatioRemainder = 1 - ( this.bufferLength * this.outputSampleRate / this.inputSampleRate ) % 1;
+  this.resampleRatioRemainder = ( this.bufferLength * this.outputSampleRate / this.inputSampleRate ) % 1;
   this.resampleRatio = this.bufferLength / this.resampledBufferLength;
 
   this.lastSample = [];
