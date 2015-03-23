@@ -128,7 +128,7 @@ WavePCM.prototype.resampleAndInterleave = function( buffers ) {
     var channelData = buffers[ channel ];
     var samplePoint = Math.ceil( this.resampleRatio - 1 );
     var interpolationPoint = channelData[samplePoint-1] || this.lastSample[channel];
-    outputData[channel] = channelData[0] - (channelData[samplePoint] - interpolationPoint) * (samplePoint - this.resampleRatio - 1);
+    outputData[channel] = channelData[0] - (samplePoint - this.resampleRatio - 1) * (channelData[samplePoint] - interpolationPoint);
     this.lastSample[channel] = channelData[ this.bufferLength-1 ];
   }
 
@@ -137,7 +137,7 @@ WavePCM.prototype.resampleAndInterleave = function( buffers ) {
     var samplePoint = Math.ceil( resampleValue );
     for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
       var channelData = buffers[ channel ];
-      outputData[i*this.numberOfChannels+channel] = channelData[samplePoint] - (channelData[samplePoint] - channelData[samplePoint - 1]) * (samplePoint - resampleValue);
+      outputData[i*this.numberOfChannels+channel] = channelData[samplePoint] - (samplePoint - resampleValue) * (channelData[samplePoint] - channelData[samplePoint-1]);
     }
   }
 
