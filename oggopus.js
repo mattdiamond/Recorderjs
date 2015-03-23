@@ -8,7 +8,7 @@ var OggOpus = function( config ){
   this.bitDepth = config.bitDepth;
   this.encoderApplication = config.encoderApplication || 2049; // 2048 = Voice, 2049 = Full Band Audio, 2051 = Restricted Low Delay
   this.encoderFrameSize = config.encoderFrameSize || 20; // 20ms frame
-  this.granuleIncrement = 48000 * this.encoderFrameSize / 1000
+  this.granuleIncrement = 48 * this.encoderFrameSize
   this.wavepcm = new WavePCM( config );
   this.packets = [];
 
