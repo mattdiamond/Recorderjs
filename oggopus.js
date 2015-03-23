@@ -43,7 +43,7 @@ OggOpus.prototype.encode = function( samples ) {
     this.encoderBufferIndex += lengthToCopy;
 
     if ( this.encoderBufferIndex === this.encoderBufferLength ) {
-      outputPacketLength = _opus_encode_float( this.encoder, this.encoderBufferPointer, this.encoderBufferLengthPerChannel, this.encoderOutputPointer, this.encoderOutputMaxLength );
+      outputPacketLength = _opus_encode_float( this.encoder, this.encoderBufferPointer, this.samplesPerChannelPerPacket, this.encoderOutputPointer, this.encoderOutputMaxLength );
       outputPackets.push( new Uint8Array( this.encoderOutputBuffer.subarray(0, outputPacketLength) ) );
       this.encoderBufferIndex = 0;
     }
@@ -144,7 +144,7 @@ OggOpus.prototype.getPage = function( headerType, granulePosition, pageIndex, se
   pageBufferView.setUint8( 4, 0, true ); // Version
   pageBufferView.setUint8( 5, headerType, true ); // 1 = continuation, 2 = beginning of stream, 4 = end of stream
 
-  // Number of samples upto and including this page at 48000 Hz into 64 bits
+  // Number of samples upto and including this page at output sample rate, into 64 bits
   pageBufferView.setUint32( 6, granulePosition, true );
   if ( granulePosition > 4294967296 || granulePosition < 0 ) {
     pageBufferView.setUint32( 10, Math.floor( granulePosition/4294967296 ), true );
@@ -174,8 +174,7 @@ OggOpus.prototype.initChecksumTable = function(){
 OggOpus.prototype.initCodec = function() {
   this.encoder = _opus_encoder_create( this.outputSampleRate, this.numberOfChannels, this.encoderApplication, allocate(4, 'i32', ALLOC_STACK) );
   this.encoderBufferIndex = 0;
-  this.encoderBufferLengthPerChannel = this.outputSampleRate * this.encoderFrameSize / 1000
-  this.encoderBufferLength = this.encoderBufferLengthPerChannel * this.numberOfChannels;
+  this.encoderBufferLength = this.samplesPerChannelPerPacket * this.numberOfChannels;
   this.encoderBufferPointer = _malloc( this.encoderBufferLength * 4 );
   this.encoderBuffer = HEAPF32.subarray( this.encoderBufferPointer >> 2, (this.encoderBufferPointer >> 2) + this.encoderBufferLength );
   this.encoderOutputMaxLength = 4000; 

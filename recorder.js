@@ -191,8 +191,7 @@ Recorder.prototype.reset = function(){
     inputSampleRate: this.audioContext.sampleRate,
     numberOfChannels: this.config.numberOfChannels,
     outputSampleRate: this.config.sampleRate,
-    recordOpus: this.config.recordOpus,
-    encoderApplication: this.config.encoderApplication
+    recordOpus: this.config.recordOpus
   });
 };
 
