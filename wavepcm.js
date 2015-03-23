@@ -9,8 +9,8 @@
   this.recordedBuffers = [];
   this.bytesPerSample = this.bitDepth / 8;
   this.resampledBufferLength = Math.round( this.bufferLength * this.outputSampleRate / this.inputSampleRate );
-  this.resampleRatio = (this.bufferLength-1) / (this.resampledBufferLength-1);
-  this.resampleRatioRemainder = 1 - (this.resampledBufferLength * this.resampleRatio) % 1;
+  this.resampleRatioRemainder = 1 - ( this.bufferLength * this.outputSampleRate / this.inputSampleRate ) % 1;
+  this.resampleRatio = this.bufferLength / this.resampledBufferLength;
 
   this.lastSample = [];
   for ( var i = 0; i < this.numberOfChannels; i++ ){
@@ -127,7 +127,7 @@ WavePCM.prototype.resampleAndInterleave = function( buffers ) {
 
   for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
     var channelData = buffers[ channel ];
-    outputData[ channel ] = this.lastSample[ channel ] + ( channelData[ 0 ] - this.lastSample[ channel ] ) * this.resampleRatioRemainder;
+    outputData[ channel ] = this.lastSample[ channel ] + (channelData[0] - this.lastSample[ channel ]) * this.resampleRatioRemainder;
     this.lastSample[ channel ] = channelData[ this.bufferLength - 1 ];
   }
 
