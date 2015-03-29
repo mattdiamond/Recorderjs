@@ -5,7 +5,8 @@
   "license": "https://spdx.org/licenses/MIT",
   "ignore": [
     "example.html",
-    "README.md"
+    "README.md",
+    "bower.json"
   ],
   "keywords": [
     "Ogg",
