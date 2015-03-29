@@ -57,11 +57,11 @@ The Opus encoder will throw an error if the value is not 8000, 12000, 16000, 240
 
     rec.start()
 
-**start** will initalize the audio stream and begin capturing audio when the stream is ready. Initilaizes the worker in this stage.
+**start** will initalize the worker and the audio stream and begin capturing audio ready.
 
     rec.stop()
 
-**stop** will cease capturing audio and disable the monitoring and mic input stream. Will requestData and then terminate the worker once the final data has been published.
+**stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published.
 
 
 ---------
