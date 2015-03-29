@@ -13,7 +13,7 @@
 </head>
 <body>
 
-  <h1>Recorder.js simple example</h1>
+  <h1>Recorder.js example</h1>
   <p>Before you enable monitoring, make sure to either plug in headphones or turn the volume down.</p>
   <p>This ogg opus implementation does not support more than 2 channels.</p>
 
@@ -65,21 +65,10 @@
   <script>
     var recorder;
 
-    start.addEventListener( "click", function(){ 
-      recorder.start();
-    });
-
-    pause.addEventListener( "click", function(){
-      recorder.pause();
-    });
-
-    resume.addEventListener( "click", function(){
-      recorder.resume();
-    });
-
-    stopButton.addEventListener( "click", function(){
-      recorder.stop();
-    });
+    start.addEventListener( "click", function(){ recorder.start(); });
+    pause.addEventListener( "click", function(){ recorder.pause(); });
+    resume.addEventListener( "click", function(){ recorder.resume(); });
+    stopButton.addEventListener( "click", function(){ recorder.stop(); });
 
     init.addEventListener( "click", function(){
 
