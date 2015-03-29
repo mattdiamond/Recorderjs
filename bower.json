@@ -1,5 +1,5 @@
 {
-  "name": "recorderjs",
+  "name": "opus-recorderjs",
   "description": "Record audio from the mic into a wav or ogg opus file",
   "main": "recorder.js",
   "license": [
