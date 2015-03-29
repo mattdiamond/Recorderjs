@@ -112,14 +112,14 @@ Recorder.prototype.onStreamInit = function( stream ){
 
   this.state = "recording";
   this.recordingTime = 0;
-  this.eventTarget.dispatchEvent( new CustomEvent( 'start' ) );
-  this.eventTarget.dispatchEvent( new CustomEvent( 'recordingTimeChange', { "detail": this.recordingTime } ) );
+  this.eventTarget.dispatchEvent( new Event( 'start' ) );
+  this.eventTarget.dispatchEvent( new CustomEvent( 'recordingProgress', { "detail": this.recordingTime } ) );
 };
 
 Recorder.prototype.pause = function(){
   if ( this.state === "recording" ){
     this.state = "paused";
-    this.eventTarget.dispatchEvent( new CustomEvent( 'pause' ) );
+    this.eventTarget.dispatchEvent( new Event( 'pause' ) );
   }
 };
 
@@ -133,7 +133,7 @@ Recorder.prototype.recordBuffers = function( inputBuffer ){
 
     this.worker.postMessage({ command: "recordBuffers", buffers: buffers });
     this.recordingTime += inputBuffer.duration;
-    this.eventTarget.dispatchEvent( new CustomEvent( 'recordingTimeChange', { "detail": this.recordingTime } ) );
+    this.eventTarget.dispatchEvent( new CustomEvent( 'recordingProgress', { "detail": this.recordingTime } ) );
   }
 };
 
@@ -150,7 +150,7 @@ Recorder.prototype.requestData = function( callback ) {
 Recorder.prototype.resume = function( callback ) {
   if ( this.state === "paused" ) {
     this.state = "recording";
-    this.eventTarget.dispatchEvent( new CustomEvent( 'resume' ) );
+    this.eventTarget.dispatchEvent( new Event( 'resume' ) );
   }
 };
 
@@ -179,7 +179,7 @@ Recorder.prototype.stop = function(){
     this.stream.stop();
 
     this.state = "inactive";
-    this.eventTarget.dispatchEvent( new CustomEvent( 'stop' ) );
+    this.eventTarget.dispatchEvent( new Event( 'stop' ) );
     this.requestData();
     this.worker.postMessage({ command: "stop" });
   }

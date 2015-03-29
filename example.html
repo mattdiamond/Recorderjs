@@ -107,7 +107,7 @@
         pause.disabled = stopButton.disabled = false;
       });
 
-      recorder.addEventListener( "recordingTimeChange", function(e){
+      recorder.addEventListener( "recordingProgress", function(e){
         screenLogger('Recorded ' + e.detail + ' seconds');
       });
 
