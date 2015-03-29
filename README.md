@@ -41,7 +41,7 @@ The Opus encoder will throw an error if the value is not 8000, 12000, 16000, 240
 
     rec.pause()
 
-**pause** will keep the stream and monitoring alive, but will not be recording the buffers. Subsequent calls to **resume** will add to the current recording.
+**pause** will keep the stream and monitoring alive, but will not be recording the buffers. Will raise the pause event. Subsequent calls to **resume** will add to the current recording.
 
     rec.removeEventListener( type, listener[, useCapture] )
 
@@ -49,19 +49,19 @@ The Opus encoder will throw an error if the value is not 8000, 12000, 16000, 240
 
     rec.requestData()
 
-**requestData** will request the recorded data if not recording. The event "dataAvailable" will be published with a blob containing the appropriate data in format ogg or wav depending on config.
+**requestData** will request the recorded data if not recording. If successful, the event "dataAvailable" will be published with a blob containing the appropriate data as an ogg or wav file depending on config.
 
     rec.resume()
 
-**resume** will resume the recording if paused.
+**resume** will resume the recording if paused. Will raise the resume event
 
     rec.start()
 
-**start** will initalize the worker and the audio stream and begin capturing audio ready.
+**start** will initalize the worker and the audio stream and begin capturing audio when ready. Will raise the start event when started.
 
     rec.stop()
 
-**stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published.
+**stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published. Will raise the stop event when stopped.
 
 
 ---------
