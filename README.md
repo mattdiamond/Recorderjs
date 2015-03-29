@@ -20,7 +20,7 @@ Creates a recorder instance. Instantiating an instance will prompt the user for 
 - **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 1. More than two channels has not been tested.
 - **recordOpus** - (*optional*) Specifies if recorder should record using the opus encoder. Defaults to true.
 - **sampleRate** - (*optional*) Specifies the sample rate to record at. Defaults to device sample rate. If different than native rate, the audio will be resampled using a linear interpolation algorithm. If recordOpus is true, this value will default to 48000.
-The Opus encoder will throw an error if the value is not 8000, 12000, 16000, 24000, 48000.
+The Opus encoder will not work if the value is not 8000, 12000, 16000, 24000 or 48000.
 - **workerPath** - (*optional*) Path to recorder.js worker script. Defaults to 'recorderWorker.js'
 
 
