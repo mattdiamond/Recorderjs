@@ -51,10 +51,10 @@
 
   <h2>Commands</h2>
   <button id="init">init</button>
-  <button id="start" disabled>record</button>
+  <button id="start" disabled>start</button>
   <button id="pause" disabled>pause</button>
-  <button id="reset" disabled>reset</button>
-  <button id="done" disabled>done</button>
+  <button id="resume" disabled>resume</button>
+  <button id="stopButton" disabled>stop</button>
   
   <h2>Recordings</h2>
   <ul id="recordingslist"></ul>
@@ -65,15 +65,26 @@
   <script>
     var recorder;
 
+    start.addEventListener( "click", function(){ 
+      recorder.start();
+    });
+
+    pause.addEventListener( "click", function(){
+      recorder.pause();
+    });
+
+    resume.addEventListener( "click", function(){
+      recorder.resume();
+    });
+
+    stopButton.addEventListener( "click", function(){
+      recorder.stop();
+    });
+
     init.addEventListener( "click", function(){
 
-      screenLogger('Initializing');
-
-      init.disabled = true;
+      init.disabled = pause.disabled = resume.disabled = stopButton.disabled = true;
       start.disabled = false;
-      pause.disabled = false;
-      reset.disabled = false;
-      done.disabled = false;
 
       recorder = new Recorder({
         enableMonitoring: enableMonitoring.checked,
@@ -83,56 +94,54 @@
         sampleRate: sampleRate.value
       });
 
-      start.addEventListener("click", function(){ recorder.startRecording(); });
-      pause.addEventListener("click", function(){ recorder.pauseRecording(); });
-      reset.addEventListener("click", function(){ recorder.reset(); });
-      done.addEventListener("click", doneRecording );
+      recorder.addEventListener( "start", function(e){
+        screenLogger('Recorder is started');
+        init.disabled = start.disabled = resume.disabled = true;
+        pause.disabled = stopButton.disabled = false;
+      });
 
-      recorder.addEventListener( "stateChange", function(e){
-        screenLogger('Recorder is in state ' + e.detail);
+      recorder.addEventListener( "stop", function(e){
+        screenLogger('Recorder is stopped');
+        init.disabled = start.disabled = false;
+        pause.disabled = resume.disabled = stopButton.disabled = true;
+      });
+
+      recorder.addEventListener( "pause", function(e){
+        screenLogger('Recorder is paused');
+        init.disabled = pause.disabled = start.disabled = true;
+        resume.disabled = stopButton.disabled = false;
+      });
+
+      recorder.addEventListener( "resume", function(e){
+        screenLogger('Recorder is resuming');
+        init.disabled = start.disabled = resume.disabled = true;
+        pause.disabled = stopButton.disabled = false;
       });
 
       recorder.addEventListener( "recordingTimeChange", function(e){
         screenLogger('Recorded ' + e.detail + ' seconds');
       });
+
+      recorder.addEventListener( "dataAvailable", function(e){
+        var fileName = new Date().toISOString() + "." + e.detail.type.split("/")[1];
+        var url = URL.createObjectURL( e.detail );
+
+        var audio = document.createElement('audio');
+        audio.controls = true;
+        audio.src = url;
+
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.innerHTML = link.download;
+
+        var li = document.createElement('li');
+        li.appendChild(link);
+        li.appendChild(audio);
+
+        recordingslist.appendChild(li);
+      });
     });
-
-    function doneRecording() {
-      var date = new Date().toISOString();
-      recorder.doneRecording();
-      start.disabled = true;
-      pause.disabled = true;
-      done.disabled = true;
-      reset.disabled = true;
-      init.disabled = false;
-
-      recorder.getWav( function( wavBlob ) {
-        if ( wavBlob ) createDownloadLink( wavBlob, date+'.wav' );
-      });
-
-      recorder.getOgg( function( oggBlob ) {
-        if ( oggBlob ) createDownloadLink( oggBlob, date+'.ogg' );
-      });
-    }
-
-    function createDownloadLink( blob, filename ) {
-      var url = URL.createObjectURL( blob );
-
-      var audio = document.createElement('audio');
-      audio.controls = true;
-      audio.src = url;
-
-      var link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      link.innerHTML = link.download;
-
-      var li = document.createElement('li');
-      li.appendChild(link);
-      li.appendChild(audio);
-
-      recordingslist.appendChild(li);
-    }
 
     function screenLogger(text, data) {
       log.innerHTML += "\n" + text + " " + (data || '');

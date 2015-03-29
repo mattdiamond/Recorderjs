@@ -5,18 +5,16 @@ this.onmessage = function( e ){
       this.recorder.recordBuffers( e.data.buffers );
       break;
 
-    case 'get':
-      var data = this.recorder.get( e.data.format );
+    case 'requestData':
+      var data = this.recorder.requestData();
       this.postMessage( data, [data.buffer] );
       break;
 
-    case 'doneRecording':
-      if ( this.recorder.encodeFinalFrame ) {
-        this.recorder.encodeFinalFrame();
-      }
+    case 'stop':
+      this.close();
       break;
 
-    case 'init':
+    case 'start':
       if ( e.data.recordOpus ) {
         importScripts( 'oggopus.js' );
         this.recorder = new OggOpus( e.data );

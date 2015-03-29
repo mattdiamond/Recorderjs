@@ -29,51 +29,39 @@ The Opus encoder will throw an error if the value is not 8000, 12000, 16000, 240
 
     rec.addEventListener( type, listener[, useCapture] )
 
-**addEventListener** will add an event listener to the web worker. Custom events are "stateChange" and "recordingTimeChange"
-
-    rec.removeEventListener( type, listener[, useCapture] )
-
-**removeEventListener** will remove an event listener from the web worker.
-
-    rec.startRecording()
-
-**startRecording** will begin capturing audio if the stream is ready.
-
-    rec.pauseRecording()
-
-**pauseRecording** will keep the stream and monitoring alive, but will not be recording the buffers. Subsequent calls to **startRecording** will add to the current recording.
-
-    rec.doneRecording()
-
-**doneRecording** will cease capturing audio and disable the monitoring and mic input stream. To start recording again, **initStream** will need to be called and authorization to access the input stream will be required again.
-
-    rec.reset()
-
-**reset** will clear the data buffers of any recorded data.
-
-    rec.enableMonitoring()
-
-**enableMonitoring** will pass the input stream to the destination node. Headphones are recommended if enabling monitoring to avoid feedback noise.
+**addEventListener** will add an event listener to the event target. Custom events are "recordingTimeChange", "dataAvailable", "start", "pause", "resume" and "stop"
 
     rec.disableMonitoring()
 
 **disableMonitoring** will disable the live monitoring of your mic input.
 
-    rec.getWav( callback[, mimeType] )
+    rec.enableMonitoring()
 
-**getWav** will generate a Blob object containing the recording in WAV format. The callback will be called with the Blob as its sole argument. In addition, you may specify the mime type of Blob to be returned (defaults to "audio/wav").
+**enableMonitoring** will pass the input stream to the destination node. Headphones are recommended if enabling monitoring to avoid feedback noise.
 
-    rec.getOgg( callback[, mimeType] )
+    rec.pause()
 
-**getOgg** will generate a Blob object containing the opus encoded recording in an Ogg container. The callback will be called with the Blob as its sole argument. If audio was recorded as Wave, an error will be thrown. In addition, you may specify the mime type of Blob to be returned (defaults to "audio/ogg").
+**pause** will keep the stream and monitoring alive, but will not be recording the buffers. Subsequent calls to **resume** will add to the current recording.
 
-    rec.get( format, callback )
+    rec.removeEventListener( type, listener[, useCapture] )
 
-**get** will return the recorded audio in format (supported values are "wav" or "ogg") as a Uint8Array to the callback. If the format type is not supported an error will be thrown. This method will do nothing if a recording is in progress.
+**removeEventListener** will remove an event listener from the event target.
 
-    rec.initStream()
+    rec.requestData()
 
-**initStream** will initialize the input stream. This is called internally when recorder is instantiated. This should only be needed if doneRecording() was called and the input stream has be terminated.
+**requestData** will request the recorded data if not recording. The event "dataAvailable" will be published with a blob containing the appropriate data in format ogg or wav depending on config.
+
+    rec.resume()
+
+**resume** will resume the recording if paused.
+
+    rec.start()
+
+**start** will initalize the audio stream and begin capturing audio when the stream is ready. Initilaizes the worker in this stage.
+
+    rec.stop()
+
+**stop** will cease capturing audio and disable the monitoring and mic input stream. Will requestData and then terminate the worker once the final data has been published.
 
 
 ---------

@@ -52,23 +52,6 @@ OggOpus.prototype.encode = function( samples ) {
   return outputPackets;
 };
 
-OggOpus.prototype.encodeFinalFrame = function() {
-  return this.encode( new Float32Array( this.encoderBufferLength - this.encoderBufferIndex ) );
-};
-
-OggOpus.prototype.get = function( format ){
-  switch( format ){
-    case "ogg":
-      return this.getFile( this.segmentPackets( this.packets ) );
-
-    case "wav":
-      return this.wavepcm.getFile( this.decode( this.packets ) );
-
-    default:
-      throw "Unsupported format: " + format;
-  }
-};
-
 OggOpus.prototype.getChecksum = function( data ){
   var checksum = 0;
   for ( var i = 0; i < data.length; i++ ) {
@@ -192,6 +175,10 @@ OggOpus.prototype.initCodec = function() {
 
 OggOpus.prototype.recordBuffers = function( buffers ) {
   this.packets.push.apply( this.packets, this.encode( this.wavepcm.resampleAndInterleave( buffers ) ) );
+};
+
+OggOpus.prototype.requestData = function(){
+  return this.getFile( this.segmentPackets( this.packets ) );
 };
 
 OggOpus.prototype.segmentPackets = function( packets ) {

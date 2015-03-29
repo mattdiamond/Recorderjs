@@ -65,16 +65,6 @@ WavePCM.prototype.bitReduce = function( floatData ){
   return outputData;
 };
 
-WavePCM.prototype.get = function( format ){
-  switch( format ){
-    case "wav":
-      return this.getFile( this.mergeBuffers( this.recordedBuffers ) );
-
-    default:
-      throw "Unsupported format: " + format;
-  }
-};
-
 WavePCM.prototype.getFile = function( audioData ){
   var header = this.getHeader( audioData.byteLength );
   var wav = new Uint8Array( header.byteLength + audioData.byteLength );
@@ -119,6 +109,10 @@ WavePCM.prototype.mergeBuffers = function( buffers ) {
 
 WavePCM.prototype.recordBuffers = function( buffers ){
   this.recordedBuffers.push( this.bitReduce( this.resampleAndInterleave( buffers ) ) );
+};
+
+WavePCM.prototype.requestData = function(){
+  return this.getFile( this.mergeBuffers( this.recordedBuffers ) );
 };
 
 WavePCM.prototype.resampleAndInterleave = function( buffers ) {

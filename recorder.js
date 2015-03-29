@@ -13,14 +13,22 @@ var Recorder = function( config ){
   config.enableMonitoring = config.enableMonitoring || false;
   config.numberOfChannels = config.numberOfChannels || 1;
   config.sampleRate = config.sampleRate || (config.recordOpus ? 48000 : this.audioContext.sampleRate);
-  this.config = config;
+  config.streamOptions = config.streamOptions || {
+    optional: [],
+    mandatory: {
+      googEchoCancellation: false,
+      googAutoGainControl: false,
+      googNoiseSuppression: false,
+      googHighpassFilter: false
+    }
+  };
 
-  this.worker = new Worker( config.workerPath || 'recorderWorker.js' );
+  this.config = config;
+  this.state = "inactive";
+  this.eventTarget = document.createDocumentFragment();
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( config.bufferLength, config.numberOfChannels, config.numberOfChannels );
   this.scriptProcessorNode.onaudioprocess = function( e ){ that.recordBuffers( e.inputBuffer ); };
   this.scriptProcessorNode.connect( this.audioContext.destination );
-  this.reset();
-  this.initStream();
 };
 
 Recorder.AudioContextConstructor = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
@@ -38,17 +46,7 @@ Recorder.isRecordingSupported = function(){
 };
 
 Recorder.prototype.addEventListener = function( type, listener, useCapture ){
-  this.worker.addEventListener( type, listener, useCapture );
-};
-
-Recorder.prototype.addWorkerCallback = function( callback ) {
-  var that = this;
-  var handler = function( e ){
-    e.stopImmediatePropagation();
-    that.worker.removeEventListener( "message", handler );
-    callback.call( that, e.data );
-  };
-  this.worker.addEventListener( "message", handler );
+  this.eventTarget.addEventListener( type, listener, useCapture );
 };
 
 Recorder.prototype.audioContext = new Recorder.AudioContextConstructor();
@@ -60,25 +58,6 @@ Recorder.prototype.disableMonitoring = function(){
   }
 };
 
-Recorder.prototype.doneRecording = function(){
-  this.worker.postMessage({
-    command: "doneRecording"
-  });
-
-  if ( this.sourceNode ) {
-    if ( this.filterNode ) {
-      this.filterNode.disconnect( this.filterNode2 );
-      this.sourceNode.disconnect( this.filterNode );
-    }
-    this.sourceEndNode.disconnect( this.scriptProcessorNode );
-    this.sourceEndNode.disconnect( this.audioContext.destination );
-    this.stream.stop();
-    this.sourceNode = this.sourceEndNode = this.filterNode = this.filterNode2 = this.stream = undefined;
-  }
-
-  this.updateState( "stopped" );
-};
-
 Recorder.prototype.enableMonitoring = function(){
   this.config.enableMonitoring = true;
   if ( this.sourceEndNode ) {
@@ -86,54 +65,31 @@ Recorder.prototype.enableMonitoring = function(){
   }
 };
 
-Recorder.prototype.get = function( format, callback ) {
-  if ( this.state !== "recording" ) {
-    this.addWorkerCallback( callback );
-    this.worker.postMessage({ 
-      command: "get",
-      format: format
-    });
-  }
-};
-
-Recorder.prototype.getWav = function( callback, mimeType ) {
-  this.get( "wav", function( data ){
-    callback( new Blob( [data], { type: mimeType || "audio/wav" } ) );
-  });
-};
-
-Recorder.prototype.getOgg = function( callback, mimeType ) {
-  this.get( "ogg", function( data ){
-    callback( new Blob( [data], { type: mimeType || "audio/ogg" } ) );
-  });
-};
-
-Recorder.prototype.initStream = function(){
-  this.updateState( "initializing" );
+Recorder.prototype.initWorker = function(){
   var that = this;
-  var audioOptions = { 
-    optional: [],
-    mandatory: {
-      googEchoCancellation: false,
-      googAutoGainControl: false,
-      googNoiseSuppression: false,
-      googHighpassFilter: false
-    }
-  };
-
-  Recorder.getUserMedia(
-    { audio : audioOptions },
-    function( stream ){ that.onStreamInit( stream ); }, 
-    function( e ){ throw e; }
-  );
+  this.worker = new Worker( this.config.workerPath || 'recorderWorker.js' );
+  this.worker.addEventListener( "message", function( e ) {
+    that.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
+      "detail": new Blob( [e.data], { type: that.config.recordOpus ? "audio/ogg" : "audio/wav" } )
+    }));
+  });
+  this.worker.postMessage({
+    command: "start",
+    bitDepth: this.config.bitDepth,
+    bufferLength: this.config.bufferLength,
+    inputSampleRate: this.audioContext.sampleRate,
+    numberOfChannels: this.config.numberOfChannels,
+    outputSampleRate: this.config.sampleRate,
+    recordOpus: this.config.recordOpus
+  });
 };
 
-Recorder.prototype.onStreamInit = function( stream ){;
+Recorder.prototype.onStreamInit = function( stream ){
   this.stream = stream;
   this.sourceNode = this.audioContext.createMediaStreamSource( stream );
   this.sourceEndNode = this.sourceNode;
 
-  // 4th order butterworth filter to reduce aliasing noise
+  // reduce aliasing noise with 4th order butterworth filter
   if ( this.config.sampleRate < this.audioContext.sampleRate ) {
     var nyquistRate = this.config.sampleRate / 2;
     this.filterNode = this.audioContext.createBiquadFilter();
@@ -154,12 +110,16 @@ Recorder.prototype.onStreamInit = function( stream ){;
     this.sourceEndNode.connect( this.audioContext.destination );
   }
 
-  this.updateState( "paused" );
+  this.state = "recording";
+  this.recordingTime = 0;
+  this.eventTarget.dispatchEvent( new CustomEvent( 'start' ) );
+  this.eventTarget.dispatchEvent( new CustomEvent( 'recordingTimeChange', { "detail": this.recordingTime } ) );
 };
 
-Recorder.prototype.pauseRecording = function(){
+Recorder.prototype.pause = function(){
   if ( this.state === "recording" ){
-    this.updateState( "paused" );
+    this.state = "paused";
+    this.eventTarget.dispatchEvent( new CustomEvent( 'pause' ) );
   }
 };
 
@@ -173,35 +133,54 @@ Recorder.prototype.recordBuffers = function( inputBuffer ){
 
     this.worker.postMessage({ command: "recordBuffers", buffers: buffers });
     this.recordingTime += inputBuffer.duration;
-    this.worker.dispatchEvent( new CustomEvent( 'recordingTimeChange', { "detail": this.recordingTime } ) );
+    this.eventTarget.dispatchEvent( new CustomEvent( 'recordingTimeChange', { "detail": this.recordingTime } ) );
   }
 };
 
 Recorder.prototype.removeEventListener = function( type, listener, useCapture ){
-  this.worker.removeEventListener( type, listener, useCapture );
+  this.eventTarget.removeEventListener( type, listener, useCapture );
 };
 
-Recorder.prototype.reset = function(){
-  this.recordingTime = 0;
-  this.worker.dispatchEvent( new CustomEvent( 'recordingTimeChange', { "detail": this.recordingTime } ) );
-  this.worker.postMessage({
-    command: "init",
-    bitDepth: this.config.bitDepth,
-    bufferLength: this.config.bufferLength,
-    inputSampleRate: this.audioContext.sampleRate,
-    numberOfChannels: this.config.numberOfChannels,
-    outputSampleRate: this.config.sampleRate,
-    recordOpus: this.config.recordOpus
-  });
+Recorder.prototype.requestData = function( callback ) {
+  if ( this.state !== "recording" ) {
+    this.worker.postMessage({ command: "requestData" });
+  }
 };
 
-Recorder.prototype.startRecording = function(){
-  if ( this.state === "paused" ){
-    this.updateState( "recording" );
+Recorder.prototype.resume = function( callback ) {
+  if ( this.state === "paused" ) {
+    this.state = "recording";
+    this.eventTarget.dispatchEvent( new CustomEvent( 'resume' ) );
+  }
+};
+
+Recorder.prototype.start = function(){
+  if ( this.state === "inactive" ) {
+    var that = this;
+    this.initWorker();
+    Recorder.getUserMedia( 
+      { audio : this.config.streamOptions },
+      function( stream ){ that.onStreamInit( stream ); },
+      function( e ){ throw e; }
+    );
   };
 };
 
-Recorder.prototype.updateState = function( state ){
-  this.state = state;
-  this.worker.dispatchEvent( new CustomEvent( 'stateChange', { "detail": this.state } ) );
+Recorder.prototype.stop = function(){
+  if ( this.state !== "inactive" ) {
+
+    if ( this.filterNode ) {
+      this.filterNode.disconnect( this.filterNode2 );
+      this.sourceNode.disconnect( this.filterNode );
+    }
+
+    this.sourceEndNode.disconnect( this.scriptProcessorNode );
+    this.sourceEndNode.disconnect( this.audioContext.destination );
+    this.stream.stop();
+
+    this.state = "inactive";
+    this.eventTarget.dispatchEvent( new CustomEvent( 'stop' ) );
+    this.requestData();
+    this.worker.postMessage({ command: "stop" });
+  }
 };
