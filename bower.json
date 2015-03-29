@@ -2,7 +2,10 @@
   "name": "recorderjs",
   "description": "Record audio from the mic into a wav or ogg opus file",
   "main": "recorder.js",
-  "license": "https://spdx.org/licenses/MIT",
+  "license": [
+    "MIT",
+    "BSD-3-Clause"
+  ],
   "ignore": [
     "example.html",
     "README.md",
