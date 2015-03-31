@@ -112,7 +112,7 @@
       });
 
       recorder.addEventListener( "recordingError", function(e){
-        screenLogger('Error encountered: ' + e.message );
+        screenLogger('Error encountered: ' + e.error.name );
       });
 
       recorder.addEventListener( "dataAvailable", function(e){
