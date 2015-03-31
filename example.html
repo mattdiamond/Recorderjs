@@ -111,6 +111,10 @@
         screenLogger('Recorded ' + e.detail + ' seconds');
       });
 
+      recorder.addEventListener( "recordingError", function(e){
+        screenLogger('Error encountered: ' + e.message );
+      });
+
       recorder.addEventListener( "dataAvailable", function(e){
         var fileName = new Date().toISOString() + "." + e.detail.type.split("/")[1];
         var url = URL.createObjectURL( e.detail );
