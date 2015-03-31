@@ -161,7 +161,7 @@ Recorder.prototype.start = function(){
     Recorder.getUserMedia( 
       { audio : this.config.streamOptions },
       function( stream ){ that.onStreamInit( stream ); },
-      function( e ){ that.eventTarget.dispatchEvent( new ErrorEvent( "recordingError", { error: e, message: e.message, filename: e.fileName,lineno: e.lineNumber } ) ); }
+      function( e ){ that.eventTarget.dispatchEvent( new ErrorEvent( "recordingError", { error: e, message: e.message } ) ); }
     );
   };
 };
