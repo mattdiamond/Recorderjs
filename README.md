@@ -14,9 +14,9 @@ Creates a recorder instance. Instantiating an instance will prompt the user for 
 ---------
 #### Config
 
-- **enableMonitoring** - (*optional*) If you want the hear the recorder input live. Defaults to false
 - **bitDepth** - (*optional*) Specifies the bitdepth to record at. Defaults to 16. Supported values are 8, 16, 24, 32. If recordOpus is true, this value will be forced to 16.
 - **bufferLength** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
+- **monitorGain** - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between 0 and 1. Defaults to 0
 - **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 1. More than two channels has not been tested.
 - **recordOpus** - (*optional*) Specifies if recorder should record using the opus encoder. Defaults to true.
 - **sampleRate** - (*optional*) Specifies the sample rate to record at. Defaults to device sample rate. If different than native rate, the audio will be resampled using a linear interpolation algorithm. If recordOpus is true, this value will default to 48000.
@@ -31,13 +31,9 @@ The Opus encoder will not work if the value is not 8000, 12000, 16000, 24000 or 
 
 **addEventListener** will add an event listener to the event target. Custom events are "recordingProgress", "recordingError", "dataAvailable", "start", "pause", "resume" and "stop".
 
-    rec.disableMonitoring()
+    rec.setMonitorGain( gain )
 
-**disableMonitoring** will disable the live monitoring of your mic input.
-
-    rec.enableMonitoring()
-
-**enableMonitoring** will pass the input stream to the destination node. Headphones are recommended if enabling monitoring to avoid feedback noise.
+**setMonitorGain** will set the volume on what will be passed to the monitor. Monitor level does not affect the recording volume. Gain is an a-weighted value between 0 and 1
 
     rec.pause()
 

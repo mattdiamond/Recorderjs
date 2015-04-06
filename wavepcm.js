@@ -11,9 +11,9 @@
   this.resampledBufferLength = Math.round( this.bufferLength * this.outputSampleRate / this.inputSampleRate );
   this.resampleRatio = this.bufferLength / this.resampledBufferLength;
 
-  this.lastSample = [];
+  this.cachedSamples = [];
   for ( var i = 0; i < this.numberOfChannels; i++ ){
-    this.lastSample[i] = 0;
+    this.cachedSamples[i] = [0,0];
   }
 
   if ( this.numberOfChannels === 1 && this.outputSampleRate === this.inputSampleRate ) {
@@ -115,22 +115,37 @@ WavePCM.prototype.requestData = function(){
   return this.getFile( this.mergeBuffers( this.recordedBuffers ) );
 };
 
+// From http://johncostella.webs.com/magic/
+WavePCM.prototype.magicKernel = function( x ) {
+  if ( x < -0.5 ) {
+    return 0.5 * ( x + 1.5 ) * ( x + 1.5 );
+  }
+  else if ( x > 0.5 ) {
+    return 0.5 * ( x - 1.5 ) * ( x - 1.5 );
+  }
+  return 0.75 - ( x * x );
+};
+
 WavePCM.prototype.resampleAndInterleave = function( buffers ) {
   var outputData = new Float32Array( this.resampledBufferLength * this.numberOfChannels );
 
   for ( var i = 0; i < this.resampledBufferLength - 1; i++ ) {
     var resampleValue = (this.resampleRatio - 1) + (i * this.resampleRatio);
-    var samplePoint = Math.ceil( resampleValue );
-    var linearRatio = resampleValue - ( samplePoint - 1 );
+    var nearestPoint = Math.round( resampleValue );
+
     for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
       var channelData = buffers[ channel ];
-      var interpolationValue = channelData[ samplePoint - 1 ] || this.lastSample[ channel ];
-      outputData[ i * this.numberOfChannels + channel ] = interpolationValue + linearRatio * (channelData[ samplePoint ] - interpolationValue);
+
+      for ( var tap = -1; tap < 2; tap++ ) {
+        var sampleValue = channelData[ nearestPoint + tap ] || this.cachedSamples[channel][ 1 + tap ];
+        outputData[ i * this.numberOfChannels + channel ] += sampleValue * this.magicKernel( resampleValue - nearestPoint - tap );
+      }
     }
   }
 
   for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
-    this.lastSample[channel] = outputData[ this.resampledBufferLength - 1 ] = channelData[ this.bufferLength - 1 ];
+    this.cachedSamples[channel][0] = buffers[channel][ this.bufferLength - 2 ];
+    this.cachedSamples[channel][1] = outputData[ this.resampledBufferLength - 1 ] = buffers[channel][ this.bufferLength - 1 ];
   }
 
   return outputData;

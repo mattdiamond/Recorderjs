@@ -20,8 +20,8 @@
   <h2>Options</h2>
 
   <div>
-    <label>enableMonitoring</label>
-    <input type="checkbox" id="enableMonitoring"/>
+    <label>monitorGain</label>
+    <input id="monitorGain" type="number" value="0" />
   </div>
 
   <div>
@@ -76,7 +76,7 @@
       start.disabled = false;
 
       recorder = new Recorder({
-        enableMonitoring: enableMonitoring.checked,
+        monitorGain: monitorGain.value,
         numberOfChannels: numberOfChannels.value,
         bitDepth: bitDepth.options[ bitDepth.selectedIndex ].value,
         recordOpus: recordOpus.checked,
