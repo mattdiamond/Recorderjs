@@ -14,6 +14,7 @@ var Recorder = function( config ){
   config.monitorGain = config.monitorGain || 0;
   config.numberOfChannels = config.numberOfChannels || 1;
   config.sampleRate = config.sampleRate || (config.recordOpus ? 48000 : this.audioContext.sampleRate);
+  config.workerPath = config.workerPath || 'recorderWorker.js';
   config.streamOptions = config.streamOptions || {
     optional: [],
     mandatory: {
@@ -28,6 +29,7 @@ var Recorder = function( config ){
   this.state = "inactive";
   this.eventTarget = document.createDocumentFragment();
   this.createAudioNodes();
+  this.initStream();
 };
 
 Recorder.isRecordingSupported = function(){
@@ -42,14 +44,10 @@ Recorder.prototype.audioContext = new AudioContext();
 
 Recorder.prototype.createAudioNodes = function(){
   var that = this;
-
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
   this.scriptProcessorNode.onaudioprocess = function( e ){ that.recordBuffers( e.inputBuffer ); };
-  this.scriptProcessorNode.connect( this.audioContext.destination );
-
   this.monitorNode = this.audioContext.createGain();
   this.setMonitorGain( this.config.monitorGain );
-  this.monitorNode.connect( this.audioContext.destination );
 
   // 6th order butterworth
   if ( this.config.sampleRate < this.audioContext.sampleRate ) {
@@ -70,15 +68,20 @@ Recorder.prototype.createAudioNodes = function(){
   }
 };
 
-Recorder.prototype.onStreamInit = function( stream ){
-  this.stream = stream;
-  this.sourceNode = this.audioContext.createMediaStreamSource( stream );
-  this.sourceNode.connect( this.filterNode || this.scriptProcessorNode );
-  this.sourceNode.connect( this.monitorNode );
-  this.state = "recording";
-  this.recordingTime = 0;
-  this.eventTarget.dispatchEvent( new Event( 'start' ) );
-  this.eventTarget.dispatchEvent( new CustomEvent( 'recordingProgress', { "detail": this.recordingTime } ) );
+Recorder.prototype.initStream = function(){
+  var that = this;
+  navigator.getUserMedia(
+    { audio : this.config.streamOptions },
+    function ( stream ) {
+      that.stream = stream;
+      that.sourceNode = that.audioContext.createMediaStreamSource( stream );
+      that.sourceNode.connect( that.filterNode || that.scriptProcessorNode );
+      that.sourceNode.connect( that.monitorNode );
+    },
+    function ( e ) { 
+      that.eventTarget.dispatchEvent( new ErrorEvent( "recordingError", { error: e } ) );
+    }
+  );
 };
 
 Recorder.prototype.pause = function(){
@@ -124,10 +127,13 @@ Recorder.prototype.setMonitorGain = function( gain ){
 };
 
 Recorder.prototype.start = function(){
-  if ( this.state === "inactive" ) {
-    var that = this;
-    this.worker = new Worker( this.config.workerPath || 'recorderWorker.js' );
+  if ( this.state === "inactive" && this.sourceNode ) {
 
+    this.monitorNode.connect( this.audioContext.destination );
+    this.scriptProcessorNode.connect( this.audioContext.destination );
+
+    var that = this;
+    this.worker = new Worker( this.config.workerPath );
     this.worker.addEventListener( "message", function( e ) {
       that.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
         "detail": new Blob( [e.data], { type: that.config.recordOpus ? "audio/ogg" : "audio/wav" } )
@@ -144,17 +150,16 @@ Recorder.prototype.start = function(){
       recordOpus: this.config.recordOpus
     });
 
-    navigator.getUserMedia(
-      { audio : this.config.streamOptions },
-      function( stream ){ that.onStreamInit( stream ); },
-      function( e ){ that.eventTarget.dispatchEvent( new ErrorEvent( "recordingError", { error: e } ) ); }
-    );
-  };
+    this.state = "recording";
+    this.recordingTime = 0;
+    this.eventTarget.dispatchEvent( new Event( 'start' ) );
+    this.eventTarget.dispatchEvent( new CustomEvent( 'recordingProgress', { "detail": this.recordingTime } ) );
 };
 
 Recorder.prototype.stop = function(){
   if ( this.state !== "inactive" ) {
-    this.stream.stop();
+    this.monitorNode.disconnect();
+    this.scriptProcessorNode.disconnect();
     this.state = "inactive";
     this.eventTarget.dispatchEvent( new Event( 'stop' ) );
     this.requestData();
