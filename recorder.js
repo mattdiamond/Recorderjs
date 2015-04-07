@@ -152,6 +152,7 @@ Recorder.prototype.start = function(){
 
     this.state = "recording";
     this.recordingTime = 0;
+    this.recordBuffers = function(){ delete this.recordBuffers };
     this.eventTarget.dispatchEvent( new Event( 'start' ) );
     this.eventTarget.dispatchEvent( new CustomEvent( 'recordingProgress', { "detail": this.recordingTime } ) );
   }
