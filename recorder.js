@@ -154,6 +154,7 @@ Recorder.prototype.start = function(){
     this.recordingTime = 0;
     this.eventTarget.dispatchEvent( new Event( 'start' ) );
     this.eventTarget.dispatchEvent( new CustomEvent( 'recordingProgress', { "detail": this.recordingTime } ) );
+  }
 };
 
 Recorder.prototype.stop = function(){
