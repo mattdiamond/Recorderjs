@@ -1,27 +1,37 @@
 this.onmessage = function( e ){
+  var worker = this;
   switch( e.data.command ){
 
     case 'recordBuffers':
-      this.recorder.recordBuffers( e.data.buffers );
+      worker.recorder.recordBuffers( e.data.buffers );
       break;
 
     case 'requestData':
-      var data = this.recorder.requestData();
-      this.postMessage( data, [data.buffer] );
+      if ( worker.recorder.encodeFinalFrame ) {
+        worker.recorder.encodeFinalFrame();
+      }
+      if ( !worker.recordOpus.stream ) {
+        var data = worker.recorder.requestData();
+        worker.postMessage( data, [data.buffer] );
+      }
       break;
 
     case 'stop':
-      this.close();
+      worker.close();
       break;
 
     case 'start':
-      if ( e.data.recordOpus ) {
+      worker.recordOpus = e.data.recordOpus;
+      if ( worker.recordOpus ) {
         importScripts( 'oggopus.js' );
-        this.recorder = new OggOpus( e.data );
+        if ( worker.recordOpus.stream ) {
+          e.data.onPageComplete = function( page ){ worker.postMessage( page, [page.buffer] ); };
+        }
+        worker.recorder = new OggOpus( e.data );
       }
       else {
         importScripts( 'wavepcm.js' );
-        this.recorder = new WavePCM( e.data );
+        worker.recorder = new WavePCM( e.data );
       }
       break;
   }

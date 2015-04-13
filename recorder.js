@@ -8,8 +8,8 @@ var Recorder = function( config ){
   }
 
   config = config || {};
-  config.recordOpus = config.recordOpus === false ? false : true;
-  config.bitDepth = (config.recordOpus ? 16 : config.bitDepth) || 16;
+  config.recordOpus = (config.recordOpus === false) ? false : config.recordOpus || true;
+  config.bitDepth = config.recordOpus ? 16 : config.bitDepth || 16;
   config.bufferLength = config.bufferLength || 4096;
   config.monitorGain = config.monitorGain || 0;
   config.numberOfChannels = config.numberOfChannels || 1;
@@ -164,7 +164,7 @@ Recorder.prototype.stop = function(){
     this.scriptProcessorNode.disconnect();
     this.state = "inactive";
     this.eventTarget.dispatchEvent( new Event( 'stop' ) );
-    this.requestData();
+    this.worker.postMessage({ command: "requestData" });
     this.worker.postMessage({ command: "stop" });
   }
 };

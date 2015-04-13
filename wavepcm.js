@@ -137,7 +137,7 @@ WavePCM.prototype.resampleAndInterleave = function( buffers ) {
       var channelData = buffers[ channel ];
 
       for ( var tap = -1; tap < 2; tap++ ) {
-        var sampleValue = channelData[ nearestPoint + tap ] || this.cachedSamples[channel][ 1 + tap ];
+        var sampleValue = channelData[ nearestPoint + tap ] || this.cachedSamples[channel][ 1 + tap ] || channelData[ nearestPoint ];
         outputData[ i * this.numberOfChannels + channel ] += sampleValue * this.magicKernel( resampleValue - nearestPoint - tap );
       }
     }
