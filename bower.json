@@ -17,6 +17,7 @@
     "Wav",
     "PCM",
     "Resampler",
+    "Streamer",
     "Audio",
     "Microphone",
     "Recorder"

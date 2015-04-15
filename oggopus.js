@@ -7,7 +7,7 @@ var OggOpus = function( config ){
   this.onPageComplete = config.onPageComplete || this.onPageComplete;
   this.maxBuffersPerPage = config.recordOpus.maxBuffersPerPage || 40; // Limit latency for streaming
   this.encoderApplication = config.recordOpus.encoderApplication || 2049; // 2048 = Voice, 2049 = Full Band Audio, 2051 = Restricted Low Delay
-  this.encoderFrameSize = config.encoderFrameSize || 20; // 20ms frame
+  this.encoderFrameSize = config.recordOpus.encoderFrameSize || 20; // 20ms frame
   this.wavepcm = new WavePCM( config );
 
   this.pageIndex = 0;

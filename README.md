@@ -18,10 +18,19 @@ Creates a recorder instance. Instantiating an instance will prompt the user for 
 - **bufferLength** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
 - **monitorGain** - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between 0 and 1. Defaults to 0
 - **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 1. More than two channels has not been tested.
-- **recordOpus** - (*optional*) Specifies if recorder should record using the opus encoder. Defaults to true. If set to { stream : true }, then dataAvailable event will fire when each page is ready. Additionaly if stream is true, you can specify a maximum number of buffers per page to reduce latency using { stream: true, maxBuffersPerPage: 10 }. At 44100 Hz, 10 buffers will be ~1 second of latency.
+- **recordOpus** - (*optional*) Specifies if recorder should record using the opus encoder. Defaults to true. Additionaly, an optional opus configurations can be specified as an object here.
 - **sampleRate** - (*optional*) Specifies the sample rate to record at. Defaults to device sample rate. If different than native rate, the audio will be filtered and resampled. If recordOpus is true, this value will default to 48000.
 The Opus encoder will not work if the value is not 8000, 12000, 16000, 24000 or 48000.
 - **workerPath** - (*optional*) Path to recorder.js worker script. Defaults to 'recorderWorker.js'
+
+
+---------
+#### Opus Config
+
+- **stream** - (*optional*) Specifies wheather dataAvailable event should be fired when each page is ready. If true, requestData will have no effect. Defaults to false.
+- **maxBuffersPerPage** - (*optional*) Specifies the maximum number of buffers to use before generating an Ogg page. This can be used to lower the streaming latency. The lower the value the more overhead the ogg stream will incur. Defaults to 40.
+- **encoderApplication** - (*optional*) Specifies the encoder application. Supported values are 2048 - Voice, 2049 - Full Band Audio, 2051 - Restricted Low Delay. Defaults to 2049.
+- **encoderFrameSize** (*optional*) Specifies the frame size in ms used for encoding. Defaults to 20.
 
 
 ---------
