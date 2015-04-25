@@ -16,8 +16,8 @@
   <p>Make sure you are using a recent version of Google Chrome.</p>
   <p>Also before you enable microphone input either plug in headphones or turn the volume down if you want to avoid ear splitting feedback!</p>
 
-  <button onclick="startRecording(this);">record</button>
-  <button onclick="stopRecording(this);" disabled>stop</button>
+  <button id="start" onclick="startRecording(this);">record</button>
+  <button id="stop" onclick="stopRecording(this);" disabled>stop</button>
   
   <h2>Recordings</h2>
   <ul id="recordingslist"></ul>
@@ -43,13 +43,16 @@
     
     recorder = new Recorder(input);
     __log('Recorder initialised.');
+    recorder && recorder.record();
+    document.getElementById('start').disabled = true;
+    document.getElementById('stop').disabled = false;
+    __log('Recording...');
   }
 
   function startRecording(button) {
-    recorder && recorder.record();
-    button.disabled = true;
-    button.nextElementSibling.disabled = false;
-    __log('Recording...');
+    navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
+      __log('No live audio input: ' + e);
+    });
   }
 
   function stopRecording(button) {
@@ -95,10 +98,6 @@
     } catch (e) {
       alert('No web audio support in this browser!');
     }
-    
-    navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
-      __log('No live audio input: ' + e);
-    });
   };
   </script>
 
