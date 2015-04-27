@@ -38,7 +38,7 @@ The Opus encoder will not work if the value is not 8000, 12000, 16000, 24000 or 
 
     rec.addEventListener( type, listener[, useCapture] )
 
-**addEventListener** will add an event listener to the event target. Custom events are "recordingProgress", "recordingError", "dataAvailable", "start", "pause", "resume" and "stop".
+**addEventListener** will add an event listener to the event target. Available events are "recordingProgress", "streamError", "streamReady", dataAvailable", "start", "pause", "resume" and "stop".
 
     rec.setMonitorGain( gain )
 

@@ -80,9 +80,10 @@ Recorder.prototype.initStream = function(){
       that.sourceNode = that.audioContext.createMediaStreamSource( stream );
       that.sourceNode.connect( that.filterNode || that.scriptProcessorNode );
       that.sourceNode.connect( that.monitorNode );
+      that.eventTarget.dispatchEvent( new Event( "streamReady" ) );
     },
     function ( e ) { 
-      that.eventTarget.dispatchEvent( new ErrorEvent( "recordingError", { error: e } ) );
+      that.eventTarget.dispatchEvent( new ErrorEvent( "streamError", { error: e } ) );
     }
   );
 };
