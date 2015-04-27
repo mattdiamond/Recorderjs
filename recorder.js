@@ -25,18 +25,19 @@ var Recorder = function( config ){
     }
   };
 
-  var eventTarget = document.createDocumentFragment();
-  this.addEventListener = eventTarget.addEventListener;
-  this.dispatchEvent = eventTarget.dispatchEvent;
-  this.removeEventListener = eventTarget.removeEventListener;
   this.config = config;
   this.state = "inactive";
+  this.eventTarget = document.createDocumentFragment();
   this.createAudioNodes();
   this.initStream();
 };
 
 Recorder.isRecordingSupported = function(){
   return AudioContext && navigator.getUserMedia;
+};
+
+Recorder.prototype.addEventListener = function( type, listener, useCapture ){
+  this.eventTarget.addEventListener( type, listener, useCapture );
 };
 
 Recorder.prototype.audioContext = new AudioContext();
@@ -79,10 +80,10 @@ Recorder.prototype.initStream = function(){
       that.sourceNode = that.audioContext.createMediaStreamSource( stream );
       that.sourceNode.connect( that.filterNode || that.scriptProcessorNode );
       that.sourceNode.connect( that.monitorNode );
-      that.dispatchEvent( new Event( "streamReady" ) );
+      that.eventTarget.dispatchEvent( new Event( "streamReady" ) );
     },
     function ( e ) { 
-      that.dispatchEvent( new ErrorEvent( "streamError", { error: e } ) );
+      that.eventTarget.dispatchEvent( new ErrorEvent( "streamError", { error: e } ) );
     }
   );
 };
@@ -90,7 +91,7 @@ Recorder.prototype.initStream = function(){
 Recorder.prototype.pause = function(){
   if ( this.state === "recording" ){
     this.state = "paused";
-    this.dispatchEvent( new Event( 'pause' ) );
+    this.eventTarget.dispatchEvent( new Event( 'pause' ) );
   }
 };
 
@@ -104,8 +105,12 @@ Recorder.prototype.recordBuffers = function( inputBuffer ){
 
     this.worker.postMessage({ command: "recordBuffers", buffers: buffers });
     this.recordingTime += inputBuffer.duration;
-    this.dispatchEvent( new CustomEvent( 'recordingProgress', { "detail": this.recordingTime } ) );
+    this.eventTarget.dispatchEvent( new CustomEvent( 'recordingProgress', { "detail": this.recordingTime } ) );
   }
+};
+
+Recorder.prototype.removeEventListener = function( type, listener, useCapture ){
+  this.eventTarget.removeEventListener( type, listener, useCapture );
 };
 
 Recorder.prototype.requestData = function( callback ) {
@@ -117,7 +122,7 @@ Recorder.prototype.requestData = function( callback ) {
 Recorder.prototype.resume = function( callback ) {
   if ( this.state === "paused" ) {
     this.state = "recording";
-    this.dispatchEvent( new Event( 'resume' ) );
+    this.eventTarget.dispatchEvent( new Event( 'resume' ) );
   }
 };
 
@@ -131,7 +136,7 @@ Recorder.prototype.start = function(){
     var that = this;
     this.worker = new Worker( this.config.workerPath );
     this.worker.addEventListener( "message", function( e ) {
-      that.dispatchEvent( new CustomEvent( 'dataAvailable', {
+      that.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
         "detail": new Blob( [e.data], { type: that.config.recordOpus ? "audio/ogg" : "audio/wav" } )
       }));
     });
@@ -151,8 +156,8 @@ Recorder.prototype.start = function(){
     this.monitorNode.connect( this.audioContext.destination );
     this.scriptProcessorNode.connect( this.audioContext.destination );
     this.recordBuffers = function(){ delete this.recordBuffers }; // First buffer can contain old data
-    this.dispatchEvent( new Event( 'start' ) );
-    this.dispatchEvent( new CustomEvent( 'recordingProgress', { "detail": this.recordingTime } ) );
+    this.eventTarget.dispatchEvent( new Event( 'start' ) );
+    this.eventTarget.dispatchEvent( new CustomEvent( 'recordingProgress', { "detail": this.recordingTime } ) );
   }
 };
 
@@ -161,7 +166,7 @@ Recorder.prototype.stop = function(){
     this.monitorNode.disconnect();
     this.scriptProcessorNode.disconnect();
     this.state = "inactive";
-    this.dispatchEvent( new Event( 'stop' ) );
+    this.eventTarget.dispatchEvent( new Event( 'stop' ) );
     this.worker.postMessage({ command: "requestData" });
     this.worker.postMessage({ command: "stop" });
   }
