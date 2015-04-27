@@ -28,11 +28,10 @@ var OggOpus = function( config ){
 
 OggOpus.prototype.encode = function( samples ) {
   var sampleIndex = 0;
-  var lengthToCopy;
 
   while ( sampleIndex < samples.length ) {
 
-    lengthToCopy = Math.min( this.encoderBufferLength - this.encoderBufferIndex, samples.length - sampleIndex );
+    var lengthToCopy = Math.min( this.encoderBufferLength - this.encoderBufferIndex, samples.length - sampleIndex );
     this.encoderBuffer.set( samples.subarray( sampleIndex, sampleIndex+lengthToCopy ), this.encoderBufferIndex );
     sampleIndex += lengthToCopy;
     this.encoderBufferIndex += lengthToCopy;
@@ -172,18 +171,23 @@ OggOpus.prototype.segmentPacket = function( packetLength ) {
   var packetIndex = 0;
 
   while ( packetLength >= 0 ) {
+
+    if ( this.segmentTableIndex === 255 ) {
+      this.generatePage();
+      this.headerType = 1;
+    }
+
     var segmentLength = Math.min( packetLength, 255 );
     this.segmentTable[ this.segmentTableIndex++ ] = segmentLength;
     this.segmentData.set( this.encoderOutputBuffer.subarray( packetIndex, packetIndex + segmentLength ), this.segmentDataIndex );
     this.segmentDataIndex += segmentLength;
     packetIndex += segmentLength;
     packetLength -= 255;
-
-    if ( this.segmentTableIndex === 255 ) {
-      this.generatePage();
-      this.headerType = ( packetLength >= 0 ) ? 1 : 0;
-    }
   }
 
   this.granulePosition += ( 48 * this.encoderFrameSize );
+  if ( this.segmentTableIndex === 255 ) {
+    this.generatePage();
+    this.headerType = 0;
+  }
 };

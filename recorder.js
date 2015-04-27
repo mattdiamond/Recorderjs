@@ -49,23 +49,26 @@ Recorder.prototype.createAudioNodes = function(){
   this.monitorNode = this.audioContext.createGain();
   this.setMonitorGain( this.config.monitorGain );
 
-  // 6th order butterworth
   if ( this.config.sampleRate < this.audioContext.sampleRate ) {
-    this.filterNode = this.audioContext.createBiquadFilter();
-    this.filterNode2 = this.audioContext.createBiquadFilter();
-    this.filterNode3 = this.audioContext.createBiquadFilter();
-    this.filterNode.type = this.filterNode2.type = this.filterNode3.type = "lowpass";
-
-    var nyquistFreq = this.config.sampleRate / 2;
-    this.filterNode.frequency.value = this.filterNode2.frequency.value = this.filterNode3.frequency.value = nyquistFreq - ( nyquistFreq / 3.5355 );
-    this.filterNode.Q.value = 0.51764;
-    this.filterNode2.Q.value = 0.70711;
-    this.filterNode3.Q.value = 1.93184;
-
-    this.filterNode.connect( this.filterNode2 );
-    this.filterNode2.connect( this.filterNode3 );
-    this.filterNode3.connect( this.scriptProcessorNode );
+    this.createButterworthFilter();
   }
+};
+
+Recorder.prototype.createButterworthFilter = function(){
+  this.filterNode = this.audioContext.createBiquadFilter();
+  this.filterNode2 = this.audioContext.createBiquadFilter();
+  this.filterNode3 = this.audioContext.createBiquadFilter();
+  this.filterNode.type = this.filterNode2.type = this.filterNode3.type = "lowpass";
+
+  var nyquistFreq = this.config.sampleRate / 2;
+  this.filterNode.frequency.value = this.filterNode2.frequency.value = this.filterNode3.frequency.value = nyquistFreq - ( nyquistFreq / 3.5355 );
+  this.filterNode.Q.value = 0.51764;
+  this.filterNode2.Q.value = 0.70711;
+  this.filterNode3.Q.value = 1.93184;
+
+  this.filterNode.connect( this.filterNode2 );
+  this.filterNode2.connect( this.filterNode3 );
+  this.filterNode3.connect( this.scriptProcessorNode );
 };
 
 Recorder.prototype.initStream = function(){
@@ -152,7 +155,7 @@ Recorder.prototype.start = function(){
 
     this.state = "recording";
     this.recordingTime = 0;
-    this.recordBuffers = function(){ delete this.recordBuffers };
+    this.recordBuffers = function(){ delete this.recordBuffers }; // First buffer can contain old data
     this.eventTarget.dispatchEvent( new Event( 'start' ) );
     this.eventTarget.dispatchEvent( new CustomEvent( 'recordingProgress', { "detail": this.recordingTime } ) );
   }
