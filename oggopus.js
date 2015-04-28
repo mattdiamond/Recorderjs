@@ -140,30 +140,12 @@ OggOpus.prototype.initChecksumTable = function(){
 OggOpus.prototype.initCodec = function() {
   this.encoder = _opus_encoder_create( this.outputSampleRate, this.numberOfChannels, this.encoderApplication, allocate(4, 'i32', ALLOC_STACK) );
 
-  var bitrateLocation = _malloc(4);
-  HEAP32[bitrateLocation >>> 2] = this.bitRate;
-  _opus_encoder_ctl(
-    this.encoder,
-    4002, // OPUS_SET_BITRATE_REQUEST
-    bitrateLocation)
-  ;
-  _free(bitrateLocation);
-
-
-  var resultLocation = _malloc(4);
-  var resultLocationLocation = _malloc(4);
-  HEAP32[resultLocationLocation >>> 2] = resultLocation;
-
-  _opus_encoder_ctl(
-    this.encoder,
-    4003, // OPUS_GET_BITRATE_REQUEST
-    resultLocationLocation
-  );
-
-  var result = HEAPU32[resultLocation >>> 2];
-  _free(resultLocationLocation);
-  _free(resultLocation);
-  console.log("OPUS_GET_BITRATE=" + result);
+  if ( this.bitRate ) {
+    var bitrateLocation = _malloc( 4 );
+    HEAP32[bitrateLocation >>> 2] = this.bitRate;
+    _opus_encoder_ctl( this.encoder, 4002, bitrateLocation );
+    _free( bitrateLocation );
+  }
 
   this.encoderBufferIndex = 0;
   this.encoderSamplesPerChannelPerPacket = this.outputSampleRate * this.encoderFrameSize / 1000;
