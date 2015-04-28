@@ -77,9 +77,6 @@
 
     init.addEventListener( "click", function(){
 
-      init.disabled = pause.disabled = resume.disabled = stopButton.disabled = true;
-      start.disabled = false;
-
       recorder = new Recorder({
         monitorGain: monitorGain.value,
         numberOfChannels: numberOfChannels.value,
@@ -117,8 +114,14 @@
         screenLogger('Recorded ' + e.detail + ' seconds');
       });
 
-      recorder.addEventListener( "recordingError", function(e){
+      recorder.addEventListener( "streamError", function(e){
         screenLogger('Error encountered: ' + e.error.name );
+      });
+
+      recorder.addEventListener( "streamReady", function(e){
+        screenLogger('Audio stream is ready. Recording can begin.');
+        init.disabled = pause.disabled = resume.disabled = stopButton.disabled = true;
+        start.disabled = false;
       });
 
       recorder.addEventListener( "dataAvailable", function(e){
