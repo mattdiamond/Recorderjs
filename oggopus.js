@@ -8,6 +8,7 @@ var OggOpus = function( config ){
   this.maxBuffersPerPage = config.recordOpus.maxBuffersPerPage || 40; // Limit latency for streaming
   this.encoderApplication = config.recordOpus.encoderApplication || 2049; // 2048 = Voice, 2049 = Full Band Audio, 2051 = Restricted Low Delay
   this.encoderFrameSize = config.recordOpus.encoderFrameSize || 20; // 20ms frame
+  this.bitRate = config.recordOpus.bitRate;
   this.wavepcm = new WavePCM( config );
 
   this.pageIndex = 0;
@@ -138,6 +139,14 @@ OggOpus.prototype.initChecksumTable = function(){
 
 OggOpus.prototype.initCodec = function() {
   this.encoder = _opus_encoder_create( this.outputSampleRate, this.numberOfChannels, this.encoderApplication, allocate(4, 'i32', ALLOC_STACK) );
+
+  if ( this.bitRate ) {
+    var bitRateLocation = _malloc( 4 );
+    HEAP32[bitRateLocation >>> 2] = this.bitRate;
+    _opus_encoder_ctl( this.encoder, 4002, bitRateLocation );
+    _free( bitRateLocation );
+  }
+
   this.encoderBufferIndex = 0;
   this.encoderSamplesPerChannelPerPacket = this.outputSampleRate * this.encoderFrameSize / 1000;
   this.encoderBufferLength = this.encoderSamplesPerChannelPerPacket * this.numberOfChannels;

@@ -49,6 +49,11 @@
     <input id="sampleRate" type="number" value="48000" />
   </div>
 
+  <div>
+    <label>bitRate</label>
+    <input id="bitRate" type="number" value="64000" />
+  </div>
+
   <h2>Commands</h2>
   <button id="init">init</button>
   <button id="start" disabled>start</button>
@@ -76,7 +81,7 @@
         monitorGain: monitorGain.value,
         numberOfChannels: numberOfChannels.value,
         bitDepth: bitDepth.options[ bitDepth.selectedIndex ].value,
-        recordOpus: recordOpus.checked,
+        recordOpus: recordOpus.checked ? {bitRate: bitRate.value} : false,
         sampleRate: sampleRate.value
       });
 
