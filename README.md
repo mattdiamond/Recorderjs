@@ -31,6 +31,7 @@ The Opus encoder will not work if the value is not 8000, 12000, 16000, 24000 or 
 - **maxBuffersPerPage** - (*optional*) Specifies the maximum number of buffers to use before generating an Ogg page. This can be used to lower the streaming latency. The lower the value the more overhead the ogg stream will incur. Defaults to 40.
 - **encoderApplication** - (*optional*) Specifies the encoder application. Supported values are 2048 - Voice, 2049 - Full Band Audio, 2051 - Restricted Low Delay. Defaults to 2049.
 - **encoderFrameSize** (*optional*) Specifies the frame size in ms used for encoding. Defaults to 20.
+- **bitRate** (*optional*) Specifies the target bitrate in bits/sec. The encoder selects an application-specific default when this is not specified.
 
 
 ---------

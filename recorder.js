@@ -148,8 +148,7 @@ Recorder.prototype.start = function(){
       inputSampleRate: this.audioContext.sampleRate,
       numberOfChannels: this.config.numberOfChannels,
       outputSampleRate: this.config.sampleRate,
-      recordOpus: this.config.recordOpus,
-      bitRate: this.config.bitRate
+      recordOpus: this.config.recordOpus
     });
 
     this.state = "recording";

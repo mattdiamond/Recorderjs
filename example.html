@@ -81,9 +81,8 @@
         monitorGain: monitorGain.value,
         numberOfChannels: numberOfChannels.value,
         bitDepth: bitDepth.options[ bitDepth.selectedIndex ].value,
-        recordOpus: recordOpus.checked,
-        sampleRate: sampleRate.value,
-        bitRate: bitRate.value
+        recordOpus: recordOpus.checked ? {bitRate: bitRate.value} : false,
+        sampleRate: sampleRate.value
       });
 
       recorder.addEventListener( "start", function(e){
