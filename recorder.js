@@ -9,7 +9,7 @@
     this.context = source.context;
     this.node = (this.context.createScriptProcessor ||
                  this.context.createJavaScriptNode).call(this.context,
-                 bufferLen, numChannels, numChannels);
+                 bufferLen, 2, numChannels);
     var worker = new Worker(config.workerPath || WORKER_PATH);
     worker.postMessage({
       command: 'init',
