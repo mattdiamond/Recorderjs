@@ -104,8 +104,8 @@ Recorder.prototype.recordBuffers = function( inputBuffer ){
     }
 
     this.worker.postMessage({ command: "recordBuffers", buffers: buffers });
-    this.recordingTime += inputBuffer.duration;
-    this.eventTarget.dispatchEvent( new CustomEvent( 'recordingProgress', { "detail": this.recordingTime } ) );
+    this.duration += inputBuffer.duration;
+    this.eventTarget.dispatchEvent( new CustomEvent( 'duration', { "detail": this.duration } ) );
   }
 };
 
@@ -152,12 +152,12 @@ Recorder.prototype.start = function(){
     });
 
     this.state = "recording";
-    this.recordingTime = 0;
+    this.duration = 0;
     this.monitorNode.connect( this.audioContext.destination );
     this.scriptProcessorNode.connect( this.audioContext.destination );
     this.recordBuffers = function(){ delete this.recordBuffers }; // First buffer can contain old data
     this.eventTarget.dispatchEvent( new Event( 'start' ) );
-    this.eventTarget.dispatchEvent( new CustomEvent( 'recordingProgress', { "detail": this.recordingTime } ) );
+    this.eventTarget.dispatchEvent( new CustomEvent( 'duration', { "detail": this.duration } ) );
   }
 };
 
