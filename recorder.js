@@ -166,7 +166,14 @@ Recorder.prototype.stop = function(){
     this.monitorNode.disconnect();
     this.scriptProcessorNode.disconnect();
     this.state = "inactive";
-    this.eventTarget.dispatchEvent( new Event( 'stop' ) );
+
+    var that = this;
+    var publishStop = function( e ) {
+      that.eventTarget.dispatchEvent( new Event( 'stop' ) );
+      that.worker.removeEventListener( "message", publishStop );
+    };
+
+    this.worker.addEventListener( "message", publishStop );
     this.worker.postMessage({ command: "requestData" });
     this.worker.postMessage({ command: "stop" });
   }
