@@ -163,17 +163,13 @@ Recorder.prototype.start = function(){
 
 Recorder.prototype.stop = function(){
   if ( this.state !== "inactive" ) {
+    var that = this;
     this.monitorNode.disconnect();
     this.scriptProcessorNode.disconnect();
     this.state = "inactive";
-
-    var that = this;
-    var publishStop = function( e ) {
+    this.worker.addEventListener( "message", function( e ) {
       that.eventTarget.dispatchEvent( new Event( 'stop' ) );
-      that.worker.removeEventListener( "message", publishStop );
-    };
-
-    this.worker.addEventListener( "message", publishStop );
+    });
     this.worker.postMessage({ command: "requestData" });
     this.worker.postMessage({ command: "stop" });
   }
