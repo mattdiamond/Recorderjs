@@ -66,21 +66,12 @@ WavePCM.prototype.bitReduce = function( floatData ){
 };
 
 WavePCM.prototype.getFile = function( audioData ){
-  var header = this.getHeader( audioData.byteLength );
-  var wav = new Uint8Array( header.byteLength + audioData.byteLength );
-
-  wav.set( header );
-  wav.set( audioData, header.byteLength );
-
-  return wav;
-};
-
-WavePCM.prototype.getHeader = function( dataLength ) {
-  var header = new ArrayBuffer( 44 );
-  var view = new DataView( header );
+  var buffer = new ArrayBuffer( 44 + audioData.byteLength );
+  var view = new DataView( buffer );
+  var file = new Uint8Array( buffer );
 
   view.setUint32( 0, 1380533830, false ); // RIFF identifier 'RIFF'
-  view.setUint32( 4, 36 + dataLength, true ); // file length minus RIFF identifier length and file description length
+  view.setUint32( 4, 36 + audioData.byteLength, true ); // file length minus RIFF identifier length and file description length
   view.setUint32( 8, 1463899717, false ); // RIFF type 'WAVE'
   view.setUint32( 12, 1718449184, false ); // format chunk identifier 'fmt '
   view.setUint32( 16, 16, true ); // format chunk length 
@@ -91,9 +82,10 @@ WavePCM.prototype.getHeader = function( dataLength ) {
   view.setUint16( 32, this.bytesPerSample * this.numberOfChannels, true ); // block align (channel count * bytes per sample)
   view.setUint16( 34, this.bitDepth, true ); // bits per sample
   view.setUint32( 36, 1684108385, false); // data chunk identifier 'data'
-  view.setUint32( 40, dataLength, true ); // data chunk length
+  view.setUint32( 40, audioData.byteLength, true ); // data chunk length
+  file.set( audioData, 44 );
 
-  return new Uint8Array( header );
+  return file;
 };
 
 WavePCM.prototype.mergeBuffers = function( buffers ) {
