@@ -66,11 +66,11 @@ OggOpus.prototype.getChecksum = function( data ){
 
 OggOpus.prototype.generateCommentPage = function(){
   var segmentDataView = new DataView( this.segmentData.buffer );
-  segmentDataView.setUint32( 0, 1332770163, false ) // Magic Signature 'Opus'
-  segmentDataView.setUint32( 4, 1415669619, false ) // Magic Signature 'Tags'
+  segmentDataView.setUint32( 0, 1937076303, true ) // Magic Signature 'Opus'
+  segmentDataView.setUint32( 4, 1936154964, true ) // Magic Signature 'Tags'
   segmentDataView.setUint32( 8, 8, true ); // Vendor Length
-  segmentDataView.setUint32( 12, 1382376303, false ); // Vendor name 'Reco'
-  segmentDataView.setUint32( 16, 1919182194, false ); // Vendor name 'rder'
+  segmentDataView.setUint32( 12, 1868784978, true ); // Vendor name 'Reco'
+  segmentDataView.setUint32( 16, 1919247474, true ); // Vendor name 'rder'
   segmentDataView.setUint32( 20, 0, true ); // User Comment List Length
   this.segmentTableIndex = 1;
   this.segmentDataIndex = this.segmentTable[0] = 24;
@@ -80,8 +80,8 @@ OggOpus.prototype.generateCommentPage = function(){
 
 OggOpus.prototype.generateIdPage = function(){
   var segmentDataView = new DataView( this.segmentData.buffer );
-  segmentDataView.setUint32( 0, 1332770163, false ) // Magic Signature 'Opus'
-  segmentDataView.setUint32( 4, 1214603620, false ) // Magic Signature 'Head'
+  segmentDataView.setUint32( 0, 1937076303, true ) // Magic Signature 'Opus'
+  segmentDataView.setUint32( 4, 1684104520, true ) // Magic Signature 'Head'
   segmentDataView.setUint8( 8, 1, true ); // Version
   segmentDataView.setUint8( 9, this.numberOfChannels, true ); // Channel count
   segmentDataView.setUint16( 10, 3840, true ); // pre-skip (80ms)
@@ -100,7 +100,7 @@ OggOpus.prototype.generatePage = function(){
   var pageBufferView = new DataView( pageBuffer );
   var page = new Uint8Array( pageBuffer );
 
-  pageBufferView.setUint32( 0, 1332176723, false); // Capture Pattern starts all page headers 'OggS'
+  pageBufferView.setUint32( 0, 1399285583, true); // Capture Pattern starts all page headers 'OggS'
   pageBufferView.setUint8( 4, 0, true ); // Version
   pageBufferView.setUint8( 5, this.headerType, true ); // 1 = continuation, 2 = beginning of stream, 4 = end of stream
 

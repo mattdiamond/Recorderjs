@@ -70,10 +70,10 @@ WavePCM.prototype.getFile = function( audioData ){
   var view = new DataView( buffer );
   var file = new Uint8Array( buffer );
 
-  view.setUint32( 0, 1380533830, false ); // RIFF identifier 'RIFF'
+  view.setUint32( 0, 1179011410, true ); // RIFF identifier 'RIFF'
   view.setUint32( 4, 36 + audioData.byteLength, true ); // file length minus RIFF identifier length and file description length
-  view.setUint32( 8, 1463899717, false ); // RIFF type 'WAVE'
-  view.setUint32( 12, 1718449184, false ); // format chunk identifier 'fmt '
+  view.setUint32( 8, 1163280727, true ); // RIFF type 'WAVE'
+  view.setUint32( 12, 544501094, true ); // format chunk identifier 'fmt '
   view.setUint32( 16, 16, true ); // format chunk length 
   view.setUint16( 20, 1, true ); // sample format (raw)
   view.setUint16( 22, this.numberOfChannels, true ); // channel count
@@ -81,7 +81,7 @@ WavePCM.prototype.getFile = function( audioData ){
   view.setUint32( 28, this.outputSampleRate * this.bytesPerSample * this.numberOfChannels, true ); // byte rate (sample rate * block align)
   view.setUint16( 32, this.bytesPerSample * this.numberOfChannels, true ); // block align (channel count * bytes per sample)
   view.setUint16( 34, this.bitDepth, true ); // bits per sample
-  view.setUint32( 36, 1684108385, false); // data chunk identifier 'data'
+  view.setUint32( 36, 1635017060, true); // data chunk identifier 'data'
   view.setUint32( 40, audioData.byteLength, true ); // data chunk length
   file.set( audioData, 44 );
 
