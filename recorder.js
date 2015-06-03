@@ -8,13 +8,15 @@ var Recorder = function( config ){
   }
 
   config = config || {};
-  config.recordOpus = (config.recordOpus === false) ? false : config.recordOpus || true;
-  config.bitDepth = config.recordOpus ? 16 : config.bitDepth || 16;
   config.bufferLength = config.bufferLength || 4096;
   config.monitorGain = config.monitorGain || 0;
   config.numberOfChannels = config.numberOfChannels || 1;
-  config.sampleRate = config.sampleRate || (config.recordOpus ? 48000 : this.audioContext.sampleRate);
+  config.sampleRate = config.sampleRate || 48000;
   config.workerPath = config.workerPath || 'recorderWorker.js';
+  config.stream = config.stream || false;
+  config.maxBuffersPerPage = config.maxBuffersPerPage || 40;
+  config.encoderApplication = config.encoderApplication || 2049;
+  config.encoderFrameSize = config.encoderFrameSize || 20;
   config.streamOptions = config.streamOptions || {
     optional: [],
     mandatory: {

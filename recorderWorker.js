@@ -7,13 +7,7 @@ this.onmessage = function( e ){
       break;
 
     case 'requestData':
-      if ( worker.recorder.encodeFinalFrame ) {
-        worker.recorder.encodeFinalFrame();
-      }
-      if ( !worker.recordOpus.stream ) {
-        var data = worker.recorder.requestData();
-        worker.postMessage( data, [data.buffer] );
-      }
+      worker.recorder.requestData()
       break;
 
     case 'stop':
@@ -21,18 +15,8 @@ this.onmessage = function( e ){
       break;
 
     case 'start':
-      worker.recordOpus = e.data.recordOpus;
-      if ( worker.recordOpus ) {
-        importScripts( 'oggopus.js' );
-        if ( worker.recordOpus.stream ) {
-          e.data.onPageComplete = function( page ){ worker.postMessage( page, [page.buffer] ); };
-        }
-        worker.recorder = new OggOpus( e.data );
-      }
-      else {
-        importScripts( 'wavepcm.js' );
-        worker.recorder = new WavePCM( e.data );
-      }
+      importScripts( 'oggopusEncoder.js' );
+      worker.recorder = new OggOpusEncoder( e.data, worker );
       break;
   }
 };

@@ -1,5 +1,6 @@
- var WavePCM = function( config ){
+ var WavePCM = function( config, worker ){
 
+  this.worker = worker;
   this.inputSampleRate = config.inputSampleRate;
   this.bufferLength = config.bufferLength;
   this.bitDepth = config.bitDepth;
@@ -104,7 +105,8 @@ WavePCM.prototype.recordBuffers = function( buffers ){
 };
 
 WavePCM.prototype.requestData = function(){
-  return this.getFile( this.mergeBuffers( this.recordedBuffers ) );
+  var data = this.getFile( this.mergeBuffers( this.recordedBuffers ) );
+  this.worker.postMessage( data, [data.buffer] );
 };
 
 // From http://johncostella.webs.com/magic/
