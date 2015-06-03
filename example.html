@@ -3,7 +3,7 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Live input record and playback</title>
+  <title>Ogg Opus Recorder Example</title>
   <script src="recorder.js"></script>
   <style type='text/css'>
     ul { list-style: none; }
@@ -25,23 +25,8 @@
   </div>
 
   <div>
-    <label>bitDepth</label>
-    <select id="bitDepth">
-      <option value="8">8</option> 
-      <option value="16" selected>16</option>
-      <option value="24">24</option>
-      <option value="32">32</option>
-    </select>
-  </div>
-
-  <div>
     <label>numberOfChannels</label>
     <input id="numberOfChannels" type="number" value="1" />
-  </div>
-
-  <div>
-    <label>recordOpus</label>
-    <input type="checkbox" id="recordOpus" checked />
   </div>
 
   <div>
@@ -80,8 +65,7 @@
       recorder = new Recorder({
         monitorGain: monitorGain.value,
         numberOfChannels: numberOfChannels.value,
-        bitDepth: bitDepth.options[ bitDepth.selectedIndex ].value,
-        recordOpus: recordOpus.checked ? {bitRate: bitRate.value} : false,
+        bitRate: bitRate.value},
         sampleRate: sampleRate.value
       });
 
