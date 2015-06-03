@@ -27,12 +27,10 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
 
     // Decode page
     if ( pageIndex > 1 ) {
-
       var segmentTableLength = dataView.getUint8( pageStart + 26 );
       var segmentTableIndex = pageStart + 27 + segmentTableLength;
 
       for ( var i = 0; i < segmentTableLength; i++ ) {
-
         var packetLength = dataView.getUint8( pageStart + 27 + i );
         this.decoderBuffer.set( typedArray.subarray( segmentTableIndex, segmentTableIndex += packetLength ), this.decoderBufferIndex );
         this.decoderBufferIndex += packetLength;
