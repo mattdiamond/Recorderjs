@@ -14,8 +14,8 @@
   "keywords": [
     "Ogg",
     "Opus",
-    "Wav",
     "PCM",
+    "Decoder",
     "Resampler",
     "Streamer",
     "Audio",

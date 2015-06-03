@@ -2,15 +2,11 @@ importScripts( 'libopus.js', 'resampler.js' );
 
 var OggOpusDecoder = function( config, worker ){
   this.sampleRate = config.resampledrate = config.sampleRate || 48000;
+  this.decoderSampleRate = config.originalSampleRate = 48000;
   this.bufferLength = config.bufferLength || 4096;
   this.outputBuffers = [];
   this.worker = worker;
-  this.decoderSampleRate = config.originalSampleRate = 48000;
   this.resampler = new Resampler( config );
-
-  if ( this.numberOfChannels === 1 ) {
-    this.deinterleave = function( mergedBuffers ) { return [mergedBuffers]; };
-  }
 };
 
 OggOpusDecoder.prototype.decode = function( typedArray ) {
@@ -24,8 +20,7 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
     // Beginning of stream
     if ( headerType & 2 ) {
       this.numberOfChannels = dataView.getUint8( 37 );
-      this.resetOutputBuffers();
-      this.initCodec();
+      this.init();
     }
 
     if ( pageIndex > 1 ) {
@@ -84,6 +79,14 @@ OggOpusDecoder.prototype.getPageBoundaries = function( typedArray ){
 
   return pages;
 };
+
+OggOpusDecoder.prototype.init = function(){
+  this.resetOutputBuffers();
+  this.initCodec();
+  if ( this.numberOfChannels === 1 ) {
+    this.deinterleave = function( mergedBuffers ) { return [mergedBuffers]; };
+  }
+}
 
 OggOpusDecoder.prototype.initCodec = function() {
   this.decoder = _opus_decoder_create( this.decoderSampleRate, this.numberOfChannels, allocate(4, 'i32', ALLOC_STACK) );
