@@ -10,16 +10,14 @@ var OggOpusDecoder = function( config, worker ){
 };
 
 OggOpusDecoder.prototype.decode = function( typedArray ) {
-  this.getPageBoundaries( typedArray.buffer ).map( function( pageStart, index, pages ) {
-
-    var pageEnd = pages[ index + 1 ] || typedArray.length;
-    var dataView = new DataView( typedArray.buffer, pageEnd - pageStart, pageStart );
-    var headerType = dataView.getUint8( 5 );
-    var pageIndex = dataView.getUint32( 18 );
+  var dataView = new DataView( typedArray.buffer );
+  this.getPageBoundaries( typedArray.buffer ).map( function( pageStart ) {
+    var headerType = dataView.getUint8( pageStart + 5 );
+    var pageIndex = dataView.getUint32( pageStart + 18 );
 
     // Beginning of stream
     if ( headerType & 2 ) {
-      this.numberOfChannels = dataView.getUint8( 37 );
+      this.numberOfChannels = dataView.getUint8( pageStart + 37 );
       this.resetOutputBuffers();
       this.initCodec();
       if ( this.numberOfChannels === 1 ) {
@@ -30,12 +28,12 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
     // Decode page
     else if ( pageIndex > 1 ) {
 
-      var segmentTableLength = dataView.getUint8( 26 );
+      var segmentTableLength = dataView.getUint8( pageStart + 26 );
       var segmentTableIndex = pageStart + 27 + segmentTableLength;
 
       for ( var i = 0; i < segmentTableLength; i++ ) {
 
-        var packetLength = dataView.getUint8( 27 + i );
+        var packetLength = dataView.getUint8( pageStart + 27 + i );
         this.decoderBuffer.set( typedArray.subarray( segmentTableIndex, segmentTableIndex += packetLength ), this.decoderBufferIndex );
         this.decoderBufferIndex += packetLength;
 
@@ -72,8 +70,7 @@ OggOpusDecoder.prototype.deinterleave = function( mergedBuffers ) {
   return deinterleavedData;
 };
 
-OggOpusDecoder.prototype.getPageBoundaries = function( typedArray ){
-  var dataView = new DataView( typedArray.buffer );
+OggOpusDecoder.prototype.getPageBoundaries = function( dataView ){
   var pages = [];
 
   for ( var i = 0; i < dataView.length; i++ ) {
