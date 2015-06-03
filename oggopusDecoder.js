@@ -96,16 +96,30 @@ OggOpusDecoder.prototype.initCodec = function() {
   this.decoderOutputBuffer = HEAPF32.subarray( this.decoderOutputPointer >> 2, ( this.decoderOutputPointer >> 2 ) + this.decoderOutputMaxLength );
 };
 
-OggOpusDecoder.prototype.parseDecodedData = function(  ){
-  var deinterleavedData = this.deinterleavedData( mergedBuffers );
+OggOpusDecoder.prototype.parseDecodedData = function( mergedBuffers ){
+  var data = this.deinterleavedData( mergedBuffers );
+  var dataIndex = 0;
 
-  for ( var i = 0; i < deinterleavedData.length; i++ ) {
-    deinterleavedData[ i ] = this.resampler.resample( deinterleavedData[i], i );
+  for ( var i = 0; i < data.length; i++ ) {
+    data[i] = this.resampler.resample( data[i], i );
   }
-  
-  // Copy until buffer full, then publish
 
-  this.worker.postMessage( this.outputBuffers, this.outputBufferArrayBuffers );
+  while ( dataIndex < data[0].length ) {
+
+    var amountToCopy = Math.min( data[0].length - dataIndex, this.bufferLength - this.outputBufferIndex );
+
+    for ( var i = 0; i < data.length; i++ ) {
+      this.outputBuffers[ i ].set( data[i].subarray( dataIndex, amountToCopy ), outputBufferIndex );
+    }
+
+    this.outputBufferIndex += amountToCopy;
+    dataIndex += amountToCopy;
+
+    if ( this.outputBufferIndex == this.bufferLength ) {
+      this.worker.postMessage( this.outputBuffers, this.outputBufferArrayBuffers );
+      this.resetOutputBuffers();
+    }
+  }
 };
 
 OggOpusDecoder.prototype.resetOutputBuffers = function(){
@@ -119,5 +133,5 @@ OggOpusDecoder.prototype.resetOutputBuffers = function(){
 };
 
 OggOpusDecoder.prototype.sendLastBuffer = function(){
-
+  this.parseDecodedData( new Float32Array( ( this.bufferLength - this.outputBufferIndex ) * this.numberOfChannels ) );
 };
