@@ -2,10 +2,10 @@ importScripts( 'libopus.js', 'resampler.js' );
 
 var OggOpusDecoder = function( config, worker ){
   this.worker = worker;
-  this.sampleRate = config.resampledrate = config.sampleRate || 48000;
-  this.decoderSampleRate = config.originalSampleRate = 48000;
   this.bufferLength = config.bufferLength || 4096;
+  this.decoderSampleRate = config.originalSampleRate = config.decoderSampleRate || 48000;
   this.outputBuffers = [];
+  config.resampledrate = config.outputBufferSampleRate || 48000;
   this.resampler = new Resampler( config );
 };
 
@@ -103,7 +103,7 @@ OggOpusDecoder.prototype.resetOutputBuffers = function(){
 };
 
 OggOpusDecoder.prototype.sendLastBuffer = function(){
-  this.parseDecodedData( new Float32Array( ( this.bufferLength - this.outputBufferIndex ) * this.numberOfChannels ) );
+  this.sendToOutputBuffers( new Float32Array( ( this.bufferLength - this.outputBufferIndex ) * this.numberOfChannels ) );
 };
 
 OggOpusDecoder.prototype.sendToOutputBuffers = function( mergedBuffers ){
@@ -115,7 +115,6 @@ OggOpusDecoder.prototype.sendToOutputBuffers = function( mergedBuffers ){
   }
 
   while ( dataIndex < data[0].length ) {
-
     var amountToCopy = Math.min( data[0].length - dataIndex, this.bufferLength - this.outputBufferIndex );
 
     for ( var i = 0; i < data.length; i++ ) {
