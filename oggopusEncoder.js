@@ -4,7 +4,8 @@ var OggOpusEncoder = function( config, worker ){
   this.worker = worker;
 
   this.numberOfChannels = config.numberOfChannels || 1;
-  this.sampleRate = config.sampleRate || 48000;
+  this.originalSampleRate = config.originalSampleRate;
+  this.resampledRate = config.resampledRate || 48000;
   this.maxBuffersPerPage = config.maxBuffersPerPage || 40; // Limit latency for streaming
   this.encoderApplication = config.encoderApplication || 2049; // 2048 = Voice, 2049 = Full Band Audio, 2051 = Restricted Low Delay
   this.encoderFrameSize = config.encoderFrameSize || 20; // 20ms frame
@@ -86,7 +87,7 @@ OggOpusEncoder.prototype.generateIdPage = function(){
   segmentDataView.setUint8( 8, 1, true ); // Version
   segmentDataView.setUint8( 9, this.numberOfChannels, true ); // Channel count
   segmentDataView.setUint16( 10, 3840, true ); // pre-skip (80ms)
-  segmentDataView.setUint32( 12, this.inputSampleRate, true ); // original sample rate
+  segmentDataView.setUint32( 12, this.originalSampleRate, true ); // original sample rate
   segmentDataView.setUint16( 16, 0, true ); // output gain
   segmentDataView.setUint8( 18, 0, true ); // channel map 0 = mono or stereo
   this.segmentTableIndex = 1;
@@ -139,7 +140,7 @@ OggOpusEncoder.prototype.initChecksumTable = function(){
 };
 
 OggOpusEncoder.prototype.initCodec = function() {
-  this.encoder = _opus_encoder_create( this.sampleRate, this.numberOfChannels, this.encoderApplication, allocate(4, 'i32', ALLOC_STACK) );
+  this.encoder = _opus_encoder_create( this.resampledRate, this.numberOfChannels, this.encoderApplication, allocate(4, 'i32', ALLOC_STACK) );
 
   if ( this.bitRate ) {
     var bitRateLocation = _malloc( 4 );
@@ -149,7 +150,7 @@ OggOpusEncoder.prototype.initCodec = function() {
   }
 
   this.encoderBufferIndex = 0;
-  this.encoderSamplesPerChannelPerPacket = this.sampleRate * this.encoderFrameSize / 1000;
+  this.encoderSamplesPerChannelPerPacket = this.resampledRate * this.encoderFrameSize / 1000;
   this.encoderBufferLength = this.encoderSamplesPerChannelPerPacket * this.numberOfChannels;
   this.encoderBufferPointer = _malloc( this.encoderBufferLength * 4 );
   this.encoderBuffer = HEAPF32.subarray( this.encoderBufferPointer >> 2, (this.encoderBufferPointer >> 2) + this.encoderBufferLength );
@@ -186,7 +187,7 @@ OggOpusEncoder.prototype.requestData = function() {
   }
 };
 
-OggOpusEncodetype.segmentPacket = function( packetLength ) {
+OggOpusEncoder.prototype.segmentPacket = function( packetLength ) {
   var packetIndex = 0;
 
   while ( packetLength >= 0 ) {

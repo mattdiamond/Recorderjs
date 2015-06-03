@@ -147,9 +147,9 @@ Recorder.prototype.start = function(){
       command: "start",
       bitDepth: this.config.bitDepth,
       bufferLength: this.config.bufferLength,
-      inputSampleRate: this.audioContext.sampleRate,
+      originalSampleRate: this.audioContext.sampleRate,
       numberOfChannels: this.config.numberOfChannels,
-      outputSampleRate: this.config.sampleRate,
+      resampledRate: this.config.sampleRate,
       recordOpus: this.config.recordOpus
     });
 
