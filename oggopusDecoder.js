@@ -11,7 +11,7 @@ var OggOpusDecoder = function( config, worker ){
 
 OggOpusDecoder.prototype.decode = function( typedArray ) {
   var dataView = new DataView( typedArray.buffer );
-  this.getPageBoundaries( typedArray.buffer ).map( function( pageStart ) {
+  this.getPageBoundaries( dataView ).map( function( pageStart ) {
     var headerType = dataView.getUint8( pageStart + 5 );
     var pageIndex = dataView.getUint32( pageStart + 18 );
 
