@@ -26,7 +26,7 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
     }
 
     // Decode page
-    else if ( pageIndex > 1 ) {
+    if ( pageIndex > 1 ) {
 
       var segmentTableLength = dataView.getUint8( pageStart + 26 );
       var segmentTableIndex = pageStart + 27 + segmentTableLength;
@@ -50,7 +50,7 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
       this.sendLastBuffer();
       this.worker.close();
     }
-  }, this);
+  }, this );
 };
 
 OggOpusDecoder.prototype.deinterleave = function( mergedBuffers ) {
@@ -97,6 +97,7 @@ OggOpusDecoder.prototype.resetOutputBuffers = function(){
   this.outputBuffers = [];
   this.outputBufferArrayBuffers = [];
   this.outputBufferIndex = 0;
+
   for ( var i = 0; i < this.numberOfChannels; i++ ) {
     this.outputBuffers.push( new Float32Array( this.bufferLength ) );
     this.outputBufferArrayBuffers.push( this.outputBuffers[i].buffer );

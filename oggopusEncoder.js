@@ -179,6 +179,7 @@ OggOpusEncoder.prototype.onPageComplete = function( page ){
   if ( this.stream ) {
     this.worker.postMessage( page, [page.buffer] );
   }
+
   else {
     this.fileLength += page.length;
     this.pages.push( page );
@@ -187,9 +188,11 @@ OggOpusEncoder.prototype.onPageComplete = function( page ){
 
 OggOpusEncoder.prototype.recordBuffers = function( buffers ) {
   var resampledBuffers = [];
+
   for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
     resampledBuffers.push( this.resampler.resample( buffers[channel], channel );
   }
+
   this.encode( this.interleave( resampledBuffers ) );
 };
 
