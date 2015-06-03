@@ -29,7 +29,7 @@ Resampler.prototype.magicKernel = function( x ) {
 };
 
 Resampler.prototype.resample = function( buffer, channel ) {
-  var outputData = new buffer.constructor( this.resampledBufferLength );
+  var outputData = new Float32Array( this.resampledBufferLength );
 
   for ( var i = 0; i < this.resampledBufferLength - 1; i++ ) {
     var resampleValue = ( this.resampleRatio - 1 ) + ( i * this.resampleRatio );

@@ -5,13 +5,13 @@ var OggOpusEncoder = function( config, worker ){
 
   this.numberOfChannels = config.numberOfChannels || 1;
   this.originalSampleRate = config.originalSampleRate;
-  this.resampledRate = config.resampledRate || 48000;
+  this.encodingSampleRate = this.resampledRate = config.encodingSampleRate || 48000;
   this.maxBuffersPerPage = config.maxBuffersPerPage || 40; // Limit latency for streaming
   this.encoderApplication = config.encoderApplication || 2049; // 2048 = Voice, 2049 = Full Band Audio, 2051 = Restricted Low Delay
   this.encoderFrameSize = config.encoderFrameSize || 20; // 20ms frame
   this.stream = config.stream || false;
   this.bitRate = config.bitRate;
-  
+
   this.resampler = new Resampler( config );
   this.pageIndex = 0;
   this.granulePosition = 0;
@@ -144,7 +144,7 @@ OggOpusEncoder.prototype.initChecksumTable = function(){
 };
 
 OggOpusEncoder.prototype.initCodec = function() {
-  this.encoder = _opus_encoder_create( this.resampledRate, this.numberOfChannels, this.encoderApplication, allocate(4, 'i32', ALLOC_STACK) );
+  this.encoder = _opus_encoder_create( this.encodingSampleRate, this.numberOfChannels, this.encoderApplication, allocate(4, 'i32', ALLOC_STACK) );
 
   if ( this.bitRate ) {
     var bitRateLocation = _malloc( 4 );
@@ -154,9 +154,9 @@ OggOpusEncoder.prototype.initCodec = function() {
   }
 
   this.encoderBufferIndex = 0;
-  this.encoderSamplesPerChannelPerPacket = this.resampledRate * this.encoderFrameSize / 1000;
+  this.encoderSamplesPerChannelPerPacket = this.encodingSampleRate * this.encoderFrameSize / 1000;
   this.encoderBufferLength = this.encoderSamplesPerChannelPerPacket * this.numberOfChannels;
-  this.encoderBufferPointer = _malloc( this.encoderBufferLength * 4 );
+  this.encoderBufferPointer = _malloc( this.encoderBufferLength * 4 ); // 4 bytes per sampled
   this.encoderBuffer = HEAPF32.subarray( this.encoderBufferPointer >> 2, (this.encoderBufferPointer >> 2) + this.encoderBufferLength );
   this.encoderOutputMaxLength = 4000; 
   this.encoderOutputPointer = _malloc( this.encoderOutputMaxLength );
