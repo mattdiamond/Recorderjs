@@ -3,7 +3,7 @@
   this.worker = worker;
   this.originalSampleRate = config.originalSampleRate;
   this.bufferLength = config.bufferLength;
-  this.bitDepth = config.bitDepth;
+  this.bitDepth = config.bitDepth || 16;
   this.numberOfChannels = config.numberOfChannels;
   this.resampledRate = config.resampledRate;
 
@@ -12,9 +12,9 @@
   this.resampledBufferLength = Math.round( this.bufferLength * this.resampledRate / this.originalSampleRate );
   this.resampleRatio = this.bufferLength / this.resampledBufferLength;
 
-  this.cachedSamples = [];
+  this.resamplerCache = [];
   for ( var i = 0; i < this.numberOfChannels; i++ ){
-    this.cachedSamples[i] = [0,0];
+    this.resamplerCache[i] = [0,0];
   }
 
   if ( this.resampledRate === this.originalSampleRate ) {
@@ -27,51 +27,7 @@
   }
 };
 
-WavePCM.prototype.bitReduce = function( floatData ){
-  var outputData = new Uint8Array( floatData.length * this.bytesPerSample );
-  var outputIndex = 0;
-
-  for ( var i = 0; i < floatData.length; i++ ) {
-
-    var sample = floatData[i];
-    if ( sample > 1 ) sample = 1;
-    else if ( sample < -1 ) sample = -1;
-
-    switch ( this.bytesPerSample ) {
-      case 4:
-        sample = sample * 2147483648;
-        outputData[ outputIndex++ ] = sample;
-        outputData[ outputIndex++ ] = sample >> 8;
-        outputData[ outputIndex++ ] = sample >> 16;
-        outputData[ outputIndex++ ] = sample >> 24;
-        break;
-
-      case 3:
-        sample = sample * 8388608;
-        outputData[ outputIndex++ ] = sample;
-        outputData[ outputIndex++ ] = sample >> 8;
-        outputData[ outputIndex++ ] = sample >> 16;
-        break;
-
-      case 2:
-        sample = sample * 32768;
-        outputData[ outputIndex++ ] = sample;
-        outputData[ outputIndex++ ] = sample >> 8;
-        break;
-
-      case 1:
-        outputData[ outputIndex++ ] = (sample+1) * 128;
-        break;
-
-      default:
-        throw "Only 8, 16, 24 and 32 bits per sample are supported";
-    }
-  }
-
-  return outputData;
-};
-
-WavePCM.prototype.getFile = function( audioData ){
+WavePCM.prototype.createFile = function( audioData ){
   var buffer = new ArrayBuffer( 44 + audioData.byteLength );
   var view = new DataView( buffer );
   var file = new Uint8Array( buffer );
@@ -94,26 +50,6 @@ WavePCM.prototype.getFile = function( audioData ){
   return file;
 };
 
-WavePCM.prototype.mergeBuffers = function( buffers ) {
-  var bytesPerChunk = this.resampledBufferLength * this.numberOfChannels * this.bytesPerSample;
-  var mergedBuffers = new Uint8Array( buffers.length * bytesPerChunk );
-
-  for (var i = 0; i < buffers.length; i++ ) {
-    mergedBuffers.set( buffers[i], i*bytesPerChunk );
-  }
-
-  return mergedBuffers;
-};
-
-WavePCM.prototype.recordBuffers = function( buffers ){
-  this.recordedBuffers.push( this.bitReduce( this.resampleAndInterleave( buffers ) ) );
-};
-
-WavePCM.prototype.requestData = function(){
-  var data = this.getFile( this.mergeBuffers( this.recordedBuffers ) );
-  this.worker.postMessage( data, [data.buffer] );
-};
-
 // From http://johncostella.webs.com/magic/
 WavePCM.prototype.magicKernel = function( x ) {
   if ( x < -0.5 ) {
@@ -126,19 +62,11 @@ WavePCM.prototype.magicKernel = function( x ) {
 };
 
 WavePCM.prototype.interleave = function( buffers ) {
-  var outputData = new Float32Array( this.resampledBufferLength * this.numberOfChannels );
+  var outputData = new buffers[0].constructor( this.resampledBufferLength * buffers.length );
 
   for ( var i = 0; i < this.resampledBufferLength; i++ ) {
-    var resampleValue = (this.resampleRatio - 1) + (i * this.resampleRatio);
-    var nearestPoint = Math.round( resampleValue );
-
-    for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
-      var channelData = buffers[ channel ];
-
-      for ( var tap = -1; tap < 2; tap++ ) {
-        var sampleValue = channelData[ nearestPoint + tap ] || this.cachedSamples[channel][ 1 + tap ] || channelData[ nearestPoint ];
-        outputData[ i * this.numberOfChannels + channel ] += sampleValue * this.magicKernel( resampleValue - nearestPoint - tap );
-      }
+    for ( var channel = 0; channel < buffers.length; channel++ ) {
+      outputData[ i * buffers.length + channel ] = buffers[ channel ][ i ];
     }
   }
 
@@ -146,51 +74,34 @@ WavePCM.prototype.interleave = function( buffers ) {
 };
 
 WavePCM.prototype.deinterleave = function( mergedBuffers ) {
-  var outputData = new Float32Array( this.mergedBuffers / this.numberOfChannels );
-
-  for ( var i = 0; i < this.resampledBufferLength; i++ ) {
-    var resampleValue = (this.resampleRatio - 1) + (i * this.resampleRatio);
-    var nearestPoint = Math.round( resampleValue );
-
-    for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
-      var channelData = buffers[ channel ];
-
-      for ( var tap = -1; tap < 2; tap++ ) {
-        var sampleValue = channelData[ nearestPoint + tap ] || this.cachedSamples[channel][ 1 + tap ] || channelData[ nearestPoint ];
-        outputData[ i * this.numberOfChannels + channel ] += sampleValue * this.magicKernel( resampleValue - nearestPoint - tap );
-      }
-    }
+  var outputData = [];
+  
+  for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
+    outputData[ channel ] = new mergedBuffers.constructor( mergedBuffers.length / this.numberOfChannels );
   }
 
-  for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
-    this.cachedSamples[channel][0] = buffers[channel][ this.bufferLength - 2 ];
-    this.cachedSamples[channel][1] = outputData[ this.resampledBufferLength - 1 ] = buffers[channel][ this.bufferLength - 1 ];
+  for ( var i = 0; i < mergedBuffers.length; i++ ) {
+    outputData[ i % this.numberOfChannels ] = mergedBuffers[i];
   }
 
   return outputData;
 };
 
-WavePCM.prototype.resample = function( buffer ) {
-  var outputData = new Float32Array( this.resampledBufferLength );
+WavePCM.prototype.resample = function( buffer, channel ) {
+  var outputData = new buffer.constructor( this.resampledBufferLength );
 
   for ( var i = 0; i < this.resampledBufferLength - 1; i++ ) {
     var resampleValue = (this.resampleRatio - 1) + (i * this.resampleRatio);
     var nearestPoint = Math.round( resampleValue );
 
-    for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
-      var channelData = buffers[ channel ];
-
-      for ( var tap = -1; tap < 2; tap++ ) {
-        var sampleValue = channelData[ nearestPoint + tap ] || this.cachedSamples[channel][ 1 + tap ] || channelData[ nearestPoint ];
-        outputData[ i * this.numberOfChannels + channel ] += sampleValue * this.magicKernel( resampleValue - nearestPoint - tap );
-      }
+    for ( var tap = -1; tap < 2; tap++ ) {
+      var sampleValue = buffer[ nearestPoint + tap ] || resamplerCache[ channel ][ 1 + tap ] || buffer[ nearestPoint ];
+      outputData[ i ] += sampleValue * this.magicKernel( resampleValue - nearestPoint - tap );
     }
   }
 
-  for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
-    this.cachedSamples[channel][0] = buffers[channel][ this.bufferLength - 2 ];
-    this.cachedSamples[channel][1] = outputData[ this.resampledBufferLength - 1 ] = buffers[channel][ this.bufferLength - 1 ];
-  }
+  resamplerCache[ channel ][0] = buffer[ this.bufferLength - 2 ];
+  resamplerCache[ channel ][1] = outputData[ this.resampledBufferLength - 1 ] = buffer[ this.bufferLength - 1 ];
 
   return outputData;
 };
