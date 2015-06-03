@@ -139,7 +139,7 @@ Recorder.prototype.start = function(){
     this.worker = new Worker( this.config.workerPath );
     this.worker.addEventListener( "message", function( e ) {
       that.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
-        "detail": new Blob( [e.data], { type: that.config.recordOpus ? "audio/ogg" : "audio/wav" } )
+        "detail": new Blob( [e.data], { type: "audio/ogg" } )
       }));
     });
 

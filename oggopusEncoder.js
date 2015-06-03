@@ -1,4 +1,4 @@
-importScripts( 'libopus.js', 'wavepcm.js' );
+importScripts( 'libopus.js', 'resampler.js' );
 
 var OggOpusEncoder = function( config, worker ){
   this.worker = worker;
@@ -12,7 +12,7 @@ var OggOpusEncoder = function( config, worker ){
   this.stream = config.stream || false;
   this.bitRate = config.bitRate;
   
-  this.wavepcm = new WavePCM( config );
+  this.resampler = new Resampler( config );
   this.pageIndex = 0;
   this.granulePosition = 0;
   this.segmentData = new Uint8Array( 65025 );
@@ -27,6 +27,10 @@ var OggOpusEncoder = function( config, worker ){
   this.initCodec();
   this.generateIdPage();
   this.generateCommentPage();
+
+  if ( this.numberOfChannels === 1 ) {
+    this.interleave = function( buffers ) { return buffers[0]; };
+  }
 };
 
 OggOpusEncoder.prototype.encode = function( samples ) {
@@ -159,6 +163,18 @@ OggOpusEncoder.prototype.initCodec = function() {
   this.encoderOutputBuffer = HEAPU8.subarray( this.encoderOutputPointer, this.encoderOutputPointer + this.encoderOutputMaxLength );
 };
 
+OggOpusEncoder.prototype.interleaveBuffers = function( buffers ) {
+  var outputData = new Float32Array( buffers[0].length * this.numberOfChannels );
+
+  for ( var i = 0; i < buffers[0].length; i++ ) {
+    for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
+      outputData[ i * this.numberOfChannels + channel ] = buffers[ channel ][ i ];
+    }
+  }
+
+  return outputData;
+};
+
 OggOpusEncoder.prototype.onPageComplete = function( page ){
   if ( this.stream ) {
     this.worker.postMessage( page, [page.buffer] );
@@ -170,7 +186,11 @@ OggOpusEncoder.prototype.onPageComplete = function( page ){
 };
 
 OggOpusEncoder.prototype.recordBuffers = function( buffers ) {
-  this.encode( this.wavepcm.resampleAndInterleave( buffers ) );
+  var resampledBuffers = [];
+  for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
+    resampledBuffers.push( this.resampler.resample( buffers[channel], channel );
+  }
+  this.encode( this.interleaveBuffers( resampledBuffers ) );
 };
 
 OggOpusEncoder.prototype.requestData = function() {

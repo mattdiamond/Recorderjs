@@ -1,8 +1,12 @@
-importScripts( 'libopus.js' );
+importScripts( 'libopus.js', 'resampler.js' );
 
 var OggOpusDecoder = function( config, worker ){
   this.sampleRate = config.sampleRate || 48000;
   this.worker = worker;
+
+  if ( this.numberOfChannels === 1 ) {
+    this.deinterleave = function( mergedBuffers ) { return [mergedBuffers]; };
+  }
 };
 
 OggOpusDecoder.prototype.decode = function( typedArray ) {
@@ -48,6 +52,20 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
       this.onStreamEnd();
     }
   }, this);
+};
+
+OggOpus.prototype.deinterleave = function( mergedBuffers ) {
+  var outputData = [];
+  
+  for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
+    outputData[ channel ] = new this.dataConstructor( mergedBuffers.length / this.numberOfChannels );
+  }
+
+  for ( var i = 0; i < mergedBuffers.length; i++ ) {
+    outputData[ i % this.numberOfChannels ] = mergedBuffers[i];
+  }
+
+  return outputData;
 };
 
 Decoder.prototype.getPageBoundaries = function( typedArray ){
