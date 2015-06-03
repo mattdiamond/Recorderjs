@@ -1,11 +1,7 @@
  var Resampler = function( config ){
-
   this.originalSampleRate = config.originalSampleRate;
-  this.bufferLength = config.bufferLength;
   this.numberOfChannels = config.numberOfChannels;
   this.resampledRate = config.resampledRate;
-  this.resampledBufferLength = Math.round( this.bufferLength * this.resampledRate / this.originalSampleRate );
-  this.resampleRatio = this.bufferLength / this.resampledBufferLength;
   this.lastSampleCache = [];
 
   for ( var i = 0; i < this.numberOfChannels; i++ ){
@@ -29,10 +25,12 @@ Resampler.prototype.magicKernel = function( x ) {
 };
 
 Resampler.prototype.resample = function( buffer, channel ) {
-  var outputData = new Float32Array( this.resampledBufferLength );
+  var resampledBufferLength = Math.round( buffer.length * this.resampledRate / this.originalSampleRate );
+  var resampleRatio = buffer.length / resampledBufferLength;
+  var outputData = new Float32Array( resampledBufferLength );
 
   for ( var i = 0; i < this.resampledBufferLength - 1; i++ ) {
-    var resampleValue = ( this.resampleRatio - 1 ) + ( i * this.resampleRatio );
+    var resampleValue = ( resampleRatio - 1 ) + ( i * resampleRatio );
     var nearestPoint = Math.round( resampleValue );
 
     for ( var tap = -1; tap < 2; tap++ ) {
@@ -41,8 +39,8 @@ Resampler.prototype.resample = function( buffer, channel ) {
     }
   }
 
-  this.lastSampleCache[ channel ][ 0 ] = buffer[ this.bufferLength - 2 ];
-  this.lastSampleCache[ channel ][ 1 ] = outputData[ this.resampledBufferLength - 1 ] = buffer[ this.bufferLength - 1 ];
+  this.lastSampleCache[ channel ][ 0 ] = buffer[ buffer.length - 2 ];
+  this.lastSampleCache[ channel ][ 1 ] = outputData[ this.resampledBufferLength - 1 ] = buffer[ buffer.length - 1 ];
 
   return outputData;
 };

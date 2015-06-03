@@ -3,10 +3,8 @@ importScripts( 'libopus.js', 'resampler.js' );
 var OggOpusDecoder = function( config, worker ){
   this.worker = worker;
   this.bufferLength = config.bufferLength || 4096;
-  this.decoderSampleRate = config.originalSampleRate = config.decoderSampleRate || 48000;
+  this.decoderSampleRate = config.decoderSampleRate || 48000;
   this.outputBuffers = [];
-  config.resampledrate = config.outputBufferSampleRate || 48000;
-  this.resampler = new Resampler( config );
 };
 
 OggOpusDecoder.prototype.decode = function( typedArray ) {
@@ -18,11 +16,7 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
     // Beginning of stream
     if ( headerType & 2 ) {
       this.numberOfChannels = dataView.getUint8( pageStart + 37 );
-      this.resetOutputBuffers();
-      this.initCodec();
-      if ( this.numberOfChannels === 1 ) {
-        this.deinterleave = function( mergedBuffers ) { return [mergedBuffers]; };
-      }
+      this.init();
     }
 
     // Decode page
@@ -78,6 +72,21 @@ OggOpusDecoder.prototype.getPageBoundaries = function( dataView ){
   }
 
   return pages;
+};
+
+OggOpusDecoder.prototype.init = function(){
+  this.resetOutputBuffers();
+  this.initCodec();
+
+  this.resampler = new Resampler({
+    resampledrate: config.outputBufferSampleRate || 48000,
+    originalSampleRate: this.decoderSampleRate,
+    numberOfChannels: this.numberOfChannels
+  });
+
+  if ( this.numberOfChannels === 1 ) {
+    this.deinterleave = function( mergedBuffers ) { return [mergedBuffers]; };
+  }
 };
 
 OggOpusDecoder.prototype.initCodec = function() {

@@ -5,14 +5,19 @@ var OggOpusEncoder = function( config, worker ){
 
   this.numberOfChannels = config.numberOfChannels || 1;
   this.originalSampleRate = config.originalSampleRate;
-  this.encodingSampleRate = this.resampledRate = config.encodingSampleRate || 48000;
+  this.encodingSampleRate = config.encodingSampleRate || 48000;
   this.maxBuffersPerPage = config.maxBuffersPerPage || 40; // Limit latency for streaming
   this.encoderApplication = config.encoderApplication || 2049; // 2048 = Voice, 2049 = Full Band Audio, 2051 = Restricted Low Delay
   this.encoderFrameSize = config.encoderFrameSize || 20; // 20ms frame
   this.stream = config.stream || false;
   this.bitRate = config.bitRate;
 
-  this.resampler = new Resampler( config );
+  this.resampler = new Resampler({
+    resampledrate: this.encodingSampleRate,
+    originalSampleRate: this.originalSampleRate,
+    numberOfChannels: this.numberOfChannels
+  });
+
   this.pageIndex = 0;
   this.granulePosition = 0;
   this.segmentData = new Uint8Array( 65025 );
