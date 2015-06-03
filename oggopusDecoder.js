@@ -47,31 +47,31 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
 
 OggOpusDecoder.prototype.deinterleave = function( mergedBuffers ) {
   var deinterleavedData = [];
-  var lengthDeinterleaved = mergedBuffers.length / this.numberOfChannels;
+  var deinterleavedDataIndex = 0;
 
   for ( var i = 0; i < this.numberOfChannels; i++ ) {
-    deinterleavedData.push( new Float32Array( lengthDeinterleaved ) );
+    deinterleavedData.push( new Float32Array( mergedBuffers.length / this.numberOfChannels ) );
   }
 
   for ( var i = 0; i < mergedBuffers.length; i++ ) {
     var channel = i % this.numberOfChannels;
-    this.outputBuffers[ channel ][ this.outputBufferIndex ] = mergedBuffers[ i ];
-    this.outputBufferIndex += ( channel == deinterleavedData.length - 1 ) ? 1 : 0;
+    this.outputBuffers[ channel ][ deinterleavedDataIndex ] = mergedBuffers[ i ];
+    deinterleavedDataIndex += ( channel == deinterleavedData.length - 1 ) ? 1 : 0;
   }
 
   return deinterleavedData;
 };
 
 OggOpusDecoder.prototype.getPageBoundaries = function( dataView ){
-  var pages = [];
+  var pageBoundaries = [];
 
   for ( var i = 0; i < dataView.length; i++ ) {
     if ( dataView.getUint32( i ) == 1399285583 ) {
-      pages.push( i );
+      pageBoundaries.push( i );
     }
   }
 
-  return pages;
+  return pageBoundaries;
 };
 
 OggOpusDecoder.prototype.init = function(){
