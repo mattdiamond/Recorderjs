@@ -163,7 +163,7 @@ OggOpusEncoder.prototype.initCodec = function() {
   this.encoderOutputBuffer = HEAPU8.subarray( this.encoderOutputPointer, this.encoderOutputPointer + this.encoderOutputMaxLength );
 };
 
-OggOpusEncoder.prototype.interleaveBuffers = function( buffers ) {
+OggOpusEncoder.prototype.interleave = function( buffers ) {
   var outputData = new Float32Array( buffers[0].length * this.numberOfChannels );
 
   for ( var i = 0; i < buffers[0].length; i++ ) {
@@ -190,7 +190,7 @@ OggOpusEncoder.prototype.recordBuffers = function( buffers ) {
   for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
     resampledBuffers.push( this.resampler.resample( buffers[channel], channel );
   }
-  this.encode( this.interleaveBuffers( resampledBuffers ) );
+  this.encode( this.interleave( resampledBuffers ) );
 };
 
 OggOpusEncoder.prototype.requestData = function() {

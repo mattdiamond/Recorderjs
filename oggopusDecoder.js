@@ -2,7 +2,7 @@ importScripts( 'libopus.js', 'resampler.js' );
 
 var OggOpusDecoder = function( config, worker ){
   this.sampleRate = config.resampledrate = config.sampleRate || 48000;
-  this.bufferLength = config.bufferLength || 4098;
+  this.bufferLength = config.bufferLength || 4096;
   this.outputBuffers = [];
   this.worker = worker;
   this.decoderSampleRate = config.originalSampleRate = 48000;
@@ -41,7 +41,7 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
 
         if ( packetLength < 255 ) {
           var outputSampleLength = _opus_decode_float( this.decoder, this.decoderBufferPointer, this.decoderBufferIndex, this.decoderOutputPointer, this.decoderOutputMaxLength, 0);
-          this.parseDecodedData( this.decoderOutputBuffer.subarray( 0, outputSampleLength ) );
+          this.decodedDataToBuffers( this.decoderOutputBuffer.subarray( 0, outputSampleLength ) );
           this.decoderBufferIndex = 0;
         }
       }
@@ -96,8 +96,8 @@ OggOpusDecoder.prototype.initCodec = function() {
   this.decoderOutputBuffer = HEAPF32.subarray( this.decoderOutputPointer >> 2, ( this.decoderOutputPointer >> 2 ) + this.decoderOutputMaxLength );
 };
 
-OggOpusDecoder.prototype.parseDecodedData = function( mergedBuffers ){
-  var data = this.deinterleavedData( mergedBuffers );
+OggOpusDecoder.prototype.decodedDataToBuffers = function( mergedBuffers ){
+  var data = this.deinterleave( mergedBuffers );
   var dataIndex = 0;
 
   for ( var i = 0; i < data.length; i++ ) {
@@ -109,7 +109,7 @@ OggOpusDecoder.prototype.parseDecodedData = function( mergedBuffers ){
     var amountToCopy = Math.min( data[0].length - dataIndex, this.bufferLength - this.outputBufferIndex );
 
     for ( var i = 0; i < data.length; i++ ) {
-      this.outputBuffers[ i ].set( data[i].subarray( dataIndex, amountToCopy ), outputBufferIndex );
+      this.outputBuffers[i].set( data[i].subarray( dataIndex, amountToCopy ), outputBufferIndex );
     }
 
     this.outputBufferIndex += amountToCopy;
