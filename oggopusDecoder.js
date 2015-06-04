@@ -1,5 +1,22 @@
 importScripts( 'libopus.js', 'resampler.js' );
 
+this.onmessage = function( e ){
+  switch( e.data.command ){
+
+    case 'decode':
+      this.decoder.decode( e.data.data );
+      break;
+
+    case 'stop':
+      this.close();
+      break;
+
+    case 'start':
+      this.decoder = new OggOpusDecoder( e.data, this );
+      break;
+  }
+};
+
 var OggOpusDecoder = function( config, worker ){
   this.worker = worker;
   this.bufferLength = config.bufferLength || 4096;

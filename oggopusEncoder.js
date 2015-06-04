@@ -1,8 +1,28 @@
 importScripts( 'libopus.js', 'resampler.js' );
 
+this.onmessage = function( e ){
+  switch( e.data.command ){
+
+    case 'recordBuffers':
+      this.recorder.recordBuffers( e.data.buffers );
+      break;
+
+    case 'requestData':
+      this.recorder.requestData()
+      break;
+
+    case 'stop':
+      this.close();
+      break;
+
+    case 'start':
+      this.recorder = new OggOpusEncoder( e.data, this );
+      break;
+  }
+};
+
 var OggOpusEncoder = function( config, worker ){
   this.worker = worker;
-
   this.numberOfChannels = config.numberOfChannels || 1;
   this.originalSampleRate = config.originalSampleRate;
   this.encodingSampleRate = config.encodingSampleRate || 48000;
