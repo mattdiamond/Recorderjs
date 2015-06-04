@@ -17,6 +17,7 @@ var Recorder = function( config ){
   config.maxBuffersPerPage = config.maxBuffersPerPage || 40;
   config.encoderApplication = config.encoderApplication || 2049;
   config.encoderFrameSize = config.encoderFrameSize || 20;
+  config.bit
   config.streamOptions = config.streamOptions || {
     optional: [],
     mandatory: {
@@ -145,12 +146,15 @@ Recorder.prototype.start = function(){
 
     this.worker.postMessage({
       command: "start",
-      bitDepth: this.config.bitDepth,
+      bitRate: this.config.bitRate,
       bufferLength: this.config.bufferLength,
       originalSampleRate: this.audioContext.sampleRate,
-      numberOfChannels: this.config.numberOfChannels,
+      encoderApplication: this.config.encoderApplication,
+      encoderFrameSize: this.config.encoderFrameSize,
       encodingSampleRate: this.config.sampleRate,
-      recordOpus: this.config.recordOpus
+      maxBuffersPerPage: this.config.maxBuffersPerPage,
+      numberOfChannels: this.config.numberOfChannels,
+      stream: this.config.stream
     });
 
     this.state = "recording";

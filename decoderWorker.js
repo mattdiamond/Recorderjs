@@ -3,7 +3,7 @@ this.onmessage = function( e ){
   switch( e.data.command ){
 
     case 'decode':
-      worker.decoder.decode( e.data );
+      worker.decoder.decode( e.data.data );
       break;
 
     case 'stop':
