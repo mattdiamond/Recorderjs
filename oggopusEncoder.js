@@ -13,7 +13,7 @@ var OggOpusEncoder = function( config, worker ){
   this.bitRate = config.bitRate;
 
   this.resampler = new Resampler({
-    resampledrate: this.encodingSampleRate,
+    resampledRate: this.encodingSampleRate,
     originalSampleRate: this.originalSampleRate,
     numberOfChannels: this.numberOfChannels
   });
@@ -195,7 +195,7 @@ OggOpusEncoder.prototype.recordBuffers = function( buffers ) {
   var resampledBuffers = [];
 
   for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
-    resampledBuffers.push( this.resampler.resample( buffers[channel], channel );
+    resampledBuffers.push( this.resampler.resample( buffers[channel], channel ) );
   }
 
   this.encode( this.interleave( resampledBuffers ) );

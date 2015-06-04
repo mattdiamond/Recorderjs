@@ -29,7 +29,7 @@ Resampler.prototype.resample = function( buffer, channel ) {
   var resampleRatio = buffer.length / resampledBufferLength;
   var outputData = new Float32Array( resampledBufferLength );
 
-  for ( var i = 0; i < this.resampledBufferLength - 1; i++ ) {
+  for ( var i = 0; i < resampledBufferLength - 1; i++ ) {
     var resampleValue = ( resampleRatio - 1 ) + ( i * resampleRatio );
     var nearestPoint = Math.round( resampleValue );
 
@@ -40,7 +40,7 @@ Resampler.prototype.resample = function( buffer, channel ) {
   }
 
   this.lastSampleCache[ channel ][ 0 ] = buffer[ buffer.length - 2 ];
-  this.lastSampleCache[ channel ][ 1 ] = outputData[ this.resampledBufferLength - 1 ] = buffer[ buffer.length - 1 ];
+  this.lastSampleCache[ channel ][ 1 ] = outputData[ resampledBufferLength - 1 ] = buffer[ buffer.length - 1 ];
 
   return outputData;
 };
