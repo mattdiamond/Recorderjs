@@ -1,3 +1,5 @@
+ "use strict";
+ 
  var Resampler = function( config ){
   this.originalSampleRate = config.originalSampleRate;
   this.numberOfChannels = config.numberOfChannels;

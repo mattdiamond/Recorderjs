@@ -72,13 +72,6 @@
         screenLogger('Recorder is started');
         init.disabled = start.disabled = resume.disabled = true;
         pause.disabled = stopButton.disabled = false;
-
-        recorder.encoder.addEventListener( "message", function(e){
-          decoder.postMessage({ 
-            command: 'decode',
-            pages: e.data
-          });
-        });
       });
 
       recorder.addEventListener( "stop", function(e){

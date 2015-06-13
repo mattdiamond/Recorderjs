@@ -1,3 +1,4 @@
+"use strict";
 AudioContext = AudioContext || webkitAudioContext || mozAudioContext;
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
@@ -76,6 +77,20 @@ Recorder.prototype.createButterworthFilter = function(){
   this.filterNode3.connect( this.scriptProcessorNode );
 };
 
+Recorder.prototype.encodeBuffers = function( inputBuffer ){
+  if ( this.state === "recording" ) {
+
+    var buffers = [];
+    for ( var i = 0; i < inputBuffer.numberOfChannels; i++ ) {
+      buffers[i] = inputBuffer.getChannelData(i);
+    }
+
+    this.encoder.postMessage({ command: "encode", buffers: buffers });
+    this.duration += inputBuffer.duration;
+    this.eventTarget.dispatchEvent( new CustomEvent( 'duration', { "detail": this.duration } ) );
+  }
+};
+
 Recorder.prototype.initStream = function(){
   var that = this;
   navigator.getUserMedia(
@@ -91,27 +106,6 @@ Recorder.prototype.initStream = function(){
       that.eventTarget.dispatchEvent( new ErrorEvent( "streamError", { error: e } ) );
     }
   );
-};
-
-Recorder.prototype.pause = function(){
-  if ( this.state === "recording" ){
-    this.state = "paused";
-    this.eventTarget.dispatchEvent( new Event( 'pause' ) );
-  }
-};
-
-Recorder.prototype.encodeBuffers = function( inputBuffer ){
-  if ( this.state === "recording" ) {
-
-    var buffers = [];
-    for ( var i = 0; i < inputBuffer.numberOfChannels; i++ ) {
-      buffers[i] = inputBuffer.getChannelData(i);
-    }
-
-    this.encoder.postMessage({ command: "encode", buffers: buffers });
-    this.duration += inputBuffer.duration;
-    this.eventTarget.dispatchEvent( new CustomEvent( 'duration', { "detail": this.duration } ) );
-  }
 };
 
 Recorder.prototype.onPageEncoded = function( page ) {
@@ -134,6 +128,13 @@ Recorder.prototype.onPageEncoded = function( page ) {
 
     this.recordedPages = [];
     this.eventTarget.dispatchEvent( new Event( 'stop' ) );
+  }
+};
+
+Recorder.prototype.pause = function(){
+  if ( this.state === "recording" ){
+    this.state = "paused";
+    this.eventTarget.dispatchEvent( new Event( 'pause' ) );
   }
 };
 
