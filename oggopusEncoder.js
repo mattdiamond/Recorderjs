@@ -1,3 +1,4 @@
+"use strict";
 importScripts( 'libopus.js', 'resampler.js' );
 
 this.onmessage = function( e ){
