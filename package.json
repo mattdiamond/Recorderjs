@@ -15,12 +15,9 @@
     "Microphone",
     "Recorder"
   ],
-  "license": [
-    "MIT",
-    "BSD-3-Clause"
-  ],
+  "license": "MIT",
   "main": "recorder.js",
-  "files":[
+  "files": [
     "libopus.js",
     "oggopusDecoder.js",
     "oggopusEncoder.js",
@@ -34,5 +31,8 @@
   "bugs": {
     "url": "https://github.com/chris-rudmin/Recorderjs/issues",
     "email": "chris.rudmin@gmail.com"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
