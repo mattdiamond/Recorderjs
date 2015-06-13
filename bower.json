@@ -1,7 +1,13 @@
 {
   "name": "opus-recorderjs",
   "description": "Record audio from the mic into a wav or ogg opus file",
-  "main": "recorder.js",
+  "main": [
+    "recorder.js",
+    "oggopusEncoder.js",
+    "oggopusDecoder.js",
+    "resampler.js",
+    "libopus.js"
+  ],
   "license": [
     "MIT",
     "BSD-3-Clause"
@@ -14,8 +20,8 @@
   "keywords": [
     "Ogg",
     "Opus",
-    "Wav",
     "PCM",
+    "Decoder",
     "Resampler",
     "Streamer",
     "Audio",

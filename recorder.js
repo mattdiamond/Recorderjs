@@ -7,15 +7,19 @@ var Recorder = function( config ){
     throw "Recording is not supported in this browser";
   }
 
-  config = config || {};
-  config.recordOpus = (config.recordOpus === false) ? false : config.recordOpus || true;
-  config.bitDepth = config.recordOpus ? 16 : config.bitDepth || 16;
-  config.bufferLength = config.bufferLength || 4096;
-  config.monitorGain = config.monitorGain || 0;
-  config.numberOfChannels = config.numberOfChannels || 1;
-  config.sampleRate = config.sampleRate || (config.recordOpus ? 48000 : this.audioContext.sampleRate);
-  config.workerPath = config.workerPath || 'recorderWorker.js';
-  config.streamOptions = config.streamOptions || {
+  this.config = config = config || {};
+  this.config.command = "init";
+  this.config.bufferLength = config.bufferLength || 4096;
+  this.config.monitorGain = config.monitorGain || 0;
+  this.config.numberOfChannels = config.numberOfChannels || 1;
+  this.config.originalSampleRate = this.audioContext.sampleRate;
+  this.config.encoderSampleRate = config.encoderSampleRate || 48000;
+  this.config.encoderPath = config.encoderPath || 'oggopusEncoder.js';
+  this.config.stream = config.stream || false;
+  this.config.maxBuffersPerPage = config.maxBuffersPerPage || 40;
+  this.config.encoderApplication = config.encoderApplication || 2049;
+  this.config.encoderFrameSize = config.encoderFrameSize || 20;
+  this.config.streamOptions = config.streamOptions || {
     optional: [],
     mandatory: {
       googEchoCancellation: false,
@@ -25,11 +29,9 @@ var Recorder = function( config ){
     }
   };
 
-  this.config = config;
   this.state = "inactive";
   this.eventTarget = document.createDocumentFragment();
   this.createAudioNodes();
-  this.initStream();
 };
 
 Recorder.isRecordingSupported = function(){
@@ -45,7 +47,10 @@ Recorder.prototype.audioContext = new AudioContext();
 Recorder.prototype.createAudioNodes = function(){
   var that = this;
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
-  this.scriptProcessorNode.onaudioprocess = function( e ){ that.recordBuffers( e.inputBuffer ); };
+  this.scriptProcessorNode.onaudioprocess = function( e ){ 
+    that.encodeBuffers( e.inputBuffer );
+  };
+
   this.monitorNode = this.audioContext.createGain();
   this.setMonitorGain( this.config.monitorGain );
 
@@ -95,7 +100,7 @@ Recorder.prototype.pause = function(){
   }
 };
 
-Recorder.prototype.recordBuffers = function( inputBuffer ){
+Recorder.prototype.encodeBuffers = function( inputBuffer ){
   if ( this.state === "recording" ) {
 
     var buffers = [];
@@ -103,9 +108,32 @@ Recorder.prototype.recordBuffers = function( inputBuffer ){
       buffers[i] = inputBuffer.getChannelData(i);
     }
 
-    this.worker.postMessage({ command: "recordBuffers", buffers: buffers });
+    this.encoder.postMessage({ command: "encode", buffers: buffers });
     this.duration += inputBuffer.duration;
     this.eventTarget.dispatchEvent( new CustomEvent( 'duration', { "detail": this.duration } ) );
+  }
+};
+
+Recorder.prototype.onPageEncoded = function( page ) {
+  this.recordedPages.push( page );
+  this.totalLength += page.length;
+
+  // Stream is finished
+  if ( page[5] & 4 ) {
+    var outputData = new Uint8Array( this.totalLength );
+    var outputIndex = 0;
+
+    for ( var i = 0; i < this.recordedPages.length; i++ ) {
+      outputData.set( this.recordedPages[i], outputIndex );
+      outputIndex += this.recordedPages[i].length;
+    }
+
+    this.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
+      "detail": new Blob( [outputData], { type: "audio/ogg" } )
+    }));
+
+    this.recordedPages = [];
+    this.eventTarget.dispatchEvent( new Event( 'stop' ) );
   }
 };
 
@@ -113,13 +141,7 @@ Recorder.prototype.removeEventListener = function( type, listener, useCapture ){
   this.eventTarget.removeEventListener( type, listener, useCapture );
 };
 
-Recorder.prototype.requestData = function( callback ) {
-  if ( this.state !== "recording" ) {
-    this.worker.postMessage({ command: "requestData" });
-  }
-};
-
-Recorder.prototype.resume = function( callback ) {
+Recorder.prototype.resume = function() {
   if ( this.state === "paused" ) {
     this.state = "recording";
     this.eventTarget.dispatchEvent( new Event( 'resume' ) );
@@ -131,46 +153,38 @@ Recorder.prototype.setMonitorGain = function( gain ){
 };
 
 Recorder.prototype.start = function(){
-  if ( this.state === "inactive" && this.sourceNode ) {
+  if ( this.state === "inactive" && this.stream ) {
+    this.recordedPages = [];
+    this.totalLength = 0;
+    this.duration = 0;
 
     var that = this;
-    this.worker = new Worker( this.config.workerPath );
-    this.worker.addEventListener( "message", function( e ) {
-      that.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
-        "detail": new Blob( [e.data], { type: that.config.recordOpus ? "audio/ogg" : "audio/wav" } )
-      }));
+    this.encoder = new Worker( this.config.encoderPath );
+    this.encoder.addEventListener( "message", function( e ) {
+      that.onPageEncoded( e.data );
     });
 
-    this.worker.postMessage({
-      command: "start",
-      bitDepth: this.config.bitDepth,
-      bufferLength: this.config.bufferLength,
-      inputSampleRate: this.audioContext.sampleRate,
-      numberOfChannels: this.config.numberOfChannels,
-      outputSampleRate: this.config.sampleRate,
-      recordOpus: this.config.recordOpus
-    });
+    // First buffer can contain old data. Don't encode it.
+    this.encodeBuffers = function(){ 
+      delete this.encodeBuffers;
+    };
 
     this.state = "recording";
-    this.duration = 0;
     this.monitorNode.connect( this.audioContext.destination );
     this.scriptProcessorNode.connect( this.audioContext.destination );
-    this.recordBuffers = function(){ delete this.recordBuffers }; // First buffer can contain old data
     this.eventTarget.dispatchEvent( new Event( 'start' ) );
     this.eventTarget.dispatchEvent( new CustomEvent( 'duration', { "detail": this.duration } ) );
+    this.encoder.postMessage( this.config );
   }
 };
 
 Recorder.prototype.stop = function(){
   if ( this.state !== "inactive" ) {
-    var that = this;
+    this.state = "inactive";
     this.monitorNode.disconnect();
     this.scriptProcessorNode.disconnect();
-    this.state = "inactive";
-    this.worker.addEventListener( "message", function( e ) {
-      that.eventTarget.dispatchEvent( new Event( 'stop' ) );
-    });
-    this.worker.postMessage({ command: "requestData" });
-    this.worker.postMessage({ command: "stop" });
+    this.stream.stop();
+    delete this.stream;
+    this.encoder.postMessage({ command: "done" });
   }
 };

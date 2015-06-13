@@ -1,12 +1,12 @@
 # Recorder.js
 
-A library for recording/exporting the output of Web Audio API nodes. This is a version which supports encoding the audio using libopus ver 1.1.1 beta compiled with emscripten.
+A library for recording/exporting the output of Web Audio API nodes encoded using libopus ver 1.1.1 beta compiled with emscripten.
 
 ### Syntax
 #### Constructor
     var rec = new Recorder([config]);
 
-Creates a recorder instance. Instantiating an instance will prompt the user for permission to access the audio input stream.
+Creates a recorder instance.
 
 - **config** - An optional configuration object (see **config** section below)
 
@@ -14,19 +14,11 @@ Creates a recorder instance. Instantiating an instance will prompt the user for 
 ---------
 #### Config
 
-- **bitDepth** - (*optional*) Specifies the bitdepth to record at. Defaults to 16. Supported values are 8, 16, 24, 32. If recordOpus is true, this value will be forced to 16.
 - **bufferLength** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to 4096.
 - **monitorGain** - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between 0 and 1. Defaults to 0
-- **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 1. More than two channels has not been tested.
-- **recordOpus** - (*optional*) Specifies if recorder should record using the opus encoder. Defaults to true. Additionaly, an optional opus configurations can be specified as an object here.
-- **sampleRate** - (*optional*) Specifies the sample rate to record at. Defaults to device sample rate. If different than native rate, the audio will be filtered and resampled. If recordOpus is true, this value will default to 48000.
-The Opus encoder will not work if the value is not 8000, 12000, 16000, 24000 or 48000.
-- **workerPath** - (*optional*) Path to recorder.js worker script. Defaults to 'recorderWorker.js'
-
-
----------
-#### Opus Config
-
+- **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 1. Maximum 2 channels are supported.
+- **encoderSampleRate** - (*optional*) Specifies the sample rate to encode at. Defaults to 48000. Supported values are 8000, 12000, 16000, 24000 or 48000.
+- **workerPath** - (*optional*) Path to oggopusEncoder.js worker script. Defaults to 'oggopusEncoder.js'
 - **stream** - (*optional*) Specifies wheather dataAvailable event should be fired when each page is ready. If true, requestData will have no effect. Defaults to false.
 - **maxBuffersPerPage** - (*optional*) Specifies the maximum number of buffers to use before generating an Ogg page. This can be used to lower the streaming latency. The lower the value the more overhead the ogg stream will incur. Defaults to 40.
 - **encoderApplication** - (*optional*) Specifies the encoder application. Supported values are 2048 - Voice, 2049 - Full Band Audio, 2051 - Restricted Low Delay. Defaults to 2049.
@@ -39,11 +31,11 @@ The Opus encoder will not work if the value is not 8000, 12000, 16000, 24000 or 
 
     rec.addEventListener( type, listener[, useCapture] )
 
-**addEventListener** will add an event listener to the event target. Available events are "duration", "streamError", "streamReady", dataAvailable", "start", "pause", "resume" and "stop".
+**addEventListener** will add an event listener to the event target. Available events are "duration", "streamError", "streamReady", "dataAvailable", "start", "pause", "resume" and "stop".
 
-    rec.setMonitorGain( gain )
+    rec.initStream()
 
-**setMonitorGain** will set the volume on what will be passed to the monitor. Monitor level does not affect the recording volume. Gain is an a-weighted value between 0 and 1
+**initStream** will request the user for permission to access the the audio stream and raise "streamReady" or "streamError".
 
     rec.pause()
 
@@ -53,17 +45,17 @@ The Opus encoder will not work if the value is not 8000, 12000, 16000, 24000 or 
 
 **removeEventListener** will remove an event listener from the event target.
 
-    rec.requestData()
-
-**requestData** will request the recorded data if not recording. If successful, the event "dataAvailable" will be published with a blob containing the appropriate data as an ogg or wav file depending on config. requestData will not work if recordOpus stream is enabled, as the data is being streamed and not recorded.
-
     rec.resume()
 
 **resume** will resume the recording if paused. Will raise the resume event
 
+    rec.setMonitorGain( gain )
+
+**setMonitorGain** will set the volume on what will be passed to the monitor. Monitor level does not affect the recording volume. Gain is an a-weighted value between 0 and 1
+
     rec.start()
 
-**start** will initalize the worker and the audio stream and begin capturing audio when ready. Will raise the start event when started.
+**start** will initalize the worker and begin capturing audio if the audio stream is ready. Will raise the start event when started.
 
     rec.stop()
 
