@@ -19,7 +19,6 @@ Creates a recorder instance.
 - **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 1. Maximum 2 channels are supported.
 - **encoderSampleRate** - (*optional*) Specifies the sample rate to encode at. Defaults to 48000. Supported values are 8000, 12000, 16000, 24000 or 48000.
 - **workerPath** - (*optional*) Path to oggopusEncoder.js worker script. Defaults to 'oggopusEncoder.js'
-- **stream** - (*optional*) Specifies wheather dataAvailable event should be fired when each page is ready. If true, requestData will have no effect. Defaults to false.
 - **maxBuffersPerPage** - (*optional*) Specifies the maximum number of buffers to use before generating an Ogg page. This can be used to lower the streaming latency. The lower the value the more overhead the ogg stream will incur. Defaults to 40.
 - **encoderApplication** - (*optional*) Specifies the encoder application. Supported values are 2048 - Voice, 2049 - Full Band Audio, 2051 - Restricted Low Delay. Defaults to 2049.
 - **encoderFrameSize** (*optional*) Specifies the frame size in ms used for encoding. Defaults to 20.
