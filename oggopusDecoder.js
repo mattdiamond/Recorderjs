@@ -4,14 +4,15 @@ this.onmessage = function( e ){
   switch( e.data.command ){
 
     case 'decode':
-      this.decoder.decode( e.data.data );
+      this.decoder.decode( e.data.pages );
       break;
 
-    case 'stop':
+    case 'done':
+      this.decoder.sendLastBuffer();
       this.close();
       break;
 
-    case 'start':
+    case 'init':
       this.decoder = new OggOpusDecoder( e.data, this );
       break;
   }
@@ -49,7 +50,7 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
 
         if ( packetLength < 255 ) {
           var outputSampleLength = _opus_decode_float( this.decoder, this.decoderBufferPointer, this.decoderBufferIndex, this.decoderOutputPointer, this.decoderOutputMaxLength, 0);
-          this.sendToOutputBuffers( this.decoderOutputBuffer.subarray( 0, outputSampleLength ) );
+          this.sendToOutputBuffers( this.decoderOutputBuffer.subarray( 0, outputSampleLength * this.numberOfChannels ) );
           this.decoderBufferIndex = 0;
         }
       }
@@ -73,7 +74,7 @@ OggOpusDecoder.prototype.deinterleave = function( mergedBuffers ) {
 
   for ( var i = 0; i < mergedBuffers.length; i++ ) {
     var channel = i % this.numberOfChannels;
-    this.outputBuffers[ channel ][ deinterleavedDataIndex ] = mergedBuffers[ i ];
+    deinterleavedData[ channel ][ deinterleavedDataIndex ] = mergedBuffers[ i ];
     deinterleavedDataIndex += ( channel == deinterleavedData.length - 1 ) ? 1 : 0;
   }
 
@@ -113,7 +114,7 @@ OggOpusDecoder.prototype.initCodec = function() {
   this.decoderBufferPointer = _malloc( this.decoderBufferMaxLength );
   this.decoderBuffer = HEAPU8.subarray( this.decoderBufferPointer, this.decoderBufferPointer + this.decoderBufferMaxLength );
   this.decoderBufferIndex = 0;
-  this.decoderOutputMaxLength = this.decoderSampleRate * this.numberOfChannels * 60 / 1000; // Max 60ms frame size 
+  this.decoderOutputMaxLength = this.decoderSampleRate * this.numberOfChannels * 120 / 1000; // Max 120ms frame size 
   this.decoderOutputPointer = _malloc( this.decoderOutputMaxLength * 4 ); // 4 bytes per sample
   this.decoderOutputBuffer = HEAPF32.subarray( this.decoderOutputPointer >> 2, ( this.decoderOutputPointer >> 2 ) + this.decoderOutputMaxLength );
 };
@@ -137,15 +138,15 @@ OggOpusDecoder.prototype.sendToOutputBuffers = function( mergedBuffers ){
   var data = this.deinterleave( mergedBuffers );
   var dataIndex = 0;
 
-  for ( var i = 0; i < data.length; i++ ) {
-    data[i] = this.resampler.resample( data[i], i );
+  for ( var channel = 0; channel < data.length; channel++ ) {
+    data[ channel ] = this.resampler.resample( data[ channel ], channel );
   }
 
   while ( dataIndex < data[0].length ) {
     var amountToCopy = Math.min( data[0].length - dataIndex, this.bufferLength - this.outputBufferIndex );
 
     for ( var i = 0; i < data.length; i++ ) {
-      this.outputBuffers[i].set( data[i].subarray( dataIndex, amountToCopy ), this.outputBufferIndex );
+      this.outputBuffers[i].set( data[i].subarray( dataIndex, dataIndex + amountToCopy ), this.outputBufferIndex );
     }
 
     this.outputBufferIndex += amountToCopy;

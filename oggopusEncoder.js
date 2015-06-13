@@ -3,20 +3,17 @@ importScripts( 'libopus.js', 'resampler.js' );
 this.onmessage = function( e ){
   switch( e.data.command ){
 
-    case 'recordBuffers':
-      this.recorder.recordBuffers( e.data.buffers );
+    case 'encode':
+      this.encoder.encode( e.data.buffers );
       break;
 
-    case 'requestData':
-      this.recorder.requestData()
-      break;
-
-    case 'stop':
+    case 'done':
+      this.encoder.encodeFinalFrame();
       this.close();
       break;
 
-    case 'start':
-      this.recorder = new OggOpusEncoder( e.data, this );
+    case 'init':
+      this.encoder = new OggOpusEncoder( e.data, this );
       break;
   }
 };
@@ -25,15 +22,14 @@ var OggOpusEncoder = function( config, worker ){
   this.worker = worker;
   this.numberOfChannels = config.numberOfChannels || 1;
   this.originalSampleRate = config.originalSampleRate;
-  this.encodingSampleRate = config.encodingSampleRate || 48000;
+  this.encoderSampleRate = config.encoderSampleRate || 48000;
   this.maxBuffersPerPage = config.maxBuffersPerPage || 40; // Limit latency for streaming
   this.encoderApplication = config.encoderApplication || 2049; // 2048 = Voice, 2049 = Full Band Audio, 2051 = Restricted Low Delay
   this.encoderFrameSize = config.encoderFrameSize || 20; // 20ms frame
-  this.stream = config.stream || false;
   this.bitRate = config.bitRate;
 
   this.resampler = new Resampler({
-    resampledRate: this.encodingSampleRate,
+    resampledRate: this.encoderSampleRate,
     originalSampleRate: this.originalSampleRate,
     numberOfChannels: this.numberOfChannels
   });
@@ -44,8 +40,6 @@ var OggOpusEncoder = function( config, worker ){
   this.segmentDataIndex = 0;
   this.segmentTable = new Uint8Array( 255 );
   this.segmentTableIndex = 0;
-  this.pages = [];
-  this.fileLength = 0;
   this.buffersInPage = 0;
 
   this.initChecksumTable();
@@ -58,7 +52,8 @@ var OggOpusEncoder = function( config, worker ){
   }
 };
 
-OggOpusEncoder.prototype.encode = function( samples ) {
+OggOpusEncoder.prototype.encode = function( buffers ) {
+  var samples = this.interleave( this.resample( buffers ) );
   var sampleIndex = 0;
 
   while ( sampleIndex < samples.length ) {
@@ -148,7 +143,7 @@ OggOpusEncoder.prototype.generatePage = function(){
   page.set( this.segmentData.subarray(0, this.segmentDataIndex), 27 + this.segmentTableIndex ); // Segment Data
   pageBufferView.setUint32( 22, this.getChecksum( page ), true ); // Checksum
 
-  this.onPageComplete( page );
+  this.worker.postMessage( page, [page.buffer] );;
   this.segmentTableIndex = 0;
   this.segmentDataIndex = 0;
   this.buffersInPage = 0;
@@ -169,7 +164,7 @@ OggOpusEncoder.prototype.initChecksumTable = function(){
 };
 
 OggOpusEncoder.prototype.initCodec = function() {
-  this.encoder = _opus_encoder_create( this.encodingSampleRate, this.numberOfChannels, this.encoderApplication, allocate(4, 'i32', ALLOC_STACK) );
+  this.encoder = _opus_encoder_create( this.encoderSampleRate, this.numberOfChannels, this.encoderApplication, allocate(4, 'i32', ALLOC_STACK) );
 
   if ( this.bitRate ) {
     var bitRateLocation = _malloc( 4 );
@@ -179,7 +174,7 @@ OggOpusEncoder.prototype.initCodec = function() {
   }
 
   this.encoderBufferIndex = 0;
-  this.encoderSamplesPerChannelPerPacket = this.encodingSampleRate * this.encoderFrameSize / 1000;
+  this.encoderSamplesPerChannelPerPacket = this.encoderSampleRate * this.encoderFrameSize / 1000;
   this.encoderBufferLength = this.encoderSamplesPerChannelPerPacket * this.numberOfChannels;
   this.encoderBufferPointer = _malloc( this.encoderBufferLength * 4 ); // 4 bytes per sampled
   this.encoderBuffer = HEAPF32.subarray( this.encoderBufferPointer >> 2, (this.encoderBufferPointer >> 2) + this.encoderBufferLength );
@@ -200,39 +195,14 @@ OggOpusEncoder.prototype.interleave = function( buffers ) {
   return outputData;
 };
 
-OggOpusEncoder.prototype.onPageComplete = function( page ){
-  if ( this.stream ) {
-    this.worker.postMessage( page, [page.buffer] );
-  }
-
-  else {
-    this.fileLength += page.length;
-    this.pages.push( page );
-  }
-};
-
-OggOpusEncoder.prototype.recordBuffers = function( buffers ) {
+OggOpusEncoder.prototype.resample = function( buffers ) {
   var resampledBuffers = [];
 
   for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
     resampledBuffers.push( this.resampler.resample( buffers[channel], channel ) );
   }
 
-  this.encode( this.interleave( resampledBuffers ) );
-};
-
-OggOpusEncoder.prototype.requestData = function() {
-  this.encodeFinalFrame();
-
-  if ( !this.stream ) {
-    var data = new Uint8Array( this.fileLength );
-    var offset = 0;
-    for ( var i = 0; i < this.pages.length; i++ ) {
-      data.set( this.pages[i], offset );
-      offset += this.pages[i].length;
-    }
-    this.worker.postMessage( data, [data.buffer] );
-  }
+  return resampledBuffers;
 };
 
 OggOpusEncoder.prototype.segmentPacket = function( packetLength ) {

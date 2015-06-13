@@ -30,8 +30,8 @@
   </div>
 
   <div>
-    <label>sampleRate</label>
-    <input id="sampleRate" type="number" value="48000" />
+    <label>encoderSampleRate</label>
+    <input id="encoderSampleRate" type="number" value="48000" />
   </div>
 
   <div>
@@ -59,26 +59,32 @@
     pause.addEventListener( "click", function(){ recorder.pause(); });
     resume.addEventListener( "click", function(){ recorder.resume(); });
     stopButton.addEventListener( "click", function(){ recorder.stop(); });
-
     init.addEventListener( "click", function(){
 
       recorder = new Recorder({
         monitorGain: monitorGain.value,
         numberOfChannels: numberOfChannels.value,
         bitRate: bitRate.value,
-        sampleRate: sampleRate.value
+        encoderSampleRate: encoderSampleRate.value
       });
 
       recorder.addEventListener( "start", function(e){
         screenLogger('Recorder is started');
         init.disabled = start.disabled = resume.disabled = true;
         pause.disabled = stopButton.disabled = false;
+
+        recorder.encoder.addEventListener( "message", function(e){
+          decoder.postMessage({ 
+            command: 'decode',
+            pages: e.data
+          });
+        });
       });
 
       recorder.addEventListener( "stop", function(e){
         screenLogger('Recorder is stopped');
-        init.disabled = start.disabled = false;
-        pause.disabled = resume.disabled = stopButton.disabled = true;
+        init.disabled = false;
+        pause.disabled = resume.disabled = stopButton.disabled = start.disabled = true;
       });
 
       recorder.addEventListener( "pause", function(e){
@@ -94,7 +100,7 @@
       });
 
       recorder.addEventListener( "duration", function(e){
-        screenLogger('Recorded ' + e.detail + ' seconds');
+        screenLogger('Recorded ' + e.detail.toFixed(2) + ' seconds');
       });
 
       recorder.addEventListener( "streamError", function(e){
@@ -102,9 +108,9 @@
       });
 
       recorder.addEventListener( "streamReady", function(e){
-        screenLogger('Audio stream is ready. Recording can begin.');
         init.disabled = pause.disabled = resume.disabled = stopButton.disabled = true;
         start.disabled = false;
+        screenLogger('Audio stream is ready.');
       });
 
       recorder.addEventListener( "dataAvailable", function(e){
@@ -126,11 +132,14 @@
 
         recordingslist.appendChild(li);
       });
+
+      recorder.initStream();
     });
 
     function screenLogger(text, data) {
       log.innerHTML += "\n" + text + " " + (data || '');
     }
+
   </script>
 </body>
 </html>
