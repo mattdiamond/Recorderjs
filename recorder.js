@@ -36,14 +36,14 @@ var Recorder = function( config ){
 };
 
 Recorder.isRecordingSupported = function(){
-  return AudioContext && navigator.getUserMedia;
+  return window.AudioContext && navigator.getUserMedia;
 };
 
 Recorder.prototype.addEventListener = function( type, listener, useCapture ){
   this.eventTarget.addEventListener( type, listener, useCapture );
 };
 
-Recorder.prototype.audioContext = new AudioContext();
+Recorder.prototype.audioContext = new window.AudioContext();
 
 Recorder.prototype.createAudioNodes = function(){
   var that = this;

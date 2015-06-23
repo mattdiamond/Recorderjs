@@ -61,6 +61,10 @@
     stopButton.addEventListener( "click", function(){ recorder.stop(); });
     init.addEventListener( "click", function(){
 
+      if (!Recorder.isRecordingSupported()) {
+        return screenLogger("Recording features are not supported in your browser.");
+      }
+      
       recorder = new Recorder({
         monitorGain: monitorGain.value,
         numberOfChannels: numberOfChannels.value,
