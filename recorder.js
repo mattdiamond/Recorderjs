@@ -1,6 +1,6 @@
 "use strict";
-window.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
-navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+window.AudioContext = window.AudioContext || window.webkitAudioContext;
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 var Recorder = function( config ){
 
