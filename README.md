@@ -1,6 +1,6 @@
 # Recorder.js
 
-A library for recording/exporting the output of Web Audio API nodes encoded using libopus ver 1.1.1 beta compiled with emscripten.
+A library to encode the output of Web Audio API nodes as Opus and export in an Ogg container. Audio encoded using libopus ver 1.1.1 beta compiled with emscripten. Also included is audio resampler and Ogg Opus decoder.
 
 ### Syntax
 #### Constructor
