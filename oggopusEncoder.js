@@ -183,7 +183,7 @@ OggOpusEncoder.prototype.initCodec = function() {
   this.encoderBufferLength = this.encoderSamplesPerChannelPerPacket * this.numberOfChannels;
   this.encoderBufferPointer = _malloc( this.encoderBufferLength * 4 ); // 4 bytes per sampled
   this.encoderBuffer = HEAPF32.subarray( this.encoderBufferPointer >> 2, (this.encoderBufferPointer >> 2) + this.encoderBufferLength );
-  this.encoderOutputMaxLength = 4000; 
+  this.encoderOutputMaxLength = 4000;
   this.encoderOutputPointer = _malloc( this.encoderOutputMaxLength );
   this.encoderOutputBuffer = HEAPU8.subarray( this.encoderOutputPointer, this.encoderOutputPointer + this.encoderOutputMaxLength );
 };
