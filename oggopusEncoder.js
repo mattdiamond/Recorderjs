@@ -78,7 +78,11 @@ OggOpusEncoder.prototype.encode = function( buffers ) {
 };
 
 OggOpusEncoder.prototype.encodeFinalFrame = function() {
-  this.encode( new Float32Array( this.encoderBufferLength - this.encoderBufferIndex ) );
+  var finalFrameBuffers = [];
+  for (var i = 0; i < this.numberOfChannels; ++i) {
+    finalFrameBuffers.push(new Float32Array(this.encoderBufferLength - this.encoderBufferIndex));
+  }
+  this.encode(finalFrameBuffers);
   this.headerType += 4;
   this.generatePage();
 };
