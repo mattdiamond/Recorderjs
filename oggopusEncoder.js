@@ -78,7 +78,11 @@ OggOpusEncoder.prototype.encode = function( buffers ) {
 };
 
 OggOpusEncoder.prototype.encodeFinalFrame = function() {
-  this.encode( new Float32Array( this.encoderBufferLength - this.encoderBufferIndex ) );
+  var finalFrameBuffers = [];
+  for (var i = 0; i < this.numberOfChannels; ++i) {
+    finalFrameBuffers.push(new Float32Array(this.encoderBufferLength - this.encoderBufferIndex));
+  }
+  this.encode(finalFrameBuffers);
   this.headerType += 4;
   this.generatePage();
 };
@@ -179,7 +183,7 @@ OggOpusEncoder.prototype.initCodec = function() {
   this.encoderBufferLength = this.encoderSamplesPerChannelPerPacket * this.numberOfChannels;
   this.encoderBufferPointer = _malloc( this.encoderBufferLength * 4 ); // 4 bytes per sampled
   this.encoderBuffer = HEAPF32.subarray( this.encoderBufferPointer >> 2, (this.encoderBufferPointer >> 2) + this.encoderBufferLength );
-  this.encoderOutputMaxLength = 4000; 
+  this.encoderOutputMaxLength = 4000;
   this.encoderOutputPointer = _malloc( this.encoderOutputMaxLength );
   this.encoderOutputBuffer = HEAPU8.subarray( this.encoderOutputPointer, this.encoderOutputPointer + this.encoderOutputMaxLength );
 };

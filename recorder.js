@@ -48,7 +48,7 @@ Recorder.prototype.audioContext = new window.AudioContext();
 Recorder.prototype.createAudioNodes = function(){
   var that = this;
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
-  this.scriptProcessorNode.onaudioprocess = function( e ){ 
+  this.scriptProcessorNode.onaudioprocess = function( e ){
     that.encodeBuffers( e.inputBuffer );
   };
 
@@ -102,7 +102,7 @@ Recorder.prototype.initStream = function(){
       that.sourceNode.connect( that.monitorNode );
       that.eventTarget.dispatchEvent( new Event( "streamReady" ) );
     },
-    function ( e ) { 
+    function ( e ) {
       that.eventTarget.dispatchEvent( new ErrorEvent( "streamError", { error: e } ) );
     }
   );
@@ -166,7 +166,7 @@ Recorder.prototype.start = function(){
     });
 
     // First buffer can contain old data. Don't encode it.
-    this.encodeBuffers = function(){ 
+    this.encodeBuffers = function(){
       delete this.encodeBuffers;
     };
 

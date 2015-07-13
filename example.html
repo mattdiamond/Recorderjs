@@ -45,10 +45,10 @@
   <button id="pause" disabled>pause</button>
   <button id="resume" disabled>resume</button>
   <button id="stopButton" disabled>stop</button>
-  
+
   <h2>Recordings</h2>
   <ul id="recordingslist"></ul>
-  
+
   <h2>Log</h2>
   <pre id="log"></pre>
 
@@ -64,7 +64,7 @@
       if (!Recorder.isRecordingSupported()) {
         return screenLogger("Recording features are not supported in your browser.");
       }
-      
+
       recorder = new Recorder({
         monitorGain: monitorGain.value,
         numberOfChannels: numberOfChannels.value,
