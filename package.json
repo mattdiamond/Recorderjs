@@ -1,0 +1,38 @@
+{
+  "name": "opus-recorder",
+  "version": "0.4.2",
+  "description": "A library for recording opus encoded audio",
+  "homepage": "https://github.com/chris-rudmin/Recorderjs",
+  "author": "Chris Rudmin",
+  "keywords": [
+    "Ogg",
+    "Opus",
+    "PCM",
+    "Decoder",
+    "Resampler",
+    "Streamer",
+    "Audio",
+    "Microphone",
+    "Recorder"
+  ],
+  "license": "MIT",
+  "main": "recorder.js",
+  "files": [
+    "libopus.js",
+    "oggopusDecoder.js",
+    "oggopusEncoder.js",
+    "recorder.js",
+    "resampler.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/chris-rudmin/Recorderjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/chris-rudmin/Recorderjs/issues",
+    "email": "chris.rudmin@gmail.com"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
