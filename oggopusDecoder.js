@@ -10,7 +10,6 @@ this.onmessage = function( e ){
 
     case 'done':
       this.decoder.sendLastBuffer();
-      this.close();
       break;
 
     case 'init':
@@ -60,7 +59,6 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
     // End of stream
     if ( headerType & 4 ) {
       this.sendLastBuffer();
-      this.worker.close();
     }
   }, this );
 };
@@ -133,6 +131,8 @@ OggOpusDecoder.prototype.resetOutputBuffers = function(){
 
 OggOpusDecoder.prototype.sendLastBuffer = function(){
   this.sendToOutputBuffers( new Float32Array( ( this.bufferLength - this.outputBufferIndex ) * this.numberOfChannels ) );
+  this.worker.postMessage(null);
+  this.worker.close();
 };
 
 OggOpusDecoder.prototype.sendToOutputBuffers = function( mergedBuffers ){
