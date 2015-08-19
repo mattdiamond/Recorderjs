@@ -18,7 +18,7 @@ onmessage = function( e ){
       break;
 
     case 'init':
-      encoder = new OggOpusEncoder( e.data, this );
+      encoder = new OggOpusEncoder( e.data );
       break;
   }
 };
