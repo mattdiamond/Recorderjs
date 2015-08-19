@@ -55,11 +55,6 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
         }
       }
     }
-
-    // End of stream
-    if ( headerType & 4 ) {
-      this.sendLastBuffer();
-    }
   }, this );
 };
 

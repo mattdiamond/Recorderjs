@@ -42,6 +42,7 @@ var OggOpusEncoder = function( config, worker ){
   this.segmentTable = new Uint8Array( 255 );
   this.segmentTableIndex = 0;
   this.buffersInPage = 0;
+  this.serial = Math.floor( Math.random() * Math.pow(2,32) );
 
   this.initChecksumTable();
   this.initCodec();
@@ -141,7 +142,7 @@ OggOpusEncoder.prototype.generatePage = function(){
     pageBufferView.setUint32( 10, Math.floor( granulePosition/4294967296 ), true );
   }
 
-  pageBufferView.setUint32( 14, 0, true ); // Bitstream serial number
+  pageBufferView.setUint32( 14, this.serial, true ); // Bitstream serial number
   pageBufferView.setUint32( 18, this.pageIndex++, true ); // Page sequence number
   pageBufferView.setUint8( 26, this.segmentTableIndex, true ); // Number of segments in page.
   page.set( this.segmentTable.subarray(0, this.segmentTableIndex), 27 ); // Segment Table
