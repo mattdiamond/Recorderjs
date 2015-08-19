@@ -1,26 +1,29 @@
 "use strict";
 importScripts( 'libopus.js', 'resampler.js' );
 
-this.onmessage = function( e ){
+var encoder;
+onmessage = function( e ){
   switch( e.data.command ){
 
     case 'encode':
-      this.encoder.encode( e.data.buffers );
+      if (encoder){
+        encoder.encode( e.data.buffers );
+      }
       break;
 
     case 'done':
-      this.encoder.encodeFinalFrame();
-      this.close();
+      if (encoder) {
+        encoder.encodeFinalFrame();
+      }
       break;
 
     case 'init':
-      this.encoder = new OggOpusEncoder( e.data, this );
+      encoder = new OggOpusEncoder( e.data, this );
       break;
   }
 };
 
-var OggOpusEncoder = function( config, worker ){
-  this.worker = worker;
+var OggOpusEncoder = function( config ){
   this.numberOfChannels = config.numberOfChannels || 1;
   this.originalSampleRate = config.originalSampleRate;
   this.encoderSampleRate = config.encoderSampleRate || 48000;
@@ -86,6 +89,7 @@ OggOpusEncoder.prototype.encodeFinalFrame = function() {
   this.encode(finalFrameBuffers);
   this.headerType += 4;
   this.generatePage();
+  close();
 };
 
 OggOpusEncoder.prototype.getChecksum = function( data ){
@@ -149,7 +153,7 @@ OggOpusEncoder.prototype.generatePage = function(){
   page.set( this.segmentData.subarray(0, this.segmentDataIndex), 27 + this.segmentTableIndex ); // Segment Data
   pageBufferView.setUint32( 22, this.getChecksum( page ), true ); // Checksum
 
-  this.worker.postMessage( page, [page.buffer] );
+  postMessage( page, [page.buffer] );
   this.segmentTableIndex = 0;
   this.segmentDataIndex = 0;
   this.buffersInPage = 0;

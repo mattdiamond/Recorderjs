@@ -1,25 +1,29 @@
 "use strict";
 importScripts( 'libopus.js', 'resampler.js' );
 
-this.onmessage = function( e ){
+var decoder;
+onmessage = function( e ){
   switch( e.data.command ){
 
     case 'decode':
-      this.decoder.decode( e.data.pages );
+      if (decoder){
+        decoder.decode( e.data.pages );
+      }
       break;
 
     case 'done':
-      this.decoder.sendLastBuffer();
+      if (decoder) {
+        decoder.sendLastBuffer();
+      }
       break;
 
     case 'init':
-      this.decoder = new OggOpusDecoder( e.data, this );
+      decoder = new OggOpusDecoder( e.data, this );
       break;
   }
 };
 
-var OggOpusDecoder = function( config, worker ){
-  this.worker = worker;
+var OggOpusDecoder = function( config ){
   this.bufferLength = config.bufferLength || 4096;
   this.decoderSampleRate = config.decoderSampleRate || 48000;
   this.outputBufferSampleRate = config.outputBufferSampleRate || 48000;
@@ -126,8 +130,8 @@ OggOpusDecoder.prototype.resetOutputBuffers = function(){
 
 OggOpusDecoder.prototype.sendLastBuffer = function(){
   this.sendToOutputBuffers( new Float32Array( ( this.bufferLength - this.outputBufferIndex ) * this.numberOfChannels ) );
-  this.worker.postMessage(null);
-  this.worker.close();
+  postMessage(null);
+  close();
 };
 
 OggOpusDecoder.prototype.sendToOutputBuffers = function( mergedBuffers ){
@@ -149,7 +153,7 @@ OggOpusDecoder.prototype.sendToOutputBuffers = function( mergedBuffers ){
     dataIndex += amountToCopy;
 
     if ( this.outputBufferIndex == this.bufferLength ) {
-      this.worker.postMessage( this.outputBuffers, this.outputBufferArrayBuffers );
+      postMessage( this.outputBuffers, this.outputBufferArrayBuffers );
       this.resetOutputBuffers();
     }
   }
