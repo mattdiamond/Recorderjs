@@ -87,7 +87,7 @@ Recorder.prototype.encodeBuffers = function( inputBuffer ){
 
     this.encoder.postMessage({ command: "encode", buffers: buffers });
     this.duration += inputBuffer.duration;
-    this.eventTarget.dispatchEvent( new CustomEvent( 'duration', { "detail": this.duration } ) );
+    this.eventTarget.dispatchEvent( new CustomEvent( 'duration', { detail: this.duration } ) );
   }
 };
 
@@ -123,7 +123,7 @@ Recorder.prototype.onPageEncoded = function( page ) {
     }
 
     this.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
-      "detail": new Blob( [outputData], { type: "audio/ogg" } )
+      detail: new Blob( [outputData], { type: "audio/ogg" } )
     }));
 
     this.recordedPages = [];
@@ -174,7 +174,7 @@ Recorder.prototype.start = function(){
     this.monitorNode.connect( this.audioContext.destination );
     this.scriptProcessorNode.connect( this.audioContext.destination );
     this.eventTarget.dispatchEvent( new Event( 'start' ) );
-    this.eventTarget.dispatchEvent( new CustomEvent( 'duration', { "detail": this.duration } ) );
+    this.eventTarget.dispatchEvent( new CustomEvent( 'duration', { detail: this.duration } ) );
     this.encoder.postMessage( this.config );
   }
 };
