@@ -79,7 +79,6 @@ Recorder.prototype.createButterworthFilter = function(){
 
 Recorder.prototype.encodeBuffers = function( inputBuffer ){
   if ( this.state === "recording" ) {
-
     var buffers = [];
     for ( var i = 0; i < inputBuffer.numberOfChannels; i++ ) {
       buffers[i] = inputBuffer.getChannelData(i);
