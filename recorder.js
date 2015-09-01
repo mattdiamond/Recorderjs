@@ -178,13 +178,19 @@ Recorder.prototype.start = function(){
   }
 };
 
-Recorder.prototype.stop = function(){
+Recorder.prototype.stop = function(options){
+  options = options || {};
+
   if ( this.state !== "inactive" ) {
     this.state = "inactive";
     this.monitorNode.disconnect();
     this.scriptProcessorNode.disconnect();
-    this.stream.stop();
-    delete this.stream;
+
+    if (!options.keepStreamOpen) {
+      this.stream.stop();
+      delete this.stream;
+    }
+
     this.encoder.postMessage({ command: "done" });
   }
 };
