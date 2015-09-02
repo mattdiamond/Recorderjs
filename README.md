@@ -23,6 +23,7 @@ Creates a recorder instance.
 - **maxBuffersPerPage** - (*optional*) Specifies the maximum number of buffers to use before generating an Ogg page. This can be used to lower the streaming latency. The lower the value the more overhead the ogg stream will incur. Defaults to 40.
 - **monitorGain** - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between 0 and 1. Defaults to 0
 - **numberOfChannels** - (*optional*) The number of channels to record. 1 = mono, 2 = stereo. Defaults to 1. Maximum 2 channels are supported.
+- **reuseStream** - (*optional*) Keep the stream around when trying to `stop` recording, so you can re-`start` without re-`initStream`
 
 
 ---------
@@ -59,6 +60,10 @@ Creates a recorder instance.
     rec.stop()
 
 **stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published. Will raise the stop event when stopped.
+
+    rec.clearStream()
+
+**clearStream** will stop and delete the stream got from `initStream`, you will only ever call this manually if you have `config.reuseStream` set to true
 
 
 ---------
