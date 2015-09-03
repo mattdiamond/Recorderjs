@@ -17,6 +17,7 @@ var Recorder = function( config ){
   this.config.encoderSampleRate = config.encoderSampleRate || 48000;
   this.config.encoderPath = config.encoderPath || 'oggopusEncoder.js';
   this.config.stream = config.stream || false;
+  this.config.leaveStreamOpen = config.leaveStreamOpen || false;
   this.config.maxBuffersPerPage = config.maxBuffersPerPage || 40;
   this.config.encoderApplication = config.encoderApplication || 2049;
   this.config.encoderFrameSize = config.encoderFrameSize || 20;
@@ -91,6 +92,11 @@ Recorder.prototype.encodeBuffers = function( inputBuffer ){
 };
 
 Recorder.prototype.initStream = function(){
+  if ( this.stream ) {
+    this.eventTarget.dispatchEvent( new Event( "streamReady" ) );
+    return;
+  }
+
   var that = this;
   navigator.getUserMedia(
     { audio : this.config.streamOptions },
@@ -183,8 +189,16 @@ Recorder.prototype.stop = function(){
     this.state = "inactive";
     this.monitorNode.disconnect();
     this.scriptProcessorNode.disconnect();
-    this.stream.stop();
-    delete this.stream;
+
+    if ( !this.config.leaveStreamOpen ) { this.clearStream(); }
+
     this.encoder.postMessage({ command: "done" });
   }
 };
+
+Recorder.prototype.clearStream = function() {
+  if ( this.stream ) {
+    this.stream.stop();
+    delete this.stream;
+  }
+}
