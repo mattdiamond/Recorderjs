@@ -17,7 +17,7 @@ var Recorder = function( config ){
   this.config.encoderSampleRate = config.encoderSampleRate || 48000;
   this.config.encoderPath = config.encoderPath || 'oggopusEncoder.js';
   this.config.stream = config.stream || false;
-  this.config.reuseStream = !!config.reuseStream;
+  this.config.leaveStreamOpen = config.leaveStreamOpen || false;
   this.config.maxBuffersPerPage = config.maxBuffersPerPage || 40;
   this.config.encoderApplication = config.encoderApplication || 2049;
   this.config.encoderFrameSize = config.encoderFrameSize || 20;
@@ -190,7 +190,7 @@ Recorder.prototype.stop = function(){
     this.monitorNode.disconnect();
     this.scriptProcessorNode.disconnect();
 
-    if ( !this.config.reuseStream ) { this.clearStream(); }
+    if ( !this.config.leaveStreamOpen ) { this.clearStream(); }
 
     this.encoder.postMessage({ command: "done" });
   }
