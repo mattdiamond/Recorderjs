@@ -16,6 +16,7 @@ var Recorder = function( config ){
   this.config.originalSampleRate = this.audioContext.sampleRate;
   this.config.encoderSampleRate = config.encoderSampleRate || 48000;
   this.config.encoderPath = config.encoderPath || 'oggopusEncoder.js';
+  this.config.streamPages = config.streamPages || false;
   this.config.leaveStreamOpen = config.leaveStreamOpen || false;
   this.config.maxBuffersPerPage = config.maxBuffersPerPage || 40;
   this.config.encoderApplication = config.encoderApplication || 2049;
@@ -44,6 +45,13 @@ Recorder.prototype.addEventListener = function( type, listener, useCapture ){
 };
 
 Recorder.prototype.audioContext = new window.AudioContext();
+
+Recorder.prototype.clearStream = function() {
+  if ( this.stream ) {
+    this.stream.stop();
+    delete this.stream;
+  }
+};
 
 Recorder.prototype.createAudioNodes = function(){
   var that = this;
@@ -112,29 +120,6 @@ Recorder.prototype.initStream = function(){
   );
 };
 
-Recorder.prototype.onPageEncoded = function( page ) {
-  this.recordedPages.push( page );
-  this.totalLength += page.length;
-
-  // Stream is finished
-  if ( page[5] & 4 ) {
-    var outputData = new Uint8Array( this.totalLength );
-    var outputIndex = 0;
-
-    for ( var i = 0; i < this.recordedPages.length; i++ ) {
-      outputData.set( this.recordedPages[i], outputIndex );
-      outputIndex += this.recordedPages[i].length;
-    }
-
-    this.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
-      detail: new Blob( [outputData], { type: "audio/ogg" } )
-    }));
-
-    this.recordedPages = [];
-    this.eventTarget.dispatchEvent( new Event( 'stop' ) );
-  }
-};
-
 Recorder.prototype.pause = function(){
   if ( this.state === "recording" ){
     this.state = "paused";
@@ -159,21 +144,29 @@ Recorder.prototype.setMonitorGain = function( gain ){
 
 Recorder.prototype.start = function(){
   if ( this.state === "inactive" && this.stream ) {
-    this.recordedPages = [];
-    this.totalLength = 0;
-    this.duration = 0;
-
     var that = this;
     this.encoder = new Worker( this.config.encoderPath );
-    this.encoder.addEventListener( "message", function( e ) {
-      that.onPageEncoded( e.data );
-    });
+
+    if (this.config.streamPages){
+      this.encoder.addEventListener( "message", function( e ) {
+        that.streamPage( e.data );
+      });
+    }
+
+    else {
+      this.recordedPages = [];
+      this.totalLength = 0;
+      this.encoder.addEventListener( "message", function( e ) {
+        that.storePage( e.data );
+      });
+    }
 
     // First buffer can contain old data. Don't encode it.
     this.encodeBuffers = function(){
       delete this.encodeBuffers;
     };
 
+    this.duration = 0;
     this.state = "recording";
     this.monitorNode.connect( this.audioContext.destination );
     this.scriptProcessorNode.connect( this.audioContext.destination );
@@ -189,15 +182,44 @@ Recorder.prototype.stop = function(){
     this.monitorNode.disconnect();
     this.scriptProcessorNode.disconnect();
 
-    if ( !this.config.leaveStreamOpen ) { this.clearStream(); }
+    if ( !this.config.leaveStreamOpen ) { 
+      this.clearStream();
+    }
 
     this.encoder.postMessage({ command: "done" });
   }
 };
 
-Recorder.prototype.clearStream = function() {
-  if ( this.stream ) {
-    this.stream.stop();
-    delete this.stream;
+Recorder.prototype.storePage = function( page ) {
+  this.recordedPages.push( page );
+  this.totalLength += page.length;
+
+  // Stream is finished
+  if ( page[5] & 4 ) {
+    var outputData = new Uint8Array( this.totalLength );
+    var outputIndex = 0;
+
+    for ( var i = 0; i < this.recordedPages.length; i++ ) {
+      outputData.set( this.recordedPages[i], outputIndex );
+      outputIndex += this.recordedPages[i].length;
+    }
+
+    this.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
+      detail: new Blob( [outputData], { type: "audio/ogg" } )
+    }));
+
+    this.recordedPages = [];
+    this.eventTarget.dispatchEvent( new Event( 'stop' ) );
   }
-}
+};
+
+Recorder.prototype.streamPage = function( page ) {
+  this.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
+    detail: new Blob( [page], { type: "audio/ogg" } )
+  }));
+
+  // Stream is finished
+  if ( page[5] & 4 ) {
+    this.eventTarget.dispatchEvent( new Event( 'stop' ) );
+  }
+};
