@@ -16,7 +16,6 @@ var Recorder = function( config ){
   this.config.originalSampleRate = this.audioContext.sampleRate;
   this.config.encoderSampleRate = config.encoderSampleRate || 48000;
   this.config.encoderPath = config.encoderPath || 'oggopusEncoder.js';
-  this.config.stream = config.stream || false;
   this.config.leaveStreamOpen = config.leaveStreamOpen || false;
   this.config.maxBuffersPerPage = config.maxBuffersPerPage || 40;
   this.config.encoderApplication = config.encoderApplication || 2049;
