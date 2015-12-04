@@ -48,7 +48,9 @@ Recorder.prototype.audioContext = new window.AudioContext();
 
 Recorder.prototype.clearStream = function() {
   if ( this.stream ) {
-    this.stream.stop();
+    this.stream.getTracks().forEach(function ( track ) {
+      track.stop();
+    });
     delete this.stream;
   }
 };
@@ -182,7 +184,7 @@ Recorder.prototype.stop = function(){
     this.monitorNode.disconnect();
     this.scriptProcessorNode.disconnect();
 
-    if ( !this.config.leaveStreamOpen ) { 
+    if ( !this.config.leaveStreamOpen ) {
       this.clearStream();
     }
 
