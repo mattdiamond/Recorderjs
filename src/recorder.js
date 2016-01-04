@@ -241,7 +241,7 @@ export class Recorder {
     }
 
     static
-    forceDownload() {
+    forceDownload(blob, filename) {
         let url = (window.URL || window.webkitURL).createObjectURL(blob);
         let link = window.document.createElement('a');
         link.href = url;
