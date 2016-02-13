@@ -1,5 +1,5 @@
 "use strict";
-importScripts( 'libopus.js', 'resampler.js' );
+importScripts( 'libopus_encoder.js' );
 
 var encoder;
 onmessage = function( e ){
@@ -58,7 +58,7 @@ var OggOpusEncoder = function( config ){
 };
 
 OggOpusEncoder.prototype.encode = function( buffers ) {
-  var samples = this.interleave( this.resample( buffers ) );
+  var samples = this.resample( this.interleave( buffers ) );
   var sampleIndex = 0;
 
   while ( sampleIndex < samples.length ) {
@@ -69,7 +69,7 @@ OggOpusEncoder.prototype.encode = function( buffers ) {
     this.encoderBufferIndex += lengthToCopy;
 
     if ( this.encoderBufferIndex === this.encoderBufferLength ) {
-      var packetLength = _opus_encode_float( this.encoder, this.encoderBufferPointer, this.encoderSamplesPerChannelPerPacket, this.encoderOutputPointer, this.encoderOutputMaxLength );
+      var packetLength = Module._opus_encode_float( this.encoder, this.encoderBufferPointer, this.encoderSamplesPerChannelPerPacket, this.encoderOutputPointer, this.encoderOutputMaxLength );
       this.segmentPacket( packetLength );
       this.encoderBufferIndex = 0;
     }
@@ -174,24 +174,30 @@ OggOpusEncoder.prototype.initChecksumTable = function(){
 };
 
 OggOpusEncoder.prototype.initCodec = function() {
-  this.encoder = _opus_encoder_create( this.encoderSampleRate, this.numberOfChannels, this.encoderApplication, allocate(4, 'i32', ALLOC_STACK) );
+  var errLocation = Module._malloc( 4 );
+  this.encoder = Module._opus_encoder_create( this.encoderSampleRate, this.numberOfChannels, this.encoderApplication, errLocation );
+  Module._free( errLocation );
 
   if ( this.bitRate ) {
-    var bitRateLocation = _malloc( 4 );
-    HEAP32[bitRateLocation >>> 2] = this.bitRate;
-    _opus_encoder_ctl( this.encoder, 4002, bitRateLocation );
-    _free( bitRateLocation );
+    var bitRateLocation = Module._malloc( 4 );
+    Module.HEAP32[bitRateLocation >>> 2] = this.bitRate;
+    Module._opus_encoder_ctl( this.encoder, 4002, bitRateLocation );
+    Module._free( bitRateLocation );
   }
 
   this.encoderBufferIndex = 0;
   this.encoderSamplesPerChannelPerPacket = this.encoderSampleRate * this.encoderFrameSize / 1000;
   this.encoderBufferLength = this.encoderSamplesPerChannelPerPacket * this.numberOfChannels;
-  this.encoderBufferPointer = _malloc( this.encoderBufferLength * 4 ); // 4 bytes per sampled
-  this.encoderBuffer = HEAPF32.subarray( this.encoderBufferPointer >> 2, (this.encoderBufferPointer >> 2) + this.encoderBufferLength );
+  this.encoderBufferPointer = Module._malloc( this.encoderBufferLength * 4 ); // 4 bytes per sampled
+  this.encoderBuffer = Module.HEAPF32.subarray( this.encoderBufferPointer >> 2, (this.encoderBufferPointer >> 2) + this.encoderBufferLength );
   this.encoderOutputMaxLength = 4000;
-  this.encoderOutputPointer = _malloc( this.encoderOutputMaxLength );
-  this.encoderOutputBuffer = HEAPU8.subarray( this.encoderOutputPointer, this.encoderOutputPointer + this.encoderOutputMaxLength );
+  this.encoderOutputPointer = Module._malloc( this.encoderOutputMaxLength );
+  this.encoderOutputBuffer = Module.HEAPU8.subarray( this.encoderOutputPointer, this.encoderOutputPointer + this.encoderOutputMaxLength );
 };
+
+OggOpusEncoder.prototype.initResampler = function() {
+
+}
 
 OggOpusEncoder.prototype.interleave = function( buffers ) {
   var outputData = new Float32Array( buffers[0].length * this.numberOfChannels );

@@ -1,5 +1,5 @@
 "use strict";
-importScripts( 'libopus.js', 'resampler.js' );
+importScripts( 'libopus_decoder.js' );
 
 var decoder;
 onmessage = function( e ){
@@ -53,7 +53,7 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
         this.decoderBufferIndex += packetLength;
 
         if ( packetLength < 255 ) {
-          var outputSampleLength = _opus_decode_float( this.decoder, this.decoderBufferPointer, this.decoderBufferIndex, this.decoderOutputPointer, this.decoderOutputMaxLength, 0);
+          var outputSampleLength = Module._opus_decode_float( this.decoder, this.decoderBufferPointer, this.decoderBufferIndex, this.decoderOutputPointer, this.decoderOutputMaxLength, 0);
           this.sendToOutputBuffers( this.decoderOutputBuffer.subarray( 0, outputSampleLength * this.numberOfChannels ) );
           this.decoderBufferIndex = 0;
         }
@@ -107,14 +107,17 @@ OggOpusDecoder.prototype.init = function(){
 };
 
 OggOpusDecoder.prototype.initCodec = function() {
-  this.decoder = _opus_decoder_create( this.decoderSampleRate, this.numberOfChannels, allocate(4, 'i32', ALLOC_STACK) );
+  var errReference = Module._malloc( 4 );
+  this.decoder = Module._opus_decoder_create( this.decoderSampleRate, this.numberOfChannels, errReference );
+  Module._free( errReference );
+
   this.decoderBufferMaxLength = 4000;
-  this.decoderBufferPointer = _malloc( this.decoderBufferMaxLength );
-  this.decoderBuffer = HEAPU8.subarray( this.decoderBufferPointer, this.decoderBufferPointer + this.decoderBufferMaxLength );
+  this.decoderBufferPointer = Module_malloc( this.decoderBufferMaxLength );
+  this.decoderBuffer = Module.HEAPU8.subarray( this.decoderBufferPointer, this.decoderBufferPointer + this.decoderBufferMaxLength );
   this.decoderBufferIndex = 0;
   this.decoderOutputMaxLength = this.decoderSampleRate * this.numberOfChannels * 120 / 1000; // Max 120ms frame size
-  this.decoderOutputPointer = _malloc( this.decoderOutputMaxLength * 4 ); // 4 bytes per sample
-  this.decoderOutputBuffer = HEAPF32.subarray( this.decoderOutputPointer >> 2, ( this.decoderOutputPointer >> 2 ) + this.decoderOutputMaxLength );
+  this.decoderOutputPointer = Module._malloc( this.decoderOutputMaxLength * 4 ); // 4 bytes per sample
+  this.decoderOutputBuffer = Module.HEAPF32.subarray( this.decoderOutputPointer >> 2, ( this.decoderOutputPointer >> 2 ) + this.decoderOutputMaxLength );
 };
 
 OggOpusDecoder.prototype.resetOutputBuffers = function(){
