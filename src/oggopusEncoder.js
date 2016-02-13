@@ -84,7 +84,7 @@ OggOpusEncoder.prototype.encode = function( buffers ) {
 OggOpusEncoder.prototype.encodeFinalFrame = function() {
   var finalFrameBuffers = [];
   for ( var i = 0; i < this.numberOfChannels; ++i ) {
-    finalFrameBuffers.push( new Float32Array( Math.ceil( (this.resampleBufferLength - this.resampleBufferIndex) / this.numberOfChannels ) ) );
+    finalFrameBuffers.push( new Float32Array( this.bufferLength - (this.resampleBufferIndex / this.numberOfChannels) );
   }
   this.encode( finalFrameBuffers );
   this.headerType += 4;
@@ -185,7 +185,6 @@ OggOpusEncoder.prototype.initCodec = function() {
     Module._free( bitRateLocation );
   }
 
-  this.resampleBufferIndex = 0;
   this.encoderSamplesPerChannelPerPacket = this.encoderSampleRate * this.encoderFrameSize / 1000;
   this.encoderBufferLength = this.encoderSamplesPerChannelPerPacket * this.numberOfChannels;
   this.encoderBufferPointer = Module._malloc( this.encoderBufferLength * 4 ); // 4 bytes per sample
@@ -197,16 +196,16 @@ OggOpusEncoder.prototype.initCodec = function() {
 
 OggOpusEncoder.prototype.initResampler = function() {
   var errLocation = Module._malloc( 4 );
-  this.resampler = Module._speex_resampler_init( this.numberOfChannels, this.originalSampleRate, this.encoderSampleRate, this.quality, errLocation );
+  this.resampler = Module._speex_resampler_init( this.numberOfChannels, this.originalSampleRate, this.encoderSampleRate, this.resampleQuality, errLocation );
   Module._free( errLocation );
 
+  this.resampleBufferIndex = 0;
   this.resampleBufferLength = this.originalSampleRate * this.numberOfChannels * this.encoderFrameSize / 1000;
   this.resampleBufferPointer = Module._malloc( this.resampleBufferLength * 4 ); // 4 bytes per sample
   this.resampleBuffer = Module.HEAPF32.subarray( this.resampleBufferPointer >> 2, (this.resampleBufferPointer >> 2) + this.resampleBufferLength );
 }
 
 OggOpusEncoder.prototype.interleave = function( buffers ) {
-
   for ( var i = 0; i < this.bufferLength; i++ ) {
     for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
       this.interleavedBuffers[ i * this.numberOfChannels + channel ] = buffers[ channel ][ i ];
