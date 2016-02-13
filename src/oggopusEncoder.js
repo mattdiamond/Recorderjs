@@ -62,7 +62,7 @@ OggOpusEncoder.prototype.encode = function( buffers ) {
 
   while ( sampleIndex < samples.length ) {
 
-    var lengthToCopy = Math.min( this.resampleBufferLength - this.resampleBufferIndex, resampledBuffers.length - sampleIndex );
+    var lengthToCopy = Math.min( this.resampleBufferLength - this.resampleBufferIndex, samples.length - sampleIndex );
     this.resampleBuffer.set( samples.subarray( sampleIndex, sampleIndex+lengthToCopy ), this.resampleBufferIndex );
     sampleIndex += lengthToCopy;
     this.resampleBufferIndex += lengthToCopy;
