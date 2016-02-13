@@ -64,27 +64,6 @@ Recorder.prototype.createAudioNodes = function(){
 
   this.monitorNode = this.audioContext.createGain();
   this.setMonitorGain( this.config.monitorGain );
-
-  if ( this.config.sampleRate < this.audioContext.sampleRate ) {
-    this.createButterworthFilter();
-  }
-};
-
-Recorder.prototype.createButterworthFilter = function(){
-  this.filterNode = this.audioContext.createBiquadFilter();
-  this.filterNode2 = this.audioContext.createBiquadFilter();
-  this.filterNode3 = this.audioContext.createBiquadFilter();
-  this.filterNode.type = this.filterNode2.type = this.filterNode3.type = "lowpass";
-
-  var nyquistFreq = this.config.sampleRate / 2;
-  this.filterNode.frequency.value = this.filterNode2.frequency.value = this.filterNode3.frequency.value = nyquistFreq - ( nyquistFreq / 3.5355 );
-  this.filterNode.Q.value = 0.51764;
-  this.filterNode2.Q.value = 0.70711;
-  this.filterNode3.Q.value = 1.93184;
-
-  this.filterNode.connect( this.filterNode2 );
-  this.filterNode2.connect( this.filterNode3 );
-  this.filterNode3.connect( this.scriptProcessorNode );
 };
 
 Recorder.prototype.encodeBuffers = function( inputBuffer ){
@@ -95,8 +74,6 @@ Recorder.prototype.encodeBuffers = function( inputBuffer ){
     }
 
     this.encoder.postMessage({ command: "encode", buffers: buffers });
-    this.duration += inputBuffer.duration;
-    this.eventTarget.dispatchEvent( new CustomEvent( 'duration', { detail: this.duration } ) );
   }
 };
 
@@ -112,7 +89,7 @@ Recorder.prototype.initStream = function(){
     function ( stream ) {
       that.stream = stream;
       that.sourceNode = that.audioContext.createMediaStreamSource( stream );
-      that.sourceNode.connect( that.filterNode || that.scriptProcessorNode );
+      that.sourceNode.connect( that.scriptProcessorNode );
       that.sourceNode.connect( that.monitorNode );
       that.eventTarget.dispatchEvent( new Event( "streamReady" ) );
     },
@@ -168,12 +145,10 @@ Recorder.prototype.start = function(){
       delete this.encodeBuffers;
     };
 
-    this.duration = 0;
     this.state = "recording";
     this.monitorNode.connect( this.audioContext.destination );
     this.scriptProcessorNode.connect( this.audioContext.destination );
     this.eventTarget.dispatchEvent( new Event( 'start' ) );
-    this.eventTarget.dispatchEvent( new CustomEvent( 'duration', { detail: this.duration } ) );
     this.encoder.postMessage( this.config );
   }
 };

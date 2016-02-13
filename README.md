@@ -32,7 +32,7 @@ Creates a recorder instance.
 
     rec.addEventListener( type, listener[, useCapture] )
 
-**addEventListener** will add an event listener to the event target. Available events are `duration`, `streamError`, `streamReady`, `dataAvailable`, `start`, `pause`, `resume` and `stop`.
+**addEventListener** will add an event listener to the event target. Available events are `streamError`, `streamReady`, `dataAvailable`, `start`, `pause`, `resume` and `stop`.
 
     rec.initStream()
 
