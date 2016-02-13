@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decode Example</title>
+  <style type="text/css">
+    audio { width: 100%; }
+    .option { width: 30%; display: inline-block; }
+  </style>
+</head>
+<body>
+  <h1>Decoder Example</h1>
+  <p>Choose either a file from disk, or a file from a server.<br/> File is decoded to pcm buffers and then played back as Riff</p>
+
+  <div class="option">
+    <label for="fileInput">Load local file</label></br>
+    <input type="file" id="fileInput"/><br/>
+  </div>
+
+  <div class='option'>
+    <label for="urlInput">Load remote URI</label></br>
+    <input type="text" id="urlInput" placeholder="stereo.ogg"/>
+    <button type="button" id="remoteButton">Load</button>
+  </div>
+
+  <hr/>
+
+  <script>
+    function decodeOgg(arrayBuffer){
+
+      var typedArray = new Uint8Array(arrayBuffer);
+      var decoderWorker = new Worker('oggopusDecoder.js');
+      var wavWorker = new Worker('wavePCM.js');
+      decoderWorker.postMessage({ command:'init' });
+      wavWorker.postMessage({ command:'init' })
+
+      decoderWorker.onmessage = function(e){
+        if (e.data === null) {
+          wavWorker.postMessage({ command: 'done' });
+        }
+
+        else {
+          wavWorker.postMessage({
+            command: 'record',
+            buffers: e.data
+          }, e.data.map(function(typedArray){
+            return typedArray.buffer;
+          }));
+        }
+      };
+
+      wavWorker.onmessage = function(e){
+        var audioTag = document.createElement('audio');
+        audioTag.setAttribute('controls','controls'); 
+        audioTag.src = URL.createObjectURL( new Blob( [ e.data ], { type: "audio/wav" } ) );
+        document.body.appendChild( audioTag );
+      };
+
+      decoderWorker.postMessage({
+        command: 'decode',
+        pages: typedArray
+      }, [typedArray.buffer] );
+
+      decoderWorker.postMessage({
+        command: 'done'
+      });
+    }
+
+    fileInput.onchange = function(e){
+      var fileReader = new FileReader();
+
+      fileReader.onload = function() {
+        decodeOgg(this.result);
+      };
+
+      fileReader.readAsArrayBuffer( e.target.files[0] );
+    };
+
+    remoteButton.onclick = function(){
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", (urlInput.value || "./stereo.ogg"), true);
+      xhr.responseType = "arraybuffer";
+
+      xhr.onload = function(e) {
+        decodeOgg(this.response);
+      };
+
+      xhr.send();
+    }
+
+  </script>
+</body>
+</html>

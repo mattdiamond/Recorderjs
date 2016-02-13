@@ -1,4 +1,4 @@
-# Recorder.js
+# Opusjs
 
 A library to encode the output of Web Audio API nodes as Opus and export in an Ogg container. Audio encoded using libopus ver 1.1.1 beta compiled with emscripten. Also included is audio resampler and Ogg Opus decoder.
 
@@ -73,3 +73,17 @@ Creates a recorder instance.
     Recorder.isRecordingSupported()
 
 Will return a truthy value indicating if the browser supports recording.
+
+
+### Building from sources 
+Prebuilt binaries are included in the src folder. However below are instructions if you want to build them yourself.
+
+[Install EMScripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
+
+Install autoconf, automake, libtool and pckconfig. 
+
+On mac you can do this using [Macports](https://www.macports.org/install.php)
+`sudo port install automake autoconf libtool pkgconfig`
+
+Make the dependencies!
+`make`
