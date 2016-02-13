@@ -1,6 +1,6 @@
 OUTPUT_DIR=./src
 EMCC_OPTS=-O3 --llvm-lto 1 --closure 1 --memory-init-file 0 -s NO_FILESYSTEM=1 -s NO_BROWSER=1
-DEFAULT_EXPORTS:='_free','_malloc','HEAPF32','HEAP32','HEAPU8'
+DEFAULT_EXPORTS:='_free','_malloc'
 
 LIBOPUS_ENCODER=$(OUTPUT_DIR)/libopus_encoder.js
 LIBOPUS_DECODER=$(OUTPUT_DIR)/libopus_decoder.js
@@ -13,7 +13,7 @@ LIBOPUS_DECODER_EXPORTS:='_opus_decoder_create','_opus_decode_float'
 LIBSPEEXDSP_STABLE=tags/SpeexDSP-1.2rc3
 LIBSPEEXDSP_DIR=./speexdsp
 LIBSPEEXDSP_OBJ=$(LIBSPEEXDSP_DIR)/libspeexdsp/.libs/libspeexdsp.a
-LIBSPEEXDSP_EXPORTS:=_speex_resampler_init','_speex_resampler_process_interleaved_float'
+LIBSPEEXDSP_EXPORTS:='_speex_resampler_init','_speex_resampler_process_interleaved_float'
 
 default: $(LIBOPUS_ENCODER) $(LIBOPUS_DECODER)
 

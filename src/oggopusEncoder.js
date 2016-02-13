@@ -32,12 +32,6 @@ var OggOpusEncoder = function( config ){
   this.encoderFrameSize = config.encoderFrameSize || 20; // 20ms frame
   this.bitRate = config.bitRate;
 
-  this.resampler = new Resampler({
-    resampledRate: this.encoderSampleRate,
-    originalSampleRate: this.originalSampleRate,
-    numberOfChannels: this.numberOfChannels
-  });
-
   this.pageIndex = 0;
   this.granulePosition = 0;
   this.segmentData = new Uint8Array( 65025 );
@@ -49,6 +43,7 @@ var OggOpusEncoder = function( config ){
 
   this.initChecksumTable();
   this.initCodec();
+  this.initResampler();
   this.generateIdPage();
   this.generateCommentPage();
 
