@@ -183,7 +183,7 @@ Recorder.prototype.storePage = function( page ) {
     }
 
     this.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
-      detail: outputData )
+      detail: outputData
     }));
 
     this.recordedPages = [];
@@ -193,7 +193,7 @@ Recorder.prototype.storePage = function( page ) {
 
 Recorder.prototype.streamPage = function( page ) {
   this.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
-    detail: page )
+    detail: page
   }));
 
   // Stream is finished
