@@ -31,7 +31,7 @@ var OggOpusEncoder = function( config ){
   this.encoderApplication = config.encoderApplication || 2049; // 2048 = Voice, 2049 = Full Band Audio, 2051 = Restricted Low Delay
   this.encoderFrameSize = config.encoderFrameSize || 20; // 20ms frame
   this.bufferLength = config.bufferLength || 4096;
-  this.resampleQuality = config.resampleQuality || 3;
+  this.resampleQuality = config.resampleQuality || 3; // Value between 0 and 10 inclusive. 10 being highest quality.
 
   this.pageIndex = 0;
   this.granulePosition = 0;

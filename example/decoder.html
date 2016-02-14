@@ -30,8 +30,8 @@
     function decodeOgg(arrayBuffer){
 
       var typedArray = new Uint8Array(arrayBuffer);
-      var decoderWorker = new Worker('oggopusDecoder.js');
-      var wavWorker = new Worker('wavePCM.js');
+      var decoderWorker = new Worker('../src/oggopusDecoder.js');
+      var wavWorker = new Worker('../src/wavePCM.js');
       decoderWorker.postMessage({ command:'init' });
       wavWorker.postMessage({ command:'init' })
 

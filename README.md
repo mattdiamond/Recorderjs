@@ -24,6 +24,7 @@ Creates a recorder instance.
 - **maxBuffersPerPage** - (*optional*) Specifies the maximum number of buffers to use before generating an Ogg page. This can be used to lower the streaming latency. The lower the value the more overhead the ogg stream will incur. Defaults to `40`.
 - **monitorGain** - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between `0` and `1`. Defaults to `0`
 - **numberOfChannels** - (*optional*) The number of channels to record. `1` = mono, `2` = stereo. Defaults to `1`. Maximum `2` channels are supported.
+- **resampleQuality** - (*optional*) Value between 0 and 10 which determines latency and processing for resampling. `0` is fastest with lowest quality. `10` is slowest with highest quality. Defaults to `3`.
 - **streamPages** - (*optional*) Library will fire `dataAvailable` event after each encoded page. Defaults to `false`.
 
 
@@ -76,7 +77,7 @@ Will return a truthy value indicating if the browser supports recording.
 
 
 ### Building from sources 
-Prebuilt binaries are included in the src folder. However below are instructions if you want to build them yourself.
+Prebuilt binaries for libspeex and libopus are included in the src folder. However below are instructions if you want to build them yourself.
 
 [Install EMScripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
 

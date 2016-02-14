@@ -21,6 +21,7 @@ var Recorder = function( config ){
   this.config.maxBuffersPerPage = config.maxBuffersPerPage || 40;
   this.config.encoderApplication = config.encoderApplication || 2049;
   this.config.encoderFrameSize = config.encoderFrameSize || 20;
+  this.config.resampleQuality = config.resampleQuality || 3;
   this.config.streamOptions = config.streamOptions || {
     optional: [],
     mandatory: {
