@@ -74,7 +74,10 @@ Recorder.prototype.encodeBuffers = function( inputBuffer ){
       buffers[i] = inputBuffer.getChannelData(i);
     }
 
-    this.encoder.postMessage({ command: "encode", buffers: buffers });
+    this.encoder.postMessage({ 
+      command: "encode",
+      buffers: buffers
+    });
   }
 };
 
