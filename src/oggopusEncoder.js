@@ -175,7 +175,7 @@ OggOpusEncoder.prototype.initChecksumTable = function(){
 
 OggOpusEncoder.prototype.initCodec = function() {
   var errLocation = _malloc( 4 );
-  _opus_encoder_create( this.encoderSampleRate, this.numberOfChannels, this.encoderApplication, errLocation );
+  this.encoder = _opus_encoder_create( this.encoderSampleRate, this.numberOfChannels, this.encoderApplication, errLocation );
   _free( errLocation );
 
   if ( this.bitRate ) {
