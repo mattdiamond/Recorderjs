@@ -10,7 +10,7 @@ LIBOPUS_STABLE=tags/v1.1.2
 LIBOPUS_DIR=./opus
 LIBOPUS_OBJ=$(LIBOPUS_DIR)/.libs/libopus.a
 LIBOPUS_ENCODER_EXPORTS:='_opus_encoder_create','_opus_encode_float','_opus_encoder_ctl'
-LIBOPUS_DECODER_EXPORTS:='_opus_decoder_create','_opus_decode_float'
+LIBOPUS_DECODER_EXPORTS:='_opus_decoder_create','_opus_decode_float','_opus_decoder_destroy'
 
 LIBSPEEXDSP_STABLE=tags/SpeexDSP-1.2rc3
 LIBSPEEXDSP_DIR=./speexdsp

@@ -89,7 +89,7 @@ OggOpusEncoder.prototype.encodeFinalFrame = function() {
   this.encode( finalFrameBuffers );
   this.headerType += 4;
   this.generatePage();
-  close();
+  self['close']();
 };
 
 OggOpusEncoder.prototype.getChecksum = function( data ){

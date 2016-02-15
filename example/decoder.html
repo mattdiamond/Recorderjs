@@ -5,41 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Decode Example</title>
   <style type="text/css">
-    audio { width: 100%; }
-    .option { width: 30%; display: inline-block; }
+    ul { list-style: none; }
+    li { margin: 1em; }
+    audio { display: block; }
   </style>
 </head>
 <body>
   <h1>Decoder Example</h1>
-  <p>Choose either a file from disk, or a file from a server.<br/> File is decoded to pcm buffers and then played back as Riff</p>
+  <p>Choose either a file from disk, or a file from a server.</p>
+  <p>File is decoded to pcm buffers and then played back as Riff</p>
+  <p>The remote file is Paper Lights by <a href="http://magnatune.com/artists/ehren/">Ehren Starks</a>, encoded at 96 kb/s</p>
 
-  <div class="option">
-    <label for="fileInput">Load local file</label></br>
-    <input type="file" id="fileInput"/><br/>
+  <h2>Options</h2>
+
+  <div>
+    <label>Decoder output sample rate</label>
+    <input id="sampleRate" type="number" value="8000" />
   </div>
 
-  <div class='option'>
-    <label for="urlInput">Load remote URI</label></br>
-    <input type="text" id="urlInput" placeholder="stereo.ogg"/>
-    <button type="button" id="remoteButton">Load</button>
+  <div>
+    <label>Wave file bit depth</label>
+    <input id="bitDepth" type="number" value="16" />
   </div>
 
-  <hr/>
+
+  <h2>Commands</h2>
+  <input type="file" id="fileInput"/>
+  <button type="button" id="remoteButton">Load using XMLHttpRequest</button>
+
+  <h2>Recordings</h2>
+  <ul id="recordingslist"></ul>
 
   <script>
     function decodeOgg(arrayBuffer){
 
       var typedArray = new Uint8Array(arrayBuffer);
-      var decoderWorker = new Worker('../src/oggopusDecoder.js');
+      var decoderWorker = new Worker('../src/oggopusDecoder.min.js');
       var wavWorker = new Worker('../src/wavePCM.js');
-      decoderWorker.postMessage({ command:'init' });
-      wavWorker.postMessage({ command:'init' })
+      var desiredSampleRate = parseInt(sampleRate.value,10);
+
+      decoderWorker.postMessage({ 
+        command:'init',
+        decoderSampleRate: desiredSampleRate,
+        outputBufferSampleRate: desiredSampleRate
+      });
+
+      wavWorker.postMessage({ 
+        command:'init',
+        bitDepth: parseInt(bitDepth.value,10),
+        sampleRate: desiredSampleRate
+      });
 
       decoderWorker.onmessage = function(e){
+
+        // null means decoder is finished
         if (e.data === null) {
           wavWorker.postMessage({ command: 'done' });
         }
 
+        // e.data contains decoded buffers as float32 values
         else {
           wavWorker.postMessage({
             command: 'record',
@@ -51,10 +75,24 @@
       };
 
       wavWorker.onmessage = function(e){
-        var audioTag = document.createElement('audio');
-        audioTag.setAttribute('controls','controls'); 
-        audioTag.src = URL.createObjectURL( new Blob( [ e.data ], { type: "audio/wav" } ) );
-        document.body.appendChild( audioTag );
+        var fileName = new Date().toISOString() + ".wav";
+        var dataBlob = new Blob( [ e.data ], { type: "audio/wav" } );
+        var url = URL.createObjectURL( dataBlob );
+
+        var audio = document.createElement('audio');
+        audio.controls = true;
+        audio.src = URL.createObjectURL( dataBlob );
+
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.innerHTML = link.download;
+
+        var li = document.createElement('li');
+        li.appendChild(link);
+        li.appendChild(audio);
+
+        recordingslist.appendChild(li);
       };
 
       decoderWorker.postMessage({
@@ -65,7 +103,7 @@
       decoderWorker.postMessage({
         command: 'done'
       });
-    }
+    };
 
     fileInput.onchange = function(e){
       var fileReader = new FileReader();
@@ -79,7 +117,7 @@
 
     remoteButton.onclick = function(){
       var xhr = new XMLHttpRequest();
-      xhr.open("GET", (urlInput.value || "./stereo.ogg"), true);
+      xhr.open("GET", "./ehren-paper_lights-96.opus", true);
       xhr.responseType = "arraybuffer";
 
       xhr.onload = function(e) {
@@ -87,7 +125,7 @@
       };
 
       xhr.send();
-    }
+    };
 
   </script>
 </body>
