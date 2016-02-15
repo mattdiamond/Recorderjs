@@ -1,5 +1,4 @@
 "use strict";
-importScripts( 'libopus_decoder.js' );
 
 var decoder;
 onmessage = function( e ){
