@@ -110,7 +110,7 @@ OggOpusDecoder.prototype.initCodec = function() {
 OggOpusDecoder.prototype.initResampler = function() {
 
   if ( this.resampler ) {
-    _speex_resampler_destroy( this.decoder );
+    _speex_resampler_destroy( this.resampler );
     _free( this.resampleOutputLengthPointer );
     _free( this.resampleOutputBufferPointer );
   }
