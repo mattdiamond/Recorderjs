@@ -86,8 +86,11 @@ OggOpusDecoder.prototype.init = function(){
 
 OggOpusDecoder.prototype.initCodec = function() {
 
-  if (this.decoder){
+  if ( this.decoder ) {
     _opus_decoder_destroy( this.decoder );
+    _free( this.decoderBufferPointer );
+    _free( this.decoderOutputLengthPointer );
+    _free( this.decoderOutputPointer );
   }
 
   var errReference = _malloc( 4 );
@@ -102,10 +105,16 @@ OggOpusDecoder.prototype.initCodec = function() {
   this.decoderOutputLengthPointer = _malloc( 4 );
   this.decoderOutputMaxLength = this.decoderSampleRate * this.numberOfChannels * 120 / 1000; // Max 120ms frame size
   this.decoderOutputPointer = _malloc( this.decoderOutputMaxLength * 4 ); // 4 bytes per sample
-  this.decoderOutputBuffer = HEAPF32.subarray( this.decoderOutputPointer >> 2, ( this.decoderOutputPointer >> 2 ) + this.decoderOutputMaxLength );
 };
 
 OggOpusDecoder.prototype.initResampler = function() {
+
+  if ( this.resampler ) {
+    _speex_resampler_destroy( this.decoder );
+    _free( this.resampleOutputLengthPointer );
+    _free( this.resampleOutputBufferPointer );
+  }
+
   var errLocation = _malloc( 4 );
   this.resampler = _speex_resampler_init( this.numberOfChannels, this.decoderSampleRate, this.outputBufferSampleRate, this.resampleQuality, errLocation );
   _free( errLocation );
