@@ -1,6 +1,7 @@
 # Recorderjs
 
 A library to encode the output of Web Audio API nodes as Opus and export in an Ogg container. Audio encoded and decoded using libopus v1.1.2. Audio resampling is performed by speexdsp 1.2RC3.
+Encoded and muxed audio will be returned as typedArray in `dataAvailable` event.
 
 ### Syntax
 
