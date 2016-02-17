@@ -49,7 +49,8 @@ Recorder.prototype.audioContext = new window.AudioContext();
 
 Recorder.prototype.clearStream = function() {
   if ( this.stream ) {
-      if ( this.stream.getTracks ) {
+
+    if ( this.stream.getTracks ) {
       this.stream.getTracks().forEach(function ( track ) {
         track.stop();
       });
