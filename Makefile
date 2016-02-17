@@ -22,6 +22,11 @@ default: $(LIBOPUS_ENCODER) $(LIBOPUS_DECODER)
 clean:
 	rm -rf $(LIBOPUS_ENCODER) $(LIBOPUS_DECODER) $(LIBOPUS_DIR) $(LIBSPEEXDSP_DIR)
 
+test:
+	mocha
+
+.PHONY: test
+
 $(LIBOPUS_DIR):
 	git submodule update --init --recursive
 	cd $(LIBOPUS_DIR); git checkout ${LIBOPUS_STABLE}

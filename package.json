@@ -34,6 +34,9 @@
     "email": "chris.rudmin@gmail.com"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "make test"
+  },
+  "devDependencies": {
+    "mocha": "2.4.5"
   }
 }

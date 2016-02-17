@@ -89,3 +89,9 @@ Prebuilt binaries for libspeex and libopus are included in the src folder. Howev
 Install autoconf, automake, libtool and pckconfig. On mac you can do this using [Macports](https://www.macports.org/install.php) `sudo port install automake autoconf libtool pkgconfig`
 
 Make the dependencies using command `make`!
+
+
+---------
+### Running the unit tests 
+
+`make test`
