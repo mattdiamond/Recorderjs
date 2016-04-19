@@ -16,7 +16,7 @@
     "Recorder"
   ],
   "license": "MIT",
-  "main": "recorder.js",
+  "main": "build/recorder.min.js",
   "files": [
     "build/recorder.min.js",
     "build/encoderWorker.min.js",
