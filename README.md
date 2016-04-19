@@ -83,7 +83,7 @@ Will return a truthy value indicating if the browser supports recording.
 ---------
 ### Building from sources 
 
-Prebuilt binaries for libspeex and libopus are included in the src folder. However below are instructions if you want to build them yourself.
+Prebuilt binaries are included in the build folder. However below are instructions if you want to build them yourself.
 
 [Install EMScripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
 
