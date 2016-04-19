@@ -1,11 +1,12 @@
-OUTPUT_DIR=./src
+INPUT_DIR=./src
+OUTPUT_DIR=./build
 EMCC_OPTS=-O3 --llvm-lto 1 --memory-init-file 0 --closure 1 -s NO_FILESYSTEM=1 -s NO_BROWSER=1
 DEFAULT_EXPORTS:='_free','_malloc'
 
-LIBOPUS_ENCODER_WORKER=$(OUTPUT_DIR)/oggopusEncoder.js
-LIBOPUS_ENCODER=$(OUTPUT_DIR)/oggopusEncoder.min.js
-LIBOPUS_DECODER_WORKER=$(OUTPUT_DIR)/oggopusDecoder.js
-LIBOPUS_DECODER=$(OUTPUT_DIR)/oggopusDecoder.min.js
+LIBOPUS_ENCODER_WORKER=$(INPUT_DIR)/encoderWorker.js
+LIBOPUS_DECODER_WORKER=$(INPUT_DIR)/decoderWorker.js
+LIBOPUS_ENCODER=$(OUTPUT_DIR)/encoderWorker.min.js
+LIBOPUS_DECODER=$(OUTPUT_DIR)/decoderWorker.min.js
 LIBOPUS_STABLE=tags/v1.1.2
 LIBOPUS_DIR=./opus
 LIBOPUS_OBJ=$(LIBOPUS_DIR)/.libs/libopus.a
@@ -17,10 +18,16 @@ LIBSPEEXDSP_DIR=./speexdsp
 LIBSPEEXDSP_OBJ=$(LIBSPEEXDSP_DIR)/libspeexdsp/.libs/libspeexdsp.a
 LIBSPEEXDSP_EXPORTS:='_speex_resampler_init','_speex_resampler_process_interleaved_float','_speex_resampler_destroy'
 
-default: $(LIBOPUS_ENCODER) $(LIBOPUS_DECODER)
+UGLIFY_PATH=./node_modules/uglify-js/bin/uglifyjs
+RECORDER_PATH=$(INPUT_DIR)/recorder.js
+RECORDER_OUTPUT_PATH=$(OUTPUT_DIR)/recorder.min.js
+WAVE_WORKER_PATH=$(INPUT_DIR)/waveWorker.js
+WAVE_WORKER_OUTPUT_PATH=$(OUTPUT_DIR)/waveWorker.min.js
 
+default: $(LIBOPUS_ENCODER) $(LIBOPUS_DECODER) uglify
 clean:
-	rm -rf $(LIBOPUS_ENCODER) $(LIBOPUS_DECODER) $(LIBOPUS_DIR) $(LIBSPEEXDSP_DIR)
+	rm -rf $(OUTPUT_DIR) $(LIBOPUS_DIR) $(LIBSPEEXDSP_DIR)
+	mkdir $(OUTPUT_DIR)
 
 test:
 	mocha
@@ -50,3 +57,7 @@ $(LIBOPUS_ENCODER): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 
 $(LIBOPUS_DECODER): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 	emcc -o $@ $(EMCC_OPTS) -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_DECODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $(LIBOPUS_DECODER_WORKER) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
+
+uglify:
+	$(UGLIFY_PATH) $(RECORDER_PATH) -c -m -o $(RECORDER_OUTPUT_PATH)
+	$(UGLIFY_PATH) $(WAVE_WORKER_PATH) -c -m -o $(WAVE_WORKER_OUTPUT_PATH)

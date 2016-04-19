@@ -18,12 +18,10 @@
   "license": "MIT",
   "main": "recorder.js",
   "files": [
-    "src/recorder.js",
-    "src/oggopusEncoder.js",
-    "src/oggopusDecoder.js",
-    "src/libopus_encoder.js",
-    "src/libopus_decoder.js",
-    "src/wavPCM.js"
+    "build/recorder.min.js",
+    "build/encoderWorker.min.js",
+    "build/decoderWorker.min.js",
+    "build/waveWorker.min.js"
   ],
   "repository": {
     "type": "git",
@@ -37,6 +35,7 @@
     "test": "make test"
   },
   "devDependencies": {
-    "mocha": "2.4.5"
+    "mocha": "2.4.5",
+    "uglify-js": "2.6.2"
   }
 }
