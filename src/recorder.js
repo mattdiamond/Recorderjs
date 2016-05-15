@@ -4,6 +4,8 @@ navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia 
 
 var Recorder = function( config ){
 
+  var that = this;
+
   if ( !Recorder.isRecordingSupported() ) {
     throw "Recording is not supported in this browser";
   }
@@ -34,7 +36,12 @@ var Recorder = function( config ){
 
   this.state = "inactive";
   this.eventTarget = document.createDocumentFragment();
-  this.createAudioNodes();
+  this.monitorNode = this.audioContext.createGain();
+  this.setMonitorGain( this.config.monitorGain );
+  this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
+  this.scriptProcessorNode.onaudioprocess = function( e ){
+    that.encodeBuffers( e.inputBuffer );
+  };
 };
 
 Recorder.isRecordingSupported = function(){
@@ -64,17 +71,6 @@ Recorder.prototype.clearStream = function() {
   }
 };
 
-Recorder.prototype.createAudioNodes = function(){
-  var that = this;
-  this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
-  this.scriptProcessorNode.onaudioprocess = function( e ){
-    that.encodeBuffers( e.inputBuffer );
-  };
-
-  this.monitorNode = this.audioContext.createGain();
-  this.setMonitorGain( this.config.monitorGain );
-};
-
 Recorder.prototype.encodeBuffers = function( inputBuffer ){
   if ( this.state === "recording" ) {
     var buffers = [];
@@ -82,7 +78,7 @@ Recorder.prototype.encodeBuffers = function( inputBuffer ){
       buffers[i] = inputBuffer.getChannelData(i);
     }
 
-    this.encoder.postMessage({ 
+    this.encoder.postMessage({
       command: "encode",
       buffers: buffers
     });
