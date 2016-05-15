@@ -49,7 +49,7 @@ $(LIBOPUS_OBJ): $(LIBOPUS_DIR)
 
 $(LIBSPEEXDSP_OBJ): $(LIBSPEEXDSP_DIR)
 	cd $(LIBSPEEXDSP_DIR); ./autogen.sh
-	cd $(LIBSPEEXDSP_DIR); emconfigure ./configure --disable-examples 
+	cd $(LIBSPEEXDSP_DIR); emconfigure ./configure --disable-examples
 	cd $(LIBSPEEXDSP_DIR); emmake make
 
 $(LIBOPUS_ENCODER): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
