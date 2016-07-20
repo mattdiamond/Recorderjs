@@ -44,7 +44,7 @@ export class Recorder {
                 sampleRate,
                 numChannels;
 
-            self.onmessage = function (e) {
+            this.onmessage = function (e) {
                 switch (e.data.command) {
                     case 'init':
                         init(e.data.config);
@@ -91,7 +91,7 @@ export class Recorder {
                 let dataview = encodeWAV(interleaved);
                 let audioBlob = new Blob([dataview], {type: type});
 
-                self.postMessage({command: 'exportWAV', data: audioBlob});
+                this.postMessage({command: 'exportWAV', data: audioBlob});
             }
 
             function getBuffer() {
@@ -99,7 +99,7 @@ export class Recorder {
                 for (let channel = 0; channel < numChannels; channel++) {
                     buffers.push(mergeBuffers(recBuffers[channel], recLength));
                 }
-                self.postMessage({command: 'getBuffer', data: buffers});
+                this.postMessage({command: 'getBuffer', data: buffers});
             }
 
             function clear() {
