@@ -2,6 +2,10 @@
 
 ## A plugin for recording/exporting the output of Web Audio API nodes
 
+**Note:** This repository is not being actively maintained due to lack of time and interest. If you maintain or know of a good fork, please let me know so I can direct future visitors to it by linking to it here.
+
+My sincerest apologies to the open source community for allowing this project to stagnate. I hope it was useful for some of you as a jumping-off point.
+
 ### Syntax
 #### Constructor
     var rec = new Recorder(source [, config])
