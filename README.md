@@ -6,6 +6,8 @@
 
 My sincerest apologies to the open source community for allowing this project to stagnate. I hope it was useful for some of you as a jumping-off point.
 
+---
+
 ### Syntax
 #### Constructor
     var rec = new Recorder(source [, config])
