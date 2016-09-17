@@ -119,3 +119,8 @@ Make the dependencies using command `make`!
 ### Running the unit tests 
 
 `make test`
+
+---------
+### Required Files
+
+The required files to record audio to ogg/opus are `build/recorder.min.js` and `build/encoderWorker.min.js`. Optionally `build/decoderWorker.min.js` will help decode ogg/opus files and `build/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm.
