@@ -81,7 +81,7 @@ Will return a truthy value indicating if the browser supports recording.
 
 
 ---------
-### Building from sources 
+### Building from sources
 
 Prebuilt binaries are included in the build folder. However below are instructions if you want to build them yourself.
 
@@ -93,6 +93,11 @@ Make the dependencies using command `make`!
 
 
 ---------
-### Running the unit tests 
+### Required Files
+
+The required files to record audio to ogg/opus are `build/recorder.min.js` and `build/encoderWorker.min.js`. Optionally `build/decoderWorker.min.js` will help decode ogg/opus files and `build/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm.
+
+---------
+### Running the unit tests
 
 `make test`
