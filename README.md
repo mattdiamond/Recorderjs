@@ -8,8 +8,10 @@ Encoded and muxed audio will be returned as typedArray in `dataAvailable` event.
 
 ---------
 #### Constructor
-    var rec = new Recorder([config]);
 
+```js
+var rec = new Recorder([config]);
+```
 Creates a recorder instance.
 
 - **config** - An optional configuration object (see **config** section below)
@@ -35,39 +37,57 @@ Creates a recorder instance.
 ---------
 #### Instance Methods
 
-    rec.addEventListener( type, listener[, useCapture] )
+```js
+rec.addEventListener( type, listener[, useCapture] )
+```
 
 **addEventListener** will add an event listener to the event target. Available events are `streamError`, `streamReady`, `dataAvailable`, `start`, `pause`, `resume` and `stop`.
 
-    rec.initStream()
+```js
+rec.initStream()
+```
 
 **initStream** will request the user for permission to access the the audio stream and raise `streamReady` or `streamError`.
 
-    rec.pause()
+```js
+rec.pause()
+```
 
 **pause** will keep the stream and monitoring alive, but will not be recording the buffers. Will raise the pause event. Subsequent calls to **resume** will add to the current recording.
 
-    rec.removeEventListener( type, listener[, useCapture] )
+```js
+rec.removeEventListener( type, listener[, useCapture] )
+```
 
 **removeEventListener** will remove an event listener from the event target.
 
-    rec.resume()
+```js
+rec.resume()
+```
 
 **resume** will resume the recording if paused. Will raise the resume event.
 
-    rec.setMonitorGain( gain )
+```js
+rec.setMonitorGain( gain )
+```
 
 **setMonitorGain** will set the volume on what will be passed to the monitor. Monitor level does not affect the recording volume. Gain is an a-weighted value between `0` and `1`.
 
-    rec.start()
+```js
+rec.start()
+```
 
 **start** will initalize the worker and begin capturing audio if the audio stream is ready. Will raise the `start` event when started.
 
-    rec.stop()
+```js
+rec.stop()
+```
 
 **stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published. Will raise the `stop` event when stopped.
 
-    rec.clearStream()
+```js
+rec.clearStream()
+```
 
 **clearStream** will stop and delete the stream got from `initStream`, you will only ever call this manually if you have `config.leaveStreamOpen` set to `true`.
 
@@ -75,7 +95,9 @@ Creates a recorder instance.
 ---------
 #### Static Methods
 
-    Recorder.isRecordingSupported()
+```js
+Recorder.isRecordingSupported()
+```
 
 Will return a truthy value indicating if the browser supports recording.
 
@@ -87,10 +109,11 @@ Prebuilt binaries are included in the build folder. However below are instructio
 
 [Install EMScripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
 
-Install autoconf, automake, libtool and pckconfig. On mac you can do this using [Macports](https://www.macports.org/install.php) `sudo port install automake autoconf libtool pkgconfig`
+Install autoconf, automake, libtool and pckconfig.
+On Mac you can do this using [MacPorts](https://www.macports.org/install.php)
+`sudo port install automake autoconf libtool pkgconfig`
 
 Make the dependencies using command `make`!
-
 
 ---------
 ### Required Files
@@ -101,3 +124,8 @@ The required files to record audio to ogg/opus are `build/recorder.min.js` and `
 ### Running the unit tests
 
 `make test`
+
+---------
+### Required Files
+
+The required files to record audio to ogg/opus are `build/recorder.min.js` and `build/encoderWorker.min.js`. Optionally `build/decoderWorker.min.js` will help decode ogg/opus files and `build/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm.
