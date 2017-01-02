@@ -1,15 +1,15 @@
 "use strict";
 
-(function( global ) { 
+(function( global ) {
   var AudioContext = global.AudioContext || global.webkitAudioContext;
-  var getUserMedia = global.navigator.getUserMedia || global.navigator.webkitGetUserMedia || global.navigator.mozGetUserMedia;
+  var getUserMedia = global.navigator && (global.navigator.getUserMedia || global.navigator.webkitGetUserMedia || global.navigator.mozGetUserMedia);
 
   var Recorder = function( config ){
 
     var that = this;
 
     if ( !Recorder.isRecordingSupported() ) {
-      throw "Recording is not supported in this browser";
+      throw new Error("Recording is not supported in this browser");
     }
 
     this.config = config = config || {};
@@ -214,16 +214,16 @@
 
 
   // Exports
-  if ( typeof module !== 'undefined' && typeof module.exports !== 'undefined' ) {
-    module.exports = Recorder;
-  }
-  else if ( typeof define === 'function' && define.amd ) {
+  global.Recorder = Recorder;
+
+  if ( typeof define === 'function' && define.amd ) {
     define( [], function() {
       return Recorder;
     });
   }
-  else {
-    global.Recorder = Recorder;
+
+  else if ( typeof module == 'object' && module.exports ) {
+    module.exports = Recorder;
   }
 
-})(window);
+})(this);
