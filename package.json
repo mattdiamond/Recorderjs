@@ -1,6 +1,6 @@
 {
   "name": "opus-recorder",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A library for recording opus encoded audio",
   "homepage": "https://github.com/chris-rudmin/Recorderjs",
   "author": "Chris Rudmin",
@@ -16,12 +16,12 @@
     "Recorder"
   ],
   "license": "MIT",
-  "main": "build/recorder.min.js",
+  "main": "dist/recorder.min.js",
   "files": [
-    "build/recorder.min.js",
-    "build/encoderWorker.min.js",
-    "build/decoderWorker.min.js",
-    "build/waveWorker.min.js"
+    "dist/recorder.min.js",
+    "dist/encoderWorker.min.js",
+    "dist/decoderWorker.min.js",
+    "dist/waveWorker.min.js"
   ],
   "repository": {
     "type": "git",

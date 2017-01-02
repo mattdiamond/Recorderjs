@@ -1,13 +1,13 @@
 INPUT_DIR=./src
-OUTPUT_DIR=./build
-EMCC_OPTS=-O3 --llvm-lto 1 --memory-init-file 0 --closure 1 -s NO_FILESYSTEM=1 -s NO_BROWSER=1
+OUTPUT_DIR=./dist
+EMCC_OPTS=-O3 --llvm-lto 1 --memory-init-file 0 --closure 1 -s NO_FILESYSTEM=1
 DEFAULT_EXPORTS:='_free','_malloc'
 
 LIBOPUS_ENCODER_SRC=$(INPUT_DIR)/encoderWorker.js
 LIBOPUS_DECODER_SRC=$(INPUT_DIR)/decoderWorker.js
 LIBOPUS_ENCODER=$(OUTPUT_DIR)/encoderWorker.min.js
 LIBOPUS_DECODER=$(OUTPUT_DIR)/decoderWorker.min.js
-LIBOPUS_STABLE=tags/v1.1.2
+LIBOPUS_STABLE=tags/v1.1.3
 LIBOPUS_DIR=./opus
 LIBOPUS_OBJ=$(LIBOPUS_DIR)/.libs/libopus.a
 LIBOPUS_ENCODER_EXPORTS:='_opus_encoder_create','_opus_encode_float','_opus_encoder_ctl'
@@ -48,7 +48,7 @@ $(LIBSPEEXDSP_DIR):
 
 $(LIBOPUS_OBJ): $(LIBOPUS_DIR)
 	cd $(LIBOPUS_DIR); ./autogen.sh
-	cd $(LIBOPUS_DIR); emconfigure ./configure --disable-extra-programs --disable-doc
+	cd $(LIBOPUS_DIR); emconfigure ./configure --disable-extra-programs --disable-doc --disable-intrinsics
 	cd $(LIBOPUS_DIR); emmake make
 
 $(LIBSPEEXDSP_OBJ): $(LIBSPEEXDSP_DIR)

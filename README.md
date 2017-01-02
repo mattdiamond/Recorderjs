@@ -1,6 +1,6 @@
 # Recorderjs
 
-A library to encode the output of Web Audio API nodes as Opus and export in an Ogg container. Audio encoded and decoded using libopus v1.1.2. Audio resampling is performed by speexdsp 1.2RC3.
+A library to encode the output of Web Audio API nodes as Opus and export in an Ogg container. Audio encoded and decoded using libopus v1.1.3. Audio resampling is performed by speexdsp 1.2RC3.
 Encoded and muxed audio will be returned as typedArray in `dataAvailable` event.
 
 ### Syntax
@@ -105,7 +105,7 @@ Will return a truthy value indicating if the browser supports recording.
 ---------
 ### Building from sources
 
-Prebuilt binaries are included in the build folder. However below are instructions if you want to build them yourself.
+Prebuilt binaries are included in the dist folder. However below are instructions if you want to build them yourself.
 
 [Install EMScripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
 
@@ -118,7 +118,7 @@ Make the dependencies using command `make`!
 ---------
 ### Required Files
 
-The required files to record audio to ogg/opus are `build/recorder.min.js` and `build/encoderWorker.min.js`. Optionally `build/decoderWorker.min.js` will help decode ogg/opus files and `build/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm.
+The required files to record audio to ogg/opus are `dist/recorder.min.js` and `dist/encoderWorker.min.js`. Optionally `dist/decoderWorker.min.js` will help decode ogg/opus files and `dist/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm.
 
 ---------
 ### Running the unit tests
@@ -128,4 +128,4 @@ The required files to record audio to ogg/opus are `build/recorder.min.js` and `
 ---------
 ### Required Files
 
-The required files to record audio to ogg/opus are `build/recorder.min.js` and `build/encoderWorker.min.js`. Optionally `build/decoderWorker.min.js` will help decode ogg/opus files and `build/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm.
+The required files to record audio to ogg/opus are `dist/recorder.min.js` and `dist/encoderWorker.min.js`. Optionally `dist/decoderWorker.min.js` will help decode ogg/opus files and `build/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm.
