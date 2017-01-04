@@ -128,4 +128,4 @@ The required files to record audio to ogg/opus are `dist/recorder.min.js` and `d
 ---------
 ### Required Files
 
-The required files to record audio to ogg/opus are `dist/recorder.min.js` and `dist/encoderWorker.min.js`. Optionally `dist/decoderWorker.min.js` will help decode ogg/opus files and `build/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm.
+The required files to record audio to ogg/opus are `dist/recorder.min.js` and `dist/encoderWorker.min.js`. Optionally `dist/decoderWorker.min.js` will help decode ogg/opus files and `dist/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm. The source files `src/encoderWorker.js` and `src/decoderWorker.js` do not work without building process; it produces  `ReferenceError: _malloc is not defined`. You need to either use compiled file in `dist/` folder or build by yourself.
