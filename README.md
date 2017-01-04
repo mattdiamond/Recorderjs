@@ -123,4 +123,4 @@ Make the dependencies using command `make`!
 ---------
 ### Required Files
 
-The required files to record audio to ogg/opus are `build/recorder.min.js` and `build/encoderWorker.min.js`. Optionally `build/decoderWorker.min.js` will help decode ogg/opus files and `build/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm.
+The required files to record audio to ogg/opus are `build/recorder.min.js` and `build/encoderWorker.min.js`. Optionally `build/decoderWorker.min.js` will help decode ogg/opus files and `build/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm. The source files in `src/` folder do not work without building process; it produces  `ReferenceError: _malloc is not defined`). You need to either use compiled file in `build/` folder or build by yourself.
