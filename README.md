@@ -105,7 +105,7 @@ Will return a truthy value indicating if the browser supports recording.
 ---------
 ### Building from sources
 
-Prebuilt binaries are included in the dist folder. However below are instructions if you want to build them yourself.
+Prebuilt sources are included in the dist folder. However below are instructions if you want to build them yourself.
 
 [Install EMScripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
 

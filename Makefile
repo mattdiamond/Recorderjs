@@ -27,7 +27,7 @@ WAVE_WORKER=$(OUTPUT_DIR)/waveWorker.min.js
 WAVE_WORKER_SRC=$(INPUT_DIR)/waveWorker.js
 
 
-default: $(LIBOPUS_ENCODER) $(LIBOPUS_DECODER) $(RECORDER) $(WAVE_WORKER)
+default: $(LIBOPUS_ENCODER) $(LIBOPUS_DECODER) $(RECORDER) $(WAVE_WORKER) test
 
 clean:
 	rm -rf $(OUTPUT_DIR) $(LIBOPUS_DIR) $(LIBSPEEXDSP_DIR)
@@ -48,12 +48,12 @@ $(LIBSPEEXDSP_DIR):
 
 $(LIBOPUS_OBJ): $(LIBOPUS_DIR)
 	cd $(LIBOPUS_DIR); ./autogen.sh
-	cd $(LIBOPUS_DIR); emconfigure ./configure --disable-extra-programs --disable-doc --disable-intrinsics
+	cd $(LIBOPUS_DIR); emconfigure ./configure --disable-extra-programs --disable-doc --disable-intrinsics --disable-rtcd
 	cd $(LIBOPUS_DIR); emmake make
 
 $(LIBSPEEXDSP_OBJ): $(LIBSPEEXDSP_DIR)
 	cd $(LIBSPEEXDSP_DIR); ./autogen.sh
-	cd $(LIBSPEEXDSP_DIR); emconfigure ./configure --disable-examples
+	cd $(LIBSPEEXDSP_DIR); emconfigure ./configure --disable-examples --enable-sse
 	cd $(LIBSPEEXDSP_DIR); emmake make
 
 $(LIBOPUS_ENCODER): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
