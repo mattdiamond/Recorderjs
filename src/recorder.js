@@ -12,6 +12,11 @@
       throw new Error("Recording is not supported in this browser");
     }
 
+    this.state = "inactive";
+    this.eventTarget = document.createDocumentFragment();
+    this.audioContext = new AudioContext();
+    this.monitorNode = this.audioContext.createGain();
+
     this.config = config = config || {};
     this.config.command = "init";
     this.config.bufferLength = config.bufferLength || 4096;
@@ -36,10 +41,6 @@
       }
     };
 
-    this.state = "inactive";
-    this.eventTarget = document.createDocumentFragment();
-    this.audioContext = new AudioContext();
-    this.monitorNode = this.audioContext.createGain();
     this.setMonitorGain( this.config.monitorGain );
     this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
     this.scriptProcessorNode.onaudioprocess = function( e ){
