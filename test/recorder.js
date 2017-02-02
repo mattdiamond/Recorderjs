@@ -1,12 +1,13 @@
 var chai = require('chai');
 var should = chai.should();
 var expect = chai.expect;
-var Recorder = require('../dist/recorder.min');
 
 
 describe('Recorder', function() {
 
 	describe('unmocked', function(){
+
+		var Recorder = require('../dist/recorder.min');
 
 	    it('should not support Recording', function () {
 	    	expect(Recorder.isRecordingSupported()).to.not.be.ok;
@@ -18,6 +19,8 @@ describe('Recorder', function() {
 	});
 
 	describe('mocked', function(){
+
+		var Recorder = require('../dist/recorder.min');
 
 		before(function(){
 
