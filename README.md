@@ -105,7 +105,7 @@ Will return a truthy value indicating if the browser supports recording.
 ---------
 ### Building from sources
 
-Prebuilt sources are included in the dist folder. However below are instructions if you want to build them yourself.
+Prebuilt sources are included in the dist folder. However below are instructions if you want to build them yourself. Opus and speex are compiled without SIMD optimizations. Performace is significantly worse with SIMD optimizations enabled.
 
 [Install EMScripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
 
@@ -115,17 +115,14 @@ On Mac you can do this using [MacPorts](https://www.macports.org/install.php)
 
 Make the dependencies using command `make`!
 
----------
-### Required Files
-
-The required files to record audio to ogg/opus are `dist/recorder.min.js` and `dist/encoderWorker.min.js`. Optionally `dist/decoderWorker.min.js` will help decode ogg/opus files and `dist/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm.
 
 ---------
 ### Running the unit tests
 
 `make test`
 
+
 ---------
 ### Required Files
 
-The required files to record audio to ogg/opus are `dist/recorder.min.js` and `dist/encoderWorker.min.js`. Optionally `dist/decoderWorker.min.js` will help decode ogg/opus files and `dist/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm. The source files `src/encoderWorker.js` and `src/decoderWorker.js` do not work without building process; it produces  `ReferenceError: _malloc is not defined`. You need to either use compiled file in `dist/` folder or build by yourself.
+The required files to record audio to ogg/opus are `dist/recorder.min.js` and `dist/encoderWorker.min.js`. Optionally `dist/decoderWorker.min.js` will help decode ogg/opus files and `dist/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm. The source files `src/encoderWorker.js` and `src/decoderWorker.js` do not work without building process; it will produce an error `ReferenceError: _malloc is not defined`. You need to either use compiled file in `dist/` folder or build by yourself.
