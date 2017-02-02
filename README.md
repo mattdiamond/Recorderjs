@@ -9,6 +9,8 @@ Encoded and muxed audio will be returned as typedArray in `dataAvailable` event.
 ---------
 #### Constructor
 
+The `Recorder` object is available in the global namespace and supports importing from module exports and AMD.
+
 ```js
 var rec = new Recorder([config]);
 ```
