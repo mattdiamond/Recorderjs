@@ -37,6 +37,11 @@
     <input id="resampleQuality" type="number" value="3" />
   </div>  
 
+  <div>
+    <label>Encoder Complexity</label>
+    <input id="encoderComplexity" type="number" value="9" />
+  </div>  
+
   <h2>Commands</h2>
   <input type="file" id="fileInput"/>
 
@@ -64,9 +69,10 @@
         originalSampleRate: parseInt(sampleRate.value,10), 
         maxBuffersPerPage:  40, 
         encoderApplication: 2049, 
-        encoderFrameSize:   20, 
+        encoderFrameSize:   20,
+	encoderComplexity:  parseInt(encoderComplexity.value,10),  
         resampleQuality:    parseInt(resampleQuality.value,10),     
-		bitRate: 			parseInt(bitRate.value,10),        
+	bitRate:	    parseInt(bitRate.value,10),        
       });
 	  
 	  
