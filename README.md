@@ -113,6 +113,8 @@ Install autoconf, automake, libtool and pckconfig.
 On Mac you can do this using [MacPorts](https://www.macports.org/install.php)
 `sudo port install automake autoconf libtool pkgconfig`
 
+Install [uglify-js](https://www.npmjs.com/package/uglify-js) using the command `npm install uglify-js -g`.
+
 Make the dependencies using command `make`!
 
 ---------

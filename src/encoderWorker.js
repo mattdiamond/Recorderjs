@@ -89,6 +89,7 @@ OggOpusEncoder.prototype.encodeFinalFrame = function() {
   this.encode( finalFrameBuffers );
   this.headerType += 4;
   this.generatePage();
+  self['postMessage'](null);
   self['close']();
 };
 
