@@ -29,7 +29,7 @@ var OggOpusEncoder = function( config ){
   this.maxBuffersPerPage = config['maxBuffersPerPage'] || 40; // Limit latency for streaming
   this.encoderApplication = config['encoderApplication'] || 2049; // 2048 = Voice, 2049 = Full Band Audio, 2051 = Restricted Low Delay
   this.encoderFrameSize = config['encoderFrameSize'] || 20; // 20ms frame
-  this.encoderComplexity = config['encoderComplexity'] || 9; // Value between 0 and 10 inclusive. 10 being highest quality.
+  this.encoderComplexity = config['encoderComplexity']; // Value between 0 and 10 inclusive. 10 being highest quality.
   this.bufferLength = config['bufferLength'] || 4096;
   this.resampleQuality = config['resampleQuality'] || 3; // Value between 0 and 10 inclusive. 10 being highest quality.
   this.bitRate = config['bitRate'];
