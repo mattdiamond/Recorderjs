@@ -1,5 +1,7 @@
 "use strict";
 
+var root = (typeof self === 'object' && self.self === self && self) || (typeof global === 'object' && global.global === global && global) || this;
+
 (function( global ) {
   var AudioContext = global.AudioContext || global.webkitAudioContext;
   var getUserMedia = global.navigator && (global.navigator.getUserMedia || global.navigator.webkitGetUserMedia || global.navigator.mozGetUserMedia);
@@ -227,5 +229,4 @@
     module.exports = Recorder;
   }
 
-})(global || window);
-
+})(root);
