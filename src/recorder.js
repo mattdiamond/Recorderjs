@@ -15,7 +15,7 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     }
 
     this.state = "inactive";
-    this.eventTarget = document.createDocumentFragment();
+    this.eventTarget = global.document.createDocumentFragment();
     this.audioContext = new AudioContext();
     this.monitorNode = this.audioContext.createGain();
 
