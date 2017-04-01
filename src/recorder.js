@@ -227,4 +227,5 @@
     module.exports = Recorder;
   }
 
-})(this);
+})(global || window);
+

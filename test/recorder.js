@@ -7,7 +7,7 @@ describe('Recorder', function() {
 
 	describe('unmocked', function(){
 
-		var Recorder = require('../dist/recorder.min');
+		var Recorder = require('../src/recorder');
 
 	    it('should not support Recording', function () {
 	    	expect(Recorder.isRecordingSupported()).to.not.be.ok;
@@ -20,11 +20,17 @@ describe('Recorder', function() {
 
 	describe('mocked', function(){
 
-		var Recorder = require('../dist/recorder.min');
+		global.AudioContext = function(){};
+		global.navigator = {
+			getUserMedia: function(){}
+		};
 
-		before(function(){
+		var Recorder = require('require-uncached')('../src/recorder');
 
-		});
+		it('should support Recording', function () {
+	    	expect(Recorder.isRecordingSupported()).to.be.ok;
+	    });
+
 	});
 
 });
