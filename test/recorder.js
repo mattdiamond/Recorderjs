@@ -1,4 +1,7 @@
 var chai = require('chai');
+var sinon = require('sinon');
+var sinonChai = require("sinon-chai");
+chai.use(sinonChai);
 var should = chai.should();
 var expect = chai.expect;
 
@@ -20,24 +23,31 @@ describe('Recorder', function() {
 
 	describe('mocked', function(){
 
-		global.AudioContext = function(){
-			this.createGain = function(){
-				return { gain: {}};
-			};
-			this.createScriptProcessor = function(){
-				return {};
-			}
-		};
+		var sandbox = sinon.sandbox.create();
+		var Recorder;
 
-		global.navigator = {
-			getUserMedia: function(){}
-		};
+		beforeEach(function(){
+			global.AudioContext = sandbox.stub();
+			global.AudioContext.prototype.createGain = sandbox.stub().returns({ gain: {} });
+			global.AudioContext.prototype.createScriptProcessor = sandbox.stub().returns({});
+			global.AudioContext.prototype.createMediaStreamSource = sandbox.stub().returns({ connect: function(){} });
+			global.Event = sandbox.stub();
+			global.CustomEvent = sandbox.stub();
+			global.ErrorEvent = sandbox.stub();
+			global.navigator = {};
+			global.navigator.getUserMedia = sandbox.stub().yields(true);
+			global.document = {};
+			global.document.createDocumentFragment = sandbox.stub().returns({
+				addEventListener: sandbox.stub(),
+				removeEventListener: sandbox.stub(),
+				dispatchEvent: sandbox.stub()
+			});
+			Recorder = require('require-uncached')('../src/recorder');
+		});
 
-		global.document = {
-			createDocumentFragment: function(){}
-		};
-
-		var Recorder = require('require-uncached')('../dist/recorder.min');
+	    afterEach(function () {
+	        sandbox.restore();
+	    });
 
 		it('should support Recording', function () {
 	    	expect(Recorder.isRecordingSupported()).to.be.ok;
@@ -46,7 +56,7 @@ describe('Recorder', function() {
 		it('should create an instance with default config', function () {
 			var rec = new Recorder();
 
-	    	expect(rec).to.be.an.instanceof(Recorder);
+	    	expect(global.AudioContext).to.have.been.calledWithNew;
 	    	expect(rec.config).to.have.property('bufferLength', 4096);
 	    	expect(rec.config).to.have.property('monitorGain', 0);
 	    	expect(rec.config).to.have.property('numberOfChannels', 1);
@@ -76,7 +86,7 @@ describe('Recorder', function() {
 		        resampleQuality: 10
 			});
 
-	    	expect(rec).to.be.an.instanceof(Recorder);
+	    	expect(global.AudioContext).to.have.been.calledWithNew;
 	    	expect(rec.config).to.have.property('bufferLength', 2048);
 	    	expect(rec.config).to.have.property('monitorGain', 100);
 	    	expect(rec.config).to.have.property('numberOfChannels', 2);
@@ -89,6 +99,27 @@ describe('Recorder', function() {
 	    	expect(rec.config).to.have.property('encoderApplication', 2048);
 	    	expect(rec.config).to.have.property('encoderFrameSize', 40);
 	    	expect(rec.config).to.have.property('resampleQuality', 10);
+	    });
+
+	    it('should initialize a new stream', function () {
+			var rec = new Recorder();
+			rec.initStream();
+			expect(rec.stream).to.be.true;
+			expect(global.navigator.getUserMedia).to.have.been.calledOnce;
+			expect(rec.eventTarget.dispatchEvent).to.have.been.calledOnce;
+			expect(global.Event).to.have.been.calledOnce;
+			expect(global.Event).to.have.been.calledWith("streamReady");
+	    });
+
+	    it('should use the existing stream if already initialized', function () {
+			var rec = new Recorder();
+			rec.initStream();
+			rec.initStream();
+			expect(rec.stream).to.be.true;
+			expect(global.navigator.getUserMedia).to.have.been.calledOnce;
+			expect(rec.eventTarget.dispatchEvent).to.have.been.calledTwice;
+			expect(global.Event).to.have.been.calledTwice;
+			expect(global.Event).to.have.been.calledWith("streamReady");
 	    });
 
 	});

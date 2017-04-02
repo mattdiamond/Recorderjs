@@ -54,8 +54,8 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     return AudioContext && getUserMedia;
   };
 
-  Recorder.prototype.addEventListener = function( type, listener, useCapture ){
-    this.eventTarget.addEventListener( type, listener, useCapture );
+  Recorder.prototype.addEventListener = function(){
+    this.eventTarget.addEventListener.apply( arguments );
   };
 
   Recorder.prototype.clearStream = function() {
@@ -91,22 +91,22 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
 
   Recorder.prototype.initStream = function(){
     if ( this.stream ) {
-      this.eventTarget.dispatchEvent( new Event( "streamReady" ) );
+      this.eventTarget.dispatchEvent( new global.Event( "streamReady" ) );
       return;
     }
 
     var that = this;
-    navigator.getUserMedia(
+    global.navigator.getUserMedia(
       { audio : this.config.streamOptions },
       function ( stream ) {
         that.stream = stream;
         that.sourceNode = that.audioContext.createMediaStreamSource( stream );
         that.sourceNode.connect( that.scriptProcessorNode );
         that.sourceNode.connect( that.monitorNode );
-        that.eventTarget.dispatchEvent( new Event( "streamReady" ) );
+        that.eventTarget.dispatchEvent( new global.Event( "streamReady" ) );
       },
       function ( e ) {
-        that.eventTarget.dispatchEvent( new ErrorEvent( "streamError", { error: e } ) );
+        that.eventTarget.dispatchEvent( new global.ErrorEvent( "streamError", { error: e } ) );
       }
     );
   };
@@ -118,18 +118,18 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
   Recorder.prototype.pause = function(){
     if ( this.state === "recording" ){
       this.state = "paused";
-      this.eventTarget.dispatchEvent( new Event( 'pause' ) );
+      this.eventTarget.dispatchEvent( new global.Event( 'pause' ) );
     }
   };
 
-  Recorder.prototype.removeEventListener = function( type, listener, useCapture ){
-    this.eventTarget.removeEventListener( type, listener, useCapture );
+  Recorder.prototype.removeEventListener = function(){
+    this.eventTarget.removeEventListener.apply( arguments );
   };
 
   Recorder.prototype.resume = function() {
     if ( this.state === "paused" ) {
       this.state = "recording";
-      this.eventTarget.dispatchEvent( new Event( 'resume' ) );
+      this.eventTarget.dispatchEvent( new global.Event( 'resume' ) );
     }
   };
 
@@ -164,7 +164,7 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
       this.state = "recording";
       this.monitorNode.connect( this.audioContext.destination );
       this.scriptProcessorNode.connect( this.audioContext.destination );
-      this.eventTarget.dispatchEvent( new Event( 'start' ) );
+      this.eventTarget.dispatchEvent( new global.Event( 'start' ) );
       this.encoder.postMessage( this.config );
     }
   };
@@ -196,22 +196,22 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
         outputIndex += this.recordedPages[i].length;
       }
 
-      this.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
+      this.eventTarget.dispatchEvent( new global.CustomEvent( 'dataAvailable', {
         detail: outputData
       }));
 
       this.recordedPages = [];
-      this.eventTarget.dispatchEvent( new Event( 'stop' ) );
+      this.eventTarget.dispatchEvent( new global.Event( 'stop' ) );
     }
   };
 
   Recorder.prototype.streamPage = function( page ) {
-    this.eventTarget.dispatchEvent( new CustomEvent( 'dataAvailable', {
+    this.eventTarget.dispatchEvent( new global.CustomEvent( 'dataAvailable', {
       detail: page
     }));
 
     if ( this.isFinalPage( page ) ) {
-      this.eventTarget.dispatchEvent( new Event( 'stop' ) );
+      this.eventTarget.dispatchEvent( new global.Event( 'stop' ) );
     }
   };
 
