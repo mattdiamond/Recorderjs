@@ -42,7 +42,7 @@ describe('Recorder', function() {
 				removeEventListener: sandbox.stub(),
 				dispatchEvent: sandbox.stub()
 			});
-			Recorder = require('require-uncached')('../src/recorder');
+			Recorder = require('require-uncached')('../dist/recorder.min');
 		});
 
 	    afterEach(function () {

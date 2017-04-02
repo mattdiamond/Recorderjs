@@ -54,8 +54,8 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     return AudioContext && getUserMedia;
   };
 
-  Recorder.prototype.addEventListener = function(){
-    this.eventTarget.addEventListener.apply( arguments );
+  Recorder.prototype.addEventListener = function( type, listener, useCapture ){
+    this.eventTarget.addEventListener( type, listener, useCapture );
   };
 
   Recorder.prototype.clearStream = function() {
@@ -122,8 +122,8 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     }
   };
 
-  Recorder.prototype.removeEventListener = function(){
-    this.eventTarget.removeEventListener.apply( arguments );
+  Recorder.prototype.removeEventListener = function( type, listener, useCapture ){
+    this.eventTarget.removeEventListener( type, listener, useCapture );
   };
 
   Recorder.prototype.resume = function() {
