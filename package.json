@@ -32,7 +32,8 @@
     "email": "chris.rudmin@gmail.com"
   },
   "scripts": {
-    "test": "make test"
+    "test": "make test",
+    "uglify": "uglifyjs"
   },
   "devDependencies": {
     "require-uncached": "1.0.3",
@@ -40,6 +41,6 @@
     "chai": "3.5.0",
     "sinon": "2.1.0",
     "sinon-chai": "2.9.0",
-    "uglify-js": "2.7.5"
+    "uglify-js": "2.8.21"
   }
 }

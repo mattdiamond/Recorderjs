@@ -18,8 +18,6 @@ LIBSPEEXDSP_DIR=./speexdsp
 LIBSPEEXDSP_OBJ=$(LIBSPEEXDSP_DIR)/libspeexdsp/.libs/libspeexdsp.a
 LIBSPEEXDSP_EXPORTS:='_speex_resampler_init','_speex_resampler_process_interleaved_float','_speex_resampler_destroy'
 
-UGLIFY_PATH=./node_modules/uglify-js/bin/uglifyjs
-
 RECORDER=$(OUTPUT_DIR)/recorder.min.js
 RECORDER_SRC=$(INPUT_DIR)/recorder.js
 
@@ -63,7 +61,7 @@ $(LIBOPUS_DECODER): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 	emcc -o $@ $(EMCC_OPTS) -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_DECODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $(LIBOPUS_DECODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 
 $(RECORDER):
-	$(UGLIFY_PATH) $(RECORDER_SRC) -c -m -o $@
+	npm run uglify -- $(RECORDER_SRC) -c -m -o $@
 
 $(WAVE_WORKER):
-	$(UGLIFY_PATH) $(WAVE_WORKER_SRC) -c -m -o $@
+	npm run uglify -- $(WAVE_WORKER_SRC) -c -m -o $@
