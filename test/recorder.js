@@ -64,6 +64,7 @@ describe('Recorder', function(){
 	it('should create an instance with default config', function () {
 		var rec = new Recorder();
     	expect(global.AudioContext).to.have.been.calledWithNew;
+    	expect(rec.state).to.equal('inactive');
     	expect(rec.config).to.have.property('bufferLength', 4096);
     	expect(rec.config).to.have.property('monitorGain', 0);
     	expect(rec.config).to.have.property('numberOfChannels', 1);
@@ -94,6 +95,7 @@ describe('Recorder', function(){
 		});
 
     	expect(global.AudioContext).to.have.been.calledWithNew;
+    	expect(rec.state).to.equal('inactive');
     	expect(rec.config).to.have.property('bufferLength', 2048);
     	expect(rec.config).to.have.property('monitorGain', 100);
     	expect(rec.config).to.have.property('numberOfChannels', 2);
@@ -112,7 +114,7 @@ describe('Recorder', function(){
 		var rec = new Recorder();
 		rec.initStream();
 		expect(rec.stream).to.be.defined;
-		expect(rec.stream).to.contain.property('stop');
+		expect(rec.stream).to.have.property('stop');
 		expect(global.navigator.getUserMedia).to.have.been.calledOnce;
 		expect(rec.eventTarget.dispatchEvent).to.have.been.calledOnce;
 		expect(global.Event).to.have.been.calledOnce;
@@ -124,7 +126,7 @@ describe('Recorder', function(){
 		rec.initStream();
 		rec.initStream();
 		expect(rec.stream).to.be.defined;
-		expect(rec.stream).to.contain.property('stop');
+		expect(rec.stream).to.have.property('stop');
 		expect(global.navigator.getUserMedia).to.have.been.calledOnce;
 		expect(rec.eventTarget.dispatchEvent).to.have.been.calledTwice;
 		expect(global.Event).to.have.been.calledTwice;
@@ -147,6 +149,7 @@ describe('Recorder', function(){
 				{ stop: stopTrack2 }
 			])
 		});
+		
 		var rec = new Recorder();
 		rec.initStream();
 		rec.clearStream();
