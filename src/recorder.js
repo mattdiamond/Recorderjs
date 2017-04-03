@@ -140,7 +140,7 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
   Recorder.prototype.start = function(){
     if ( this.state === "inactive" && this.stream ) {
       var that = this;
-      this.encoder = new Worker( this.config.encoderPath );
+      this.encoder = new global.Worker( this.config.encoderPath );
 
       if (this.config.streamPages){
         this.encoder.addEventListener( "message", function( e ) {

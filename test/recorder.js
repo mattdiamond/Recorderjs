@@ -28,8 +28,13 @@ describe('Recorder', function(){
 
 	beforeEach(function(){
 		global.AudioContext = sandbox.stub();
-		global.AudioContext.prototype.createGain = sandbox.stub().returns({ gain: {} });
-		global.AudioContext.prototype.createScriptProcessor = sandbox.stub().returns({});
+		global.AudioContext.prototype.createGain = sandbox.stub().returns({ 
+			connect: sandbox.stub(),
+			gain: {}
+		});
+		global.AudioContext.prototype.createScriptProcessor = sandbox.stub().returns({
+			connect: sandbox.stub()
+		});
 		global.AudioContext.prototype.createMediaStreamSource = sandbox.stub().returns({ 
 			connect: sandbox.stub()
 		});
@@ -49,6 +54,10 @@ describe('Recorder', function(){
 			removeEventListener: sandbox.stub(),
 			dispatchEvent: sandbox.stub()
 		});
+
+		global.Worker = sandbox.stub();
+		global.Worker.prototype.addEventListener = sandbox.stub();
+		global.Worker.prototype.postMessage =  sandbox.stub();
 
 		Recorder = requireUncached('../dist/recorder.min');
 	});
@@ -149,7 +158,7 @@ describe('Recorder', function(){
 				{ stop: stopTrack2 }
 			])
 		});
-		
+
 		var rec = new Recorder();
 		rec.initStream();
 		rec.clearStream();
@@ -170,6 +179,19 @@ describe('Recorder', function(){
 		rec.removeEventListener( "a", "b");
 		expect(rec.eventTarget.removeEventListener).to.have.been.calledOnce;
 		expect(rec.eventTarget.removeEventListener).to.have.been.calledWith("a", "b", undefined);
+    });
+
+    it('should start recording', function () {
+		var rec = new Recorder();
+		rec.initStream();
+		rec.start();
+		expect(global.Worker).to.have.been.calledWithNew;
+		expect(rec.encoder.addEventListener).to.have.been.calledOnce;
+		expect(rec.encoder.addEventListener).to.have.been.calledWith('message');
+		expect(rec.state).to.equal('recording');
+        expect(rec.scriptProcessorNode.connect).to.have.been.calledWith( rec.audioContext.destination );
+        expect(global.Event).to.have.been.calledWith('start');
+        expect(rec.encoder.postMessage).to.have.been.calledWith( rec.config );
     });
 
 });
