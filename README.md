@@ -25,6 +25,7 @@ Creates a recorder instance.
 - **bitRate** (*optional*) Specifies the target bitrate in bits/sec. The encoder selects an application-specific default when this is not specified.
 - **bufferLength** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to `4096`.
 - **encoderApplication** - (*optional*) Specifies the encoder application. Supported values are `2048` - Voice, `2049` - Full Band Audio, `2051` - Restricted Low Delay. Defaults to `2049`.
+- **encoderComplexity** - (*optional*) Value between 0 and 10 which determines latency and processing for resampling. `0` is fastest with lowest complexity. `10` is slowest with highest complexity. The encoder selects a default when this is not specified.
 - **encoderFrameSize** (*optional*) Specifies the frame size in ms used for encoding. Defaults to `20`.
 - **encoderPath** - (*optional*) Path to encoderWorker.min.js worker script. Defaults to `encoderWorker.min.js`
 - **encoderSampleRate** - (*optional*) Specifies the sample rate to encode at. Defaults to `48000`. Supported values are `8000`, `12000`, `16000`, `24000` or `48000`.
