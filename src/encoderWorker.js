@@ -19,6 +19,9 @@ self['onmessage'] = function( e ){
     case 'init':
       encoder = new OggOpusEncoder( e['data'] );
       break;
+
+    default:
+      // Ignore any unknown commands and continue recieving commands
   }
 };
 

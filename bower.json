@@ -2,10 +2,10 @@
   "name": "opus-recorderjs",
   "description": "Record audio from the mic into a wav or ogg opus file",
   "main": [
-    "build/recorder.min.js",
-    "build/encoderWorker.min.js",
-    "build/decoderWorker.min.js",
-    "build/waveWorker.min.js"
+    "dist/recorder.min.js",
+    "dist/encoderWorker.min.js",
+    "dist/decoderWorker.min.js",
+    "dist/waveWorker.min.js"
   ],
   "license": [
     "MIT",
