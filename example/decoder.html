@@ -40,8 +40,8 @@
     function decodeOgg(arrayBuffer){
 
       var typedArray = new Uint8Array(arrayBuffer);
-      var decoderWorker = new Worker('../build/decoderWorker.min.js');
-      var wavWorker = new Worker('../build/waveWorker.min.js');
+      var decoderWorker = new Worker('../dist/decoderWorker.min.js');
+      var wavWorker = new Worker('../dist/waveWorker.min.js');
       var desiredSampleRate = parseInt(sampleRate.value,10);
 
       decoderWorker.postMessage({ 

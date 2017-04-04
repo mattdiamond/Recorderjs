@@ -1,13 +1,15 @@
 # Recorderjs
 
-A library to encode the output of Web Audio API nodes as Opus and export in an Ogg container. Audio encoded and decoded using libopus v1.1.2. Audio resampling is performed by speexdsp 1.2RC3.
+A javascript library to encode the output of Web Audio API nodes in Ogg Opus format. Audio encoded and decoded using libopus v1.1.4. Audio resampling is performed by speexDSP 1.2RC3. 
 Encoded and muxed audio will be returned as typedArray in `dataAvailable` event.
 
-### Syntax
+### Usage
 
 
 ---------
 #### Constructor
+
+The `Recorder` object is available in the global namespace and supports importing from module exports and AMD.
 
 ```js
 var rec = new Recorder([config]);
@@ -23,10 +25,10 @@ Creates a recorder instance.
 - **bitRate** (*optional*) Specifies the target bitrate in bits/sec. The encoder selects an application-specific default when this is not specified.
 - **bufferLength** - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to `4096`.
 - **encoderApplication** - (*optional*) Specifies the encoder application. Supported values are `2048` - Voice, `2049` - Full Band Audio, `2051` - Restricted Low Delay. Defaults to `2049`.
+- **encoderComplexity** - (*optional*) Value between 0 and 10 which determines latency and processing for resampling. `0` is fastest with lowest complexity. `10` is slowest with highest complexity. The encoder selects a default when this is not specified.
 - **encoderFrameSize** (*optional*) Specifies the frame size in ms used for encoding. Defaults to `20`.
 - **encoderPath** - (*optional*) Path to encoderWorker.min.js worker script. Defaults to `encoderWorker.min.js`
 - **encoderSampleRate** - (*optional*) Specifies the sample rate to encode at. Defaults to `48000`. Supported values are `8000`, `12000`, `16000`, `24000` or `48000`.
-- **encoderComplexity** - (*optional*) Value between 0 and 10 which determines latency and processing for resampling. `0` is fastest with lowest complexity. `10` is slowest with highest complexity. The encoder selects a default when this is not specified.
 - **leaveStreamOpen** - (*optional*) Keep the stream around when trying to `stop` recording, so you can re-`start` without re-`initStream`. Defaults to `false`.
 - **maxBuffersPerPage** - (*optional*) Specifies the maximum number of buffers to use before generating an Ogg page. This can be used to lower the streaming latency. The lower the value the more overhead the ogg stream will incur. Defaults to `40`.
 - **monitorGain** - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between `0` and `1`. Defaults to `0`
@@ -104,9 +106,9 @@ Will return a truthy value indicating if the browser supports recording.
 
 
 ---------
-### Building from sources 
+### Building from sources
 
-Prebuilt binaries are included in the build folder. However below are instructions if you want to build them yourself.
+Prebuilt sources are included in the dist folder. However below are instructions if you want to build them yourself. Opus and speex are compiled without SIMD optimizations. Performace is significantly worse with SIMD optimizations enabled.
 
 [Install EMScripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
 
@@ -114,16 +116,16 @@ Install autoconf, automake, libtool and pckconfig.
 On Mac you can do this using [MacPorts](https://www.macports.org/install.php)
 `sudo port install automake autoconf libtool pkgconfig`
 
-Install [uglify-js](https://www.npmjs.com/package/uglify-js) using the command `npm install uglify-js -g`.
-
 Make the dependencies using command `make`!
 
+
 ---------
-### Running the unit tests 
+### Running the unit tests
 
 `make test`
+
 
 ---------
 ### Required Files
 
-The required files to record audio to ogg/opus are `build/recorder.min.js` and `build/encoderWorker.min.js`. Optionally `build/decoderWorker.min.js` will help decode ogg/opus files and `build/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm. The source files in `src/` folder do not work without building process; it produces  `ReferenceError: _malloc is not defined`). You need to either use compiled file in `build/` folder or build by yourself.
+The required files to record audio to ogg/opus are `dist/recorder.min.js` and `dist/encoderWorker.min.js`. Optionally `dist/decoderWorker.min.js` will help decode ogg/opus files and `dist/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm. The source files `src/encoderWorker.js` and `src/decoderWorker.js` do not work without building process; it will produce an error `ReferenceError: _malloc is not defined`. You need to either use compiled file in `dist/` folder or build by yourself.
