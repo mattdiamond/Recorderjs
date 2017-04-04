@@ -18,7 +18,7 @@ LIBSPEEXDSP_DIR=./speexdsp
 LIBSPEEXDSP_OBJ=$(LIBSPEEXDSP_DIR)/libspeexdsp/.libs/libspeexdsp.a
 LIBSPEEXDSP_EXPORTS:='_speex_resampler_init','_speex_resampler_process_interleaved_float','_speex_resampler_destroy'
 
-UGLIFY_PATH=./node_modules/uglify-js/bin/uglifyjs
+UGLIFY_PATH=uglifyjs
 
 RECORDER=$(OUTPUT_DIR)/recorder.min.js
 RECORDER_SRC=$(INPUT_DIR)/recorder.js

@@ -26,6 +26,7 @@ Creates a recorder instance.
 - **encoderFrameSize** (*optional*) Specifies the frame size in ms used for encoding. Defaults to `20`.
 - **encoderPath** - (*optional*) Path to encoderWorker.min.js worker script. Defaults to `encoderWorker.min.js`
 - **encoderSampleRate** - (*optional*) Specifies the sample rate to encode at. Defaults to `48000`. Supported values are `8000`, `12000`, `16000`, `24000` or `48000`.
+- **encoderComplexity** - (*optional*) Value between 0 and 10 which determines latency and processing for resampling. `0` is fastest with lowest complexity. `10` is slowest with highest complexity. The encoder selects a default when this is not specified.
 - **leaveStreamOpen** - (*optional*) Keep the stream around when trying to `stop` recording, so you can re-`start` without re-`initStream`. Defaults to `false`.
 - **maxBuffersPerPage** - (*optional*) Specifies the maximum number of buffers to use before generating an Ogg page. This can be used to lower the streaming latency. The lower the value the more overhead the ogg stream will incur. Defaults to `40`.
 - **monitorGain** - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between `0` and `1`. Defaults to `0`
@@ -112,6 +113,8 @@ Prebuilt binaries are included in the build folder. However below are instructio
 Install autoconf, automake, libtool and pckconfig.
 On Mac you can do this using [MacPorts](https://www.macports.org/install.php)
 `sudo port install automake autoconf libtool pkgconfig`
+
+Install [uglify-js](https://www.npmjs.com/package/uglify-js) using the command `npm install uglify-js -g`.
 
 Make the dependencies using command `make`!
 

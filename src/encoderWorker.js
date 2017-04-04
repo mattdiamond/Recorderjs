@@ -29,8 +29,9 @@ var OggOpusEncoder = function( config ){
   this.maxBuffersPerPage = config['maxBuffersPerPage'] || 40; // Limit latency for streaming
   this.encoderApplication = config['encoderApplication'] || 2049; // 2048 = Voice, 2049 = Full Band Audio, 2051 = Restricted Low Delay
   this.encoderFrameSize = config['encoderFrameSize'] || 20; // 20ms frame
+  this.encoderComplexity = config['encoderComplexity']; // Value between 0 and 10 inclusive. 10 being highest quality.
   this.bufferLength = config['bufferLength'] || 4096;
-  this.resampleQuality = config['resampleQuality'] || 3; // Value between 0 and 10 inclusive. 10 being highest quality.\
+  this.resampleQuality = config['resampleQuality'] || 3; // Value between 0 and 10 inclusive. 10 being highest quality.
   this.bitRate = config['bitRate'];
 
   this.pageIndex = 0;
@@ -89,6 +90,7 @@ OggOpusEncoder.prototype.encodeFinalFrame = function() {
   this.encode( finalFrameBuffers );
   this.headerType += 4;
   this.generatePage();
+  self['postMessage'](null);
   self['close']();
 };
 
@@ -183,6 +185,12 @@ OggOpusEncoder.prototype.initCodec = function() {
     HEAP32[ bitRateLocation >> 2 ] = this.bitRate;
     _opus_encoder_ctl( this.encoder, 4002, bitRateLocation );
     _free( bitRateLocation );
+  }
+
+  if ( this.encoderComplexity ) {
+    var encoderComplexityLocation = _malloc( 4 );
+    _opus_encoder_ctl( this.encoder, 4010, encoderComplexityLocation );
+    _free( encoderComplexityLocation );
   }
 
   this.encoderSamplesPerChannel = this.encoderSampleRate * this.encoderFrameSize / 1000;
