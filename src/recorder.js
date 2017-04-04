@@ -111,10 +111,6 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     );
   };
 
-  Recorder.prototype.isFinalPage= function( page ) {
-    return page[5] & 4;
-  };
-
   Recorder.prototype.pause = function(){
     if ( this.state === "recording" ){
       this.state = "paused";
@@ -184,10 +180,7 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
   };
 
   Recorder.prototype.storePage = function( page ) {
-    this.recordedPages.push( page );
-    this.totalLength += page.length;
-
-    if ( this.isFinalPage( page ) ) {
+    if ( page === null ) {
       var outputData = new Uint8Array( this.totalLength );
       var outputIndex = 0;
 
@@ -203,15 +196,22 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
       this.recordedPages = [];
       this.eventTarget.dispatchEvent( new global.Event( 'stop' ) );
     }
+
+    else {
+      this.recordedPages.push( page );
+      this.totalLength += page.length;
+    }
   };
 
   Recorder.prototype.streamPage = function( page ) {
-    this.eventTarget.dispatchEvent( new global.CustomEvent( 'dataAvailable', {
-      detail: page
-    }));
-
-    if ( this.isFinalPage( page ) ) {
+    if ( page === null ) {
       this.eventTarget.dispatchEvent( new global.Event( 'stop' ) );
+    }
+
+    else {
+      this.eventTarget.dispatchEvent( new global.CustomEvent( 'dataAvailable', {
+        detail: page
+      }));
     }
   };
 
