@@ -52,16 +52,16 @@
     var totalArray = new Uint8Array(0);
    
     function concatTypedArrays(a, b) { // a, b TypedArray of same type
-        var c = new (a.constructor)(a.length + b.length);
-        c.set(a, 0);
-        c.set(b, a.length);
-        return c;
+      var c = new (a.constructor)(a.length + b.length);
+      c.set(a, 0);
+      c.set(b, a.length);
+      return c;
     }
     
     function encodeOgg(arrayBuffer){
-	  var encodeWorker = new Worker('../build/encoderWorker.min.js');
-	  var bufferLength = 4096;
-	  
+      var encodeWorker = new Worker('../dist/encoderWorker.min.js');
+      var bufferLength = 4096;
+      
       encodeWorker.postMessage({ 
         command:'init',
         encoderSampleRate:  parseInt(encoderSampleRate.value,10),
@@ -70,65 +70,59 @@
         maxBuffersPerPage:  40, 
         encoderApplication: 2049, 
         encoderFrameSize:   20,
-	encoderComplexity:  parseInt(encoderComplexity.value,10),  
+        encoderComplexity:  parseInt(encoderComplexity.value,10),  
         resampleQuality:    parseInt(resampleQuality.value,10),     
-	bitRate:	    parseInt(bitRate.value,10),        
+        bitRate:            parseInt(bitRate.value,10),        
       });
-	  
-	  
-	  
 
       var typedArray = new Int16Array(arrayBuffer);
-      for (i = 0; i < typedArray.length; i+=bufferLength) {
-          var tmpBuffer = new Float32Array(bufferLength);
-          var tmpBufferList = [];
-          for (j = 0 ; j < bufferLength ; j++)
-          {
-              tmpBuffer[j] = typedArray[i + j] / 32768.0;    
-          }
-          tmpBufferList.push(tmpBuffer) ;
-          
-          encodeWorker.postMessage({
-              command:'encode',
-              buffers: tmpBufferList
-          });
+      for (i = 0; i < typedArray.length; i += bufferLength) {
+        var tmpBuffer = new Float32Array(bufferLength);
+        var tmpBufferList = [];
+        for (j = 0 ; j < bufferLength ; j++) {
+          tmpBuffer[j] = typedArray[i + j] / 32768;    
+        }
+        tmpBufferList.push(tmpBuffer) ;
+
+        encodeWorker.postMessage({
+          command:'encode',
+          buffers: tmpBufferList
+        });
       };
 
-       encodeWorker.postMessage({
-          command:'done'
+      encodeWorker.postMessage({
+        command:'done'
       });
 
       encodeWorker.onmessage = function(e){
-        if (e.data == null)
-		{
-			//finished encoding - save to audio tag
-			var fileName = new Date().toISOString() + ".ogg";        
-			var dataBlob = new Blob( [ self.totalArray ], { type: "audio/ogg" } );
-			var url = URL.createObjectURL( dataBlob );
+        if (e.data == null) {
+          //finished encoding - save to audio tag
+          var fileName = new Date().toISOString() + ".ogg";        
+          var dataBlob = new Blob( [ self.totalArray ], { type: "audio/ogg" } );
+          var url = URL.createObjectURL( dataBlob );
 
-			var audio = document.createElement('audio');
-			audio.controls = true;
-			audio.src = URL.createObjectURL( dataBlob );
-			
+          var audio = document.createElement('audio');
+          audio.controls = true;
+          audio.src = URL.createObjectURL( dataBlob );
 
-			var link = document.createElement('a');
-			link.href = url;
-			link.download = fileName;
-			link.innerHTML = link.download;
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          link.innerHTML = link.download;
 
-			var li = document.createElement('li');
-			li.appendChild(link);
-			li.appendChild(audio);
+          var li = document.createElement('li');
+          li.appendChild(link);
+          li.appendChild(audio);
 
-			recordingslist.appendChild(li);
-		}
-		else
-		{
-			totalArray = concatTypedArrays(self.totalArray, e.data);
-			self.totalArray = totalArray;
-		}
+          recordingslist.appendChild(li);
+        }
+
+        else {
+          totalArray = concatTypedArrays(self.totalArray, e.data);
+          self.totalArray = totalArray;
+        }
       };
-    };
+    }
 
     fileInput.onchange = function(e){
       var fileReader = new FileReader();
@@ -143,4 +137,3 @@
   </script>
 </body>
 </html>
-
