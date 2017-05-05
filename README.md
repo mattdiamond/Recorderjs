@@ -1,4 +1,4 @@
-# Recorderjs
+# Opus Recorder
 
 A javascript library to encode the output of Web Audio API nodes in Ogg Opus format. Audio encoded and decoded using libopus v1.1.4. Audio resampling is performed by speexDSP 1.2RC3. 
 Encoded and muxed audio will be returned as typedArray in `dataAvailable` event.
@@ -51,7 +51,7 @@ rec.initStream()
 ```
 
 **initStream** will request the user for permission to access the the audio stream and raise `streamReady` or `streamError`.
-returns a Promise which resolves the audio stream when it is ready.
+Returns a Promise which resolves the audio stream when it is ready.
 
 ```js
 rec.pause()
@@ -104,6 +104,21 @@ Recorder.isRecordingSupported()
 ```
 
 Will return a truthy value indicating if the browser supports recording.
+
+
+---------
+### Browser Support
+
+Supported:
+- Chrome v58
+- Firefox v53
+- Microsoft Edge
+- Opera v44
+
+Unsupported:
+- MacOS Safari
+- iOS
+- IE 11 and below
 
 
 ---------
