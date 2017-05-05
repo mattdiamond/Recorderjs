@@ -3,25 +3,6 @@
 var root = (typeof self === 'object' && self.self === self && self) || (typeof global === 'object' && global.global === global && global) || this;
 
 (function( global ) {
-  var AudioContext = global.AudioContext || global.webkitAudioContext;
-  var getUserMedia = ( function( navigator ) {
-
-    var newGetUserMedia = navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
-    var deprecatedGetUserMedia = navigator && ( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia );
-
-    if ( newGetUserMedia ) {
-      return newGetUserMedia;
-    }
-
-    if ( deprecatedGetUserMedia ) {
-      return function( constraints ) {
-        return new Promise( function( resolve, reject ) {
-          deprecatedGetUserMedia( constraints, resolve, reject );
-        });
-      };
-    }
-
-  })( global.navigator );
 
   var Recorder = function( config ){
 
@@ -33,7 +14,7 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
 
     this.state = "inactive";
     this.eventTarget = global.document.createDocumentFragment();
-    this.audioContext = new AudioContext();
+    this.audioContext = new global.AudioContext();
     this.monitorNode = this.audioContext.createGain();
 
     this.config = config = config || {};
@@ -50,6 +31,15 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     this.config.encoderApplication = config.encoderApplication || 2049;
     this.config.encoderFrameSize = config.encoderFrameSize || 20;
     this.config.resampleQuality = config.resampleQuality || 3;
+    this.config.streamOptions = config.streamOptions || {
+      optional: [],
+      mandatory: {
+        googEchoCancellation: false,
+        googAutoGainControl: false,
+        googNoiseSuppression: false,
+        googHighpassFilter: false
+      }
+    };
 
     this.setMonitorGain( this.config.monitorGain );
     this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
@@ -59,7 +49,7 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
   };
 
   Recorder.isRecordingSupported = function(){
-    return AudioContext && getUserMedia;
+    return global.AudioContext && global.navigator && ( global.navigator.getUserMedia || ( global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia ) );
   };
 
   Recorder.prototype.addEventListener = function( type, listener, useCapture ){
@@ -98,23 +88,37 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
   };
 
   Recorder.prototype.initStream = function(){
+    var that = this;
+
+    var onStreamInit = function( stream ){
+      that.stream = stream;
+      that.sourceNode = that.audioContext.createMediaStreamSource( stream );
+      that.sourceNode.connect( that.scriptProcessorNode );
+      that.sourceNode.connect( that.monitorNode );
+      that.eventTarget.dispatchEvent( new global.Event( "streamReady" ) );
+      return stream;
+    }
+
+    var onStreamError = function( e ){
+      that.eventTarget.dispatchEvent( new global.ErrorEvent( "streamError", { error: e } ) );
+    }
+
+    var constraints = { audio : this.config.streamOptions };
+
     if ( this.stream ) {
       this.eventTarget.dispatchEvent( new global.Event( "streamReady" ) );
       return Promise.resolve( this.stream );
     }
 
-    var that = this;
-    return getUserMedia({ audio : true })
-      .then( function ( stream ) {
-        that.stream = stream;
-        that.sourceNode = that.audioContext.createMediaStreamSource( stream );
-        that.sourceNode.connect( that.scriptProcessorNode );
-        that.sourceNode.connect( that.monitorNode );
-        that.eventTarget.dispatchEvent( new global.Event( "streamReady" ) );
-        return stream;
-      }, function ( e ) {
-        that.eventTarget.dispatchEvent( new global.ErrorEvent( "streamError", { error: e } ) );
-      });
+    if ( global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia ) {
+      return global.navigator.mediaDevices.getUserMedia( constraints ).then( onStreamInit, onStreamError );
+    }
+
+    if ( global.navigator.getUserMedia ) {
+      return new Promise( function( resolve, reject ) {
+        global.navigator.getUserMedia( constraints, resolve, reject );
+      }).then( onStreamInit, onStreamError );
+    }
   };
 
   Recorder.prototype.pause = function(){

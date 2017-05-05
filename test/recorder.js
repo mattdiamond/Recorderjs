@@ -141,8 +141,6 @@ describe('Recorder', function(){
       stop: sandbox.stub()
     });
 
-    Recorder = requireUncached('../src/recorder');
-
     var rec = new Recorder();
     return rec.initStream().then(function(){
       expect(rec.stream).to.be.defined;
@@ -186,8 +184,6 @@ describe('Recorder', function(){
         { stop: stopTrack2 }
       ])
     });
-
-    Recorder = requireUncached('../src/recorder');
 
     var rec = new Recorder();
     return rec.initStream().then(function(){
