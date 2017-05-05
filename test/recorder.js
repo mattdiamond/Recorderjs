@@ -26,7 +26,7 @@ describe('Recorder unsupported', function(){
 describe('Recorder', function(){
 
   var sandbox = sinon.sandbox.create();
-  var Recorder;
+  var Recorder = requireUncached('../dist/recorder.min');
 
   beforeEach(function(){
     global.AudioContext = sandbox.stub();
@@ -63,8 +63,6 @@ describe('Recorder', function(){
     global.Worker.prototype.postMessage =  sandbox.stub();
 
     global.Promise = Promise;
-
-    Recorder = requireUncached('../dist/recorder.min');
   });
 
   afterEach(function () {
