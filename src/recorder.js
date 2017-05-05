@@ -4,7 +4,24 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
 
 (function( global ) {
   var AudioContext = global.AudioContext || global.webkitAudioContext;
-  var getUserMedia = global.navigator && (global.navigator.getUserMedia || global.navigator.webkitGetUserMedia || global.navigator.mozGetUserMedia);
+  var getUserMedia = ( function( navigator ) {
+
+    var newGetUserMedia = navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
+    var deprecatedGetUserMedia = navigator && ( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia );
+
+    if ( newGetUserMedia ) {
+      return newGetUserMedia;
+    }
+
+    if ( deprecatedGetUserMedia ) {
+      return function ( constraints ) {
+        return new Promise( function( resolve, reject ) {
+          deprecatedGetUserMedia( constraints, resolve, reject );
+        });
+      };
+    }
+
+  })( global.navigator );
 
   var Recorder = function( config ){
 
@@ -92,23 +109,21 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
   Recorder.prototype.initStream = function(){
     if ( this.stream ) {
       this.eventTarget.dispatchEvent( new global.Event( "streamReady" ) );
-      return;
+      return Promise.resolve( this.stream );
     }
 
     var that = this;
-    global.navigator.getUserMedia(
-      { audio : this.config.streamOptions },
-      function ( stream ) {
+    return getUserMedia({ audio : this.config.streamOptions })
+      .then( function ( stream ) {
         that.stream = stream;
         that.sourceNode = that.audioContext.createMediaStreamSource( stream );
         that.sourceNode.connect( that.scriptProcessorNode );
         that.sourceNode.connect( that.monitorNode );
         that.eventTarget.dispatchEvent( new global.Event( "streamReady" ) );
-      },
-      function ( e ) {
+        return stream;
+      }, function ( e ) {
         that.eventTarget.dispatchEvent( new global.ErrorEvent( "streamError", { error: e } ) );
-      }
-    );
+      });
   };
 
   Recorder.prototype.pause = function(){

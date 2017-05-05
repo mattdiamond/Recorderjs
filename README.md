@@ -34,7 +34,7 @@ Creates a recorder instance.
 - **monitorGain** - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between `0` and `1`. Defaults to `0`
 - **numberOfChannels** - (*optional*) The number of channels to record. `1` = mono, `2` = stereo. Defaults to `1`. Maximum `2` channels are supported.
 - **resampleQuality** - (*optional*) Value between 0 and 10 which determines latency and processing for resampling. `0` is fastest with lowest quality. `10` is slowest with highest quality. Defaults to `3`.
-- **streamPages** - (*optional*) Library will fire `dataAvailable` event after each encoded page. Defaults to `false`.
+- **streamPages** - (*optional*) `dataAvailable` event will fire after each encoded page. Defaults to `false`.
 
 
 ---------
@@ -51,6 +51,7 @@ rec.initStream()
 ```
 
 **initStream** will request the user for permission to access the the audio stream and raise `streamReady` or `streamError`.
+returns a Promise which resolves the audio stream when it is ready.
 
 ```js
 rec.pause()

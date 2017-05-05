@@ -45,7 +45,8 @@ describe('Recorder', function(){
     global.ErrorEvent = sandbox.stub();
 
     global.navigator = {};
-    global.navigator.getUserMedia = sandbox.stub().yields({
+    global.navigator.mediaDevices = {};
+    global.navigator.mediaDevices.getUserMedia = sandbox.stub().resolves({
       stop: sandbox.stub()
     });
 
@@ -71,7 +72,7 @@ describe('Recorder', function(){
     expect(Recorder.isRecordingSupported()).to.be.ok;
   });
 
-  it('should create an instance with default config', function () {
+  it('should create an instance without config', function () {
     var rec = new Recorder();
     expect(global.AudioContext).to.have.been.calledWithNew;
     expect(rec.state).to.equal('inactive');
@@ -88,7 +89,7 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('resampleQuality', 3);
   });
 
-  it('should create an instance with custom config', function () {
+  it('should create an instance with config', function () {
     var rec = new Recorder({
       bufferLength: 2048,
       monitorGain: 100,
@@ -122,50 +123,80 @@ describe('Recorder', function(){
 
   it('should initialize a new audio stream', function () {
     var rec = new Recorder();
-    rec.initStream();
-    expect(rec.stream).to.be.defined;
-    expect(rec.stream).to.have.property('stop');
-    expect(global.navigator.getUserMedia).to.have.been.calledOnce;
-    expect(rec.eventTarget.dispatchEvent).to.have.been.calledOnce;
-    expect(global.Event).to.have.been.calledOnce;
-    expect(global.Event).to.have.been.calledWith("streamReady");
+ 
+    return rec.initStream().then(function(){
+      expect(rec.stream).to.be.defined;
+      expect(rec.stream).to.have.property('stop');
+      expect(global.navigator.mediaDevices.getUserMedia).to.have.been.calledOnce;
+      expect(rec.eventTarget.dispatchEvent).to.have.been.calledOnce;
+      expect(global.Event).to.have.been.calledOnce;
+      expect(global.Event).to.have.been.calledWith("streamReady");
+    });
+
+  });
+
+  it('should initialize a new audio stream with deprecated getUserMedia', function () {
+    delete global.navigator.mediaDevices.getUserMedia;
+    global.navigator.getUserMedia = sandbox.stub().yields({
+      stop: sandbox.stub()
+    });
+
+    Recorder = requireUncached('../src/recorder');
+
+    var rec = new Recorder();
+    return rec.initStream().then(function(){
+      expect(rec.stream).to.be.defined;
+      expect(rec.stream).to.have.property('stop');
+      expect(global.navigator.getUserMedia).to.have.been.calledOnce;
+      expect(rec.eventTarget.dispatchEvent).to.have.been.calledOnce;
+      expect(global.Event).to.have.been.calledOnce;
+      expect(global.Event).to.have.been.calledWith("streamReady");
+    });
   });
 
   it('should use the existing audio stream if already initialized', function () {
     var rec = new Recorder();
-    rec.initStream();
-    rec.initStream();
-    expect(rec.stream).to.be.defined;
-    expect(rec.stream).to.have.property('stop');
-    expect(global.navigator.getUserMedia).to.have.been.calledOnce;
-    expect(rec.eventTarget.dispatchEvent).to.have.been.calledTwice;
-    expect(global.Event).to.have.been.calledTwice;
-    expect(global.Event).to.have.been.calledWith("streamReady");
+    return rec.initStream().then(function(){
+      return rec.initStream().then(function(){
+        expect(rec.stream).to.be.defined;
+        expect(rec.stream).to.have.property('stop');
+        expect(global.navigator.mediaDevices.getUserMedia).to.have.been.calledOnce;
+        expect(rec.eventTarget.dispatchEvent).to.have.been.calledTwice;
+        expect(global.Event).to.have.been.calledTwice;
+        expect(global.Event).to.have.been.calledWith("streamReady");
+      });
+    });
   });
 
   it('should clear the audio stream', function () {
     var rec = new Recorder();
-    rec.initStream();
-    rec.clearStream();
-    expect(rec.stream).to.be.undefined;
+    return rec.initStream().then(function(){
+      expect(rec.stream).to.be.defined;
+      rec.clearStream();
+      expect(rec.stream).to.be.undefined;
+    });
   });
 
   it('should clear the audio stream when stream contains tracks', function () {
     var stopTrack1 = sandbox.stub();
     var stopTrack2 = sandbox.stub();
-    global.navigator.getUserMedia = sandbox.stub().yields({
+    global.navigator.mediaDevices.getUserMedia = sandbox.stub().resolves({
       getTracks: sandbox.stub().returns([
         { stop: stopTrack1 },
         { stop: stopTrack2 }
       ])
     });
 
+    Recorder = requireUncached('../src/recorder');
+
     var rec = new Recorder();
-    rec.initStream();
-    rec.clearStream();
-    expect(stopTrack1).to.have.been.calledOnce;
-    expect(stopTrack2).to.have.been.calledOnce;
-    expect(rec.stream).to.be.undefined;
+    return rec.initStream().then(function(){
+      expect(rec.stream).to.be.defined;
+      rec.clearStream();
+      expect(stopTrack1).to.have.been.calledOnce;
+      expect(stopTrack2).to.have.been.calledOnce;
+      expect(rec.stream).to.be.undefined;
+    });
   });
 
   it('should add an event listener', function () {
@@ -177,22 +208,23 @@ describe('Recorder', function(){
 
   it('should remove an event listener', function () {
     var rec = new Recorder();
-    rec.removeEventListener( "a", "b");
+    rec.removeEventListener("a", "b");
     expect(rec.eventTarget.removeEventListener).to.have.been.calledOnce;
     expect(rec.eventTarget.removeEventListener).to.have.been.calledWith("a", "b", undefined);
   });
 
   it('should start recording', function () {
     var rec = new Recorder();
-    rec.initStream();
-    rec.start();
-    expect(global.Worker).to.have.been.calledWithNew;
-    expect(rec.encoder.addEventListener).to.have.been.calledOnce;
-    expect(rec.encoder.addEventListener).to.have.been.calledWith('message');
-    expect(rec.state).to.equal('recording');
-    expect(rec.scriptProcessorNode.connect).to.have.been.calledWith( rec.audioContext.destination );
-    expect(global.Event).to.have.been.calledWith('start');
-    expect(rec.encoder.postMessage).to.have.been.calledWith( rec.config );
+    return rec.initStream().then(function(){
+      rec.start();
+      expect(global.Worker).to.have.been.calledWithNew;
+      expect(rec.encoder.addEventListener).to.have.been.calledOnce;
+      expect(rec.encoder.addEventListener).to.have.been.calledWith('message');
+      expect(rec.state).to.equal('recording');
+      expect(rec.scriptProcessorNode.connect).to.have.been.calledWith( rec.audioContext.destination );
+      expect(global.Event).to.have.been.calledWith('start');
+      expect(rec.encoder.postMessage).to.have.been.calledWith( rec.config );
+    });
   });
 
 });

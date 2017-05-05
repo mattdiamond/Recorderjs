@@ -1,6 +1,6 @@
 {
   "name": "opus-recorder",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "A library for recording opus encoded audio",
   "homepage": "https://github.com/chris-rudmin/Recorderjs",
   "author": "Chris Rudmin",
@@ -37,10 +37,10 @@
   },
   "devDependencies": {
     "require-uncached": "1.0.3",
-    "mocha": "3.2.0",
+    "mocha": "3.3.0",
     "chai": "3.5.0",
-    "sinon": "2.1.0",
-    "sinon-chai": "2.9.0",
-    "uglify-js": "2.8.21"
+    "sinon": "2.2.0",
+    "sinon-chai": "2.10.0",
+    "uglify-js": "2.8.22"
   }
 }
