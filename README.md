@@ -122,6 +122,13 @@ Unsupported:
 
 
 ---------
+### Known Issues
+
+- Firefox does not support 96k and above sample rate. Data appears as 0's
+- Microsoft Edge does not natively support opus playback
+
+
+---------
 ### Building from sources
 
 Prebuilt sources are included in the dist folder. However below are instructions if you want to build them yourself. Opus and speex are compiled without SIMD optimizations. Performace is significantly worse with SIMD optimizations enabled.
