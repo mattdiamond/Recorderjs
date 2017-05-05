@@ -124,7 +124,7 @@ Unsupported:
 ---------
 ### Known Issues
 
-- Firefox does not support 96k and above sample rate. Data appears as 0's
+- Firefox does not support sample rates above 48000Hz: https://bug623317.bugzilla.mozilla.org/show_bug.cgi?id=1233532
 - Microsoft Edge does not natively support opus playback
 
 
