@@ -2,6 +2,7 @@ var chai = require('chai');
 var sinon = require('sinon');
 var sinonChai = require("sinon-chai");
 var requireUncached = require('require-uncached');
+var Promise = require('promise');
 
 chai.use(sinonChai);
 var should = chai.should();
@@ -60,6 +61,8 @@ describe('Recorder', function(){
     global.Worker = sandbox.stub();
     global.Worker.prototype.addEventListener = sandbox.stub();
     global.Worker.prototype.postMessage =  sandbox.stub();
+
+    global.Promise = Promise;
 
     Recorder = requireUncached('../dist/recorder.min');
   });

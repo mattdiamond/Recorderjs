@@ -107,7 +107,7 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
 
     if ( this.stream ) {
       this.eventTarget.dispatchEvent( new global.Event( "streamReady" ) );
-      return Promise.resolve( this.stream );
+      return global.Promise.resolve( this.stream );
     }
 
     if ( global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia ) {
@@ -115,7 +115,7 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     }
 
     if ( global.navigator.getUserMedia ) {
-      return new Promise( function( resolve, reject ) {
+      return new global.Promise( function( resolve, reject ) {
         global.navigator.getUserMedia( constraints, resolve, reject );
       }).then( onStreamInit, onStreamError );
     }

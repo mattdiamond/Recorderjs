@@ -41,6 +41,7 @@
     "chai": "3.5.0",
     "sinon": "2.2.0",
     "sinon-chai": "2.10.0",
-    "uglify-js": "2.8.22"
+    "uglify-js": "2.8.22",
+    "promise": "7.1.1"
   }
 }
