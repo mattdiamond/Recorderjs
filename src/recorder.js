@@ -14,7 +14,7 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     }
 
     if ( deprecatedGetUserMedia ) {
-      return function ( constraints ) {
+      return function( constraints ) {
         return new Promise( function( resolve, reject ) {
           deprecatedGetUserMedia( constraints, resolve, reject );
         });
@@ -50,15 +50,6 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     this.config.encoderApplication = config.encoderApplication || 2049;
     this.config.encoderFrameSize = config.encoderFrameSize || 20;
     this.config.resampleQuality = config.resampleQuality || 3;
-    this.config.streamOptions = config.streamOptions || {
-      optional: [],
-      mandatory: {
-        googEchoCancellation: false,
-        googAutoGainControl: false,
-        googNoiseSuppression: false,
-        googHighpassFilter: false
-      }
-    };
 
     this.setMonitorGain( this.config.monitorGain );
     this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
@@ -113,7 +104,7 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     }
 
     var that = this;
-    return getUserMedia({ audio : this.config.streamOptions })
+    return getUserMedia({ audio : true })
       .then( function ( stream ) {
         that.stream = stream;
         that.sourceNode = that.audioContext.createMediaStreamSource( stream );
