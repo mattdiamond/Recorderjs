@@ -264,4 +264,17 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     }
   };
 
+  // Exports for testing
+  global.encoder = encoder;
+
+  if ( typeof define === 'function' && define.amd ) {
+    define( [], function() {
+      return encoder;
+    });
+  }
+
+  else if ( typeof module == 'object' && module.exports ) {
+    module.exports = encoder;
+  }
+
 })(root);

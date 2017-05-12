@@ -2,7 +2,6 @@ var chai = require('chai');
 var sinon = require('sinon');
 var sinonChai = require("sinon-chai");
 var requireUncached = require('require-uncached');
-var Promise = require('promise');
 
 chai.use(sinonChai);
 var should = chai.should();
@@ -25,6 +24,11 @@ describe('encoderWorker', function() {
 
   it('should initialize', function () {
     expect(encoderWorker).to.be.defined;
+    global.onMessage({
+      data: {
+        command: 'init'
+      }
+    });
   });
 
 });
