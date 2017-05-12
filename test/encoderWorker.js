@@ -12,9 +12,9 @@ var expect = chai.expect;
 describe('encoderWorker', function() {
 
   var encoderWorker = require('../dist/encoderWorker.min');
+  var sandbox = sinon.sandbox.create();
 
   beforeEach(function(){
-    global = {}
     global.postMessage = sandbox.stub();
     global.close = sandbox.stub();
   });
