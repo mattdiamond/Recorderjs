@@ -64,6 +64,14 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     }
   };
 
+  OggOpusEncoder._opus_encoder_create = _opus_encoder_create;
+  OggOpusEncoder._opus_encoder_ctl = _opus_encoder_ctl;
+  OggOpusEncoder._speex_resampler_process_interleaved_float = _speex_resampler_process_interleaved_float;
+  OggOpusEncoder._speex_resampler_init = _speex_resampler_init;
+  OggOpusEncoder._opus_encode_float = _opus_encode_float;
+  OggOpusEncoder._free = _free;
+  OggOpusEncoder._malloc = _malloc;
+
   OggOpusEncoder.prototype.encode = function( buffers ) {
     var samples = this.interleave( buffers );
     var sampleIndex = 0;
@@ -76,8 +84,8 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
       this.resampleBufferIndex += lengthToCopy;
 
       if ( this.resampleBufferIndex === this.resampleBufferLength ) {
-        _speex_resampler_process_interleaved_float( this.resampler, this.resampleBufferPointer, this.resampleSamplesPerChannelPointer, this.encoderBufferPointer, this.encoderSamplesPerChannelPointer );
-        var packetLength = _opus_encode_float( this.encoder, this.encoderBufferPointer, this.encoderSamplesPerChannel, this.encoderOutputPointer, this.encoderOutputMaxLength );
+        OggOpusEncoder._speex_resampler_process_interleaved_float( this.resampler, this.resampleBufferPointer, this.resampleSamplesPerChannelPointer, this.encoderBufferPointer, this.encoderSamplesPerChannelPointer );
+        var packetLength = OggOpusEncoder._opus_encode_float( this.encoder, this.encoderBufferPointer, this.encoderSamplesPerChannel, this.encoderOutputPointer, this.encoderOutputMaxLength );
         this.segmentPacket( packetLength );
         this.resampleBufferIndex = 0;
       }
@@ -183,49 +191,49 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
   };
 
   OggOpusEncoder.prototype.initCodec = function() {
-    var errLocation = _malloc( 4 );
-    this.encoder = _opus_encoder_create( this.encoderSampleRate, this.numberOfChannels, this.encoderApplication, errLocation );
-    _free( errLocation );
+    var errLocation = OggOpusEncoder._malloc( 4 );
+    this.encoder = OggOpusEncoder._opus_encoder_create( this.encoderSampleRate, this.numberOfChannels, this.encoderApplication, errLocation );
+    OggOpusEncoder._free( errLocation );
 
     if ( this.bitRate ) {
-      var bitRateLocation = _malloc( 4 );
+      var bitRateLocation = OggOpusEncoder._malloc( 4 );
       HEAP32[ bitRateLocation >> 2 ] = this.bitRate;
-      _opus_encoder_ctl( this.encoder, 4002, bitRateLocation );
-      _free( bitRateLocation );
+      OggOpusEncoder._opus_encoder_ctl( this.encoder, 4002, bitRateLocation );
+      OggOpusEncoder._free( bitRateLocation );
     }
 
     if ( this.encoderComplexity ) {
-      var encoderComplexityLocation = _malloc( 4 );
+      var encoderComplexityLocation = OggOpusEncoder._malloc( 4 );
       HEAP32[ encoderComplexityLocation >> 2 ] = this.encoderComplexity;
-      _opus_encoder_ctl( this.encoder, 4010, encoderComplexityLocation );
-      _free( encoderComplexityLocation );
+      OggOpusEncoder._opus_encoder_ctl( this.encoder, 4010, encoderComplexityLocation );
+      OggOpusEncoder._free( encoderComplexityLocation );
     }
 
     this.encoderSamplesPerChannel = this.encoderSampleRate * this.encoderFrameSize / 1000;
-    this.encoderSamplesPerChannelPointer = _malloc( 4 );
+    this.encoderSamplesPerChannelPointer = OggOpusEncoder._malloc( 4 );
     HEAP32[ this.encoderSamplesPerChannelPointer >> 2 ] = this.encoderSamplesPerChannel;
 
     this.encoderBufferLength = this.encoderSamplesPerChannel * this.numberOfChannels;
-    this.encoderBufferPointer = _malloc( this.encoderBufferLength * 4 ); // 4 bytes per sample
+    this.encoderBufferPointer = OggOpusEncoder._malloc( this.encoderBufferLength * 4 ); // 4 bytes per sample
     this.encoderBuffer = HEAPF32.subarray( this.encoderBufferPointer >> 2, (this.encoderBufferPointer >> 2) + this.encoderBufferLength );
 
     this.encoderOutputMaxLength = 4000;
-    this.encoderOutputPointer = _malloc( this.encoderOutputMaxLength );
+    this.encoderOutputPointer = OggOpusEncoder._malloc( this.encoderOutputMaxLength );
     this.encoderOutputBuffer = HEAPU8.subarray( this.encoderOutputPointer, this.encoderOutputPointer + this.encoderOutputMaxLength );
   };
 
   OggOpusEncoder.prototype.initResampler = function() {
-    var errLocation = _malloc( 4 );
-    this.resampler = _speex_resampler_init( this.numberOfChannels, this.originalSampleRate, this.encoderSampleRate, this.resampleQuality, errLocation );
-    _free( errLocation );
+    var errLocation = OggOpusEncoder._malloc( 4 );
+    this.resampler = OggOpusEncoder._speex_resampler_init( this.numberOfChannels, this.originalSampleRate, this.encoderSampleRate, this.resampleQuality, errLocation );
+    OggOpusEncoder._free( errLocation );
 
     this.resampleBufferIndex = 0;
     this.resampleSamplesPerChannel = this.originalSampleRate * this.encoderFrameSize / 1000;
-    this.resampleSamplesPerChannelPointer = _malloc( 4 );
+    this.resampleSamplesPerChannelPointer = OggOpusEncoder._malloc( 4 );
     HEAP32[ this.resampleSamplesPerChannelPointer >> 2 ] = this.resampleSamplesPerChannel;
 
     this.resampleBufferLength = this.resampleSamplesPerChannel * this.numberOfChannels;
-    this.resampleBufferPointer = _malloc( this.resampleBufferLength * 4 ); // 4 bytes per sample
+    this.resampleBufferPointer = OggOpusEncoder._malloc( this.resampleBufferLength * 4 ); // 4 bytes per sample
     this.resampleBuffer = HEAPF32.subarray( this.resampleBufferPointer >> 2, (this.resampleBufferPointer >> 2) + this.resampleBufferLength );
   };
 
@@ -264,17 +272,11 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     }
   };
 
-  // Exports for testing
-  global.encoder = encoder;
+  // Exports for unit testing
+  global.OggOpusEncoder = OggOpusEncoder;
 
-  if ( typeof define === 'function' && define.amd ) {
-    define( [], function() {
-      return encoder;
-    });
-  }
-
-  else if ( typeof module == 'object' && module.exports ) {
-    module.exports = encoder;
+  if ( typeof module == 'object' && module.exports ) {
+    module.exports = OggOpusEncoder;
   }
 
 })(root);
