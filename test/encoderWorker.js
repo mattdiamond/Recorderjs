@@ -52,6 +52,7 @@ describe('encoderWorker', function() {
     });
 
     expect(_opus_encoder_create_spy).to.have.been.calledOnce;
+    expect(_opus_encoder_ctl_spy).not.to.have.been.called;
   });
 
   it('should configure bitRate', function () {
