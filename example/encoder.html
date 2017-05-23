@@ -109,7 +109,7 @@
 
       recorder.addEventListener( "dataAvailable", function(e){
         var dataBlob = new Blob( [e.detail], { type: 'audio/ogg' } );
-        var fileName = new Date().toISOString() + ".ogg";
+        var fileName = new Date().toISOString() + ".opus";
         var url = URL.createObjectURL( dataBlob );
 
         var audio = document.createElement('audio');

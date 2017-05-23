@@ -32,6 +32,7 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
   var OggOpusEncoder = function( config ){
     this.numberOfChannels = config['numberOfChannels'] || 1;
     this.originalSampleRate = config['originalSampleRate'];
+    this.originalSampleRateOverride = config['originalSampleRateOverride'];
     this.encoderSampleRate = config['encoderSampleRate'] || 48000;
     this.maxBuffersPerPage = config['maxBuffersPerPage'] || 40; // Limit latency for streaming
     this.encoderApplication = config['encoderApplication'] || 2049; // 2048 = Voice, 2049 = Full Band Audio, 2051 = Restricted Low Delay
@@ -121,12 +122,13 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     var segmentDataView = new DataView( this.segmentData.buffer );
     segmentDataView.setUint32( 0, 1937076303, true ) // Magic Signature 'Opus'
     segmentDataView.setUint32( 4, 1936154964, true ) // Magic Signature 'Tags'
-    segmentDataView.setUint32( 8, 8, true ); // Vendor Length
-    segmentDataView.setUint32( 12, 1868784978, true ); // Vendor name 'Reco'
-    segmentDataView.setUint32( 16, 1919247474, true ); // Vendor name 'rder'
-    segmentDataView.setUint32( 20, 0, true ); // User Comment List Length
+    segmentDataView.setUint32( 8, 10, true ); // Vendor Length
+    segmentDataView.setUint32( 12, 1868720492, true ); // Vendor name 'Reco'
+    segmentDataView.setUint32( 16, 544437616, true ); // Vendor name 'rder'
+    segmentDataView.setUint16( 20, 3223089, true ); // Vendor name 'JS'
+    segmentDataView.setUint32( 22, 0, true ); // User Comment List Length
     this.segmentTableIndex = 1;
-    this.segmentDataIndex = this.segmentTable[0] = 24;
+    this.segmentDataIndex = this.segmentTable[0] = 26;
     this.headerType = 0;
     this.generatePage();
   };
@@ -138,7 +140,7 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     segmentDataView.setUint8( 8, 1, true ); // Version
     segmentDataView.setUint8( 9, this.numberOfChannels, true ); // Channel count
     segmentDataView.setUint16( 10, 3840, true ); // pre-skip (80ms)
-    segmentDataView.setUint32( 12, this.originalSampleRate, true ); // original sample rate
+    segmentDataView.setUint32( 12, this.originalSampleRateOverride || this.originalSampleRate, true ); // original sample rate
     segmentDataView.setUint16( 16, 0, true ); // output gain
     segmentDataView.setUint8( 18, 0, true ); // channel map 0 = mono or stereo
     this.segmentTableIndex = 1;
