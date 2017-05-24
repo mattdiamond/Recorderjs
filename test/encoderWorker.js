@@ -25,8 +25,7 @@ describe('encoderWorker', function() {
   }
 
   function getUTF8String(data, offset, length) {
-    var stringData = data.slice(offset, offset + length);
-    return String.fromCharCode.apply(null, stringData);
+    return String.fromCharCode.apply(null, data.subarray(offset, offset + length));
   }
 
 
@@ -137,7 +136,8 @@ describe('encoderWorker', function() {
         var pageData = getPacket(page, 1);
         var dataView = new DataView(pageData.buffer);
         var vendorLength = dataView.getUint8(8, true);
-        expect(getUTF8String(pageData, 12, vendorLength)).to.equal('RecorderJS');
+        var vendorString = getUTF8String(pageData, 12, vendorLength);
+        expect(vendorString).to.equal('RecorderJS');
         done();
       }
     }
