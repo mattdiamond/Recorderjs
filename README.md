@@ -33,6 +33,7 @@ Creates a recorder instance.
 - **maxBuffersPerPage** - (*optional*) Specifies the maximum number of buffers to use before generating an Ogg page. This can be used to lower the streaming latency. The lower the value the more overhead the ogg stream will incur. Defaults to `40`.
 - **monitorGain** - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between `0` and `1`. Defaults to `0`
 - **numberOfChannels** - (*optional*) The number of channels to record. `1` = mono, `2` = stereo. Defaults to `1`. Maximum `2` channels are supported.
+- **originalSampleRateOverride** - (*optional*) Override the ogg opus 'input sample rate' field. Google Speech API requires this field to be `16000`.
 - **resampleQuality** - (*optional*) Value between 0 and 10 which determines latency and processing for resampling. `0` is fastest with lowest quality. `10` is slowest with highest quality. Defaults to `3`.
 - **streamPages** - (*optional*) `dataAvailable` event will fire after each encoded page. Defaults to `false`.
 

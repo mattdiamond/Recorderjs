@@ -17,6 +17,17 @@ describe('encoderWorker', function() {
   var _speex_resampler_init_spy;
   var _opus_encode_float_spy;
 
+  function getPacket(page, packetNumber){
+    var dataView = new DataView(page.buffer);
+    var packetTableLength = dataView.getUint8( 26, true );
+    var packetLength = dataView.getUint8( 27 + packetNumber, true );
+    return page.slice(27 + packetTableLength, 27 + packetTableLength + packetLength);
+  }
+
+  function getUTF8String(data) {
+    return String.fromCharCode.apply(null, data);
+  }
+
   beforeEach(function(){
     global.postMessage = sandbox.stub();
     global.close = sandbox.stub();
@@ -52,6 +63,7 @@ describe('encoderWorker', function() {
     });
 
     expect(_opus_encoder_create_spy).to.have.been.calledOnce;
+    expect(_opus_encoder_ctl_spy).not.to.have.been.called;
   });
 
   it('should configure bitRate', function () {
@@ -70,6 +82,68 @@ describe('encoderWorker', function() {
     });
 
     expect(_opus_encoder_ctl_spy).to.have.been.calledWith(encoder.encoder, 4010, sinon.match.any);
+  });
+
+  it('should default input sample rate field to originalSampleRate', function (done) {
+    var pageBufferCount = 0;
+    global.postMessage = function(page){
+      pageBufferCount++;
+
+      // First Page
+      if (pageBufferCount == 1) {
+        var pageData = getPacket(page);
+        var dataView = new DataView(pageData.buffer);
+        expect(dataView.getUint32(12, true)).to.equal(44100);
+        done();
+      }
+    }
+
+    new OggOpusEncoder({
+      originalSampleRate: 44100
+    });
+
+  });
+
+  it('should override input sample rate field', function (done) {
+    var pageBufferCount = 0;
+    global.postMessage = function(page){
+      pageBufferCount++;
+
+      // First Page
+      if (pageBufferCount == 1) {
+        var pageData = getPacket(page, 1);
+        var dataView = new DataView(pageData.buffer);
+        expect(dataView.getUint32(12, true)).to.equal(16000);
+        done();
+      }
+    }
+
+    new OggOpusEncoder({
+      originalSampleRate: 44100,
+      originalSampleRateOverride: 16000
+    });
+
+  });
+
+  it('should have vendor \'RecorderJS\' in the second page', function (done) {
+    var pageBufferCount = 0;
+    global.postMessage = function(page){
+      pageBufferCount++;
+
+      // Second Page
+      if (pageBufferCount == 2) {
+        var pageData = getPacket(page, 1);
+        var dataView = new DataView(pageData.buffer);
+        var vendorLength = dataView.getUint8(8, true);
+        var vendorData = pageData.subarray(12, 12 + vendorLength);
+        expect(getUTF8String(vendorData)).to.equal('RecorderJS');
+        done();
+      }
+    }
+
+    new OggOpusEncoder({
+      originalSampleRate: 44100
+    });
   });
 
 });

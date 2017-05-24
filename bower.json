@@ -1,6 +1,6 @@
 {
   "name": "opus-recorderjs",
-  "description": "Record audio from the mic into a wav or ogg opus file",
+  "description": "Record audio from the mic into ogg opus format",
   "main": [
     "dist/recorder.min.js",
     "dist/encoderWorker.min.js",
@@ -20,6 +20,7 @@
     "Ogg",
     "Opus",
     "PCM",
+    "Encoder",
     "Decoder",
     "Resampler",
     "Streamer",
