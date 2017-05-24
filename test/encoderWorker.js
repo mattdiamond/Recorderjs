@@ -21,11 +21,11 @@ describe('encoderWorker', function() {
     var dataView = new DataView(page.buffer);
     var packetTableLength = dataView.getUint8( 26, true );
     var packetLength = dataView.getUint8( 27 + packetNumber, true );
-    return page.slice(27 + packetTableLength, packetLength+1);
+    return page.slice(27 + packetTableLength, 27 + packetTableLength + packetLength);
   }
 
   function getUTF8String(data, offset, length) {
-    var stringData = data.slice(offset, (length+1)*2 );
+    var stringData = data.slice(offset, offset + length);
     return String.fromCharCode.apply(null, stringData);
   }
 
