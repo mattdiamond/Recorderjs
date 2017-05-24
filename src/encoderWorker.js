@@ -44,9 +44,9 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
 
     this.pageIndex = 0;
     this.granulePosition = 0;
-    this.segmentData = new Uint8Array( 65025 );
+    this.segmentData = new Uint8Array( 65025 ); // Maximum length of data
     this.segmentDataIndex = 0;
-    this.segmentTable = new Uint8Array( 255 );
+    this.segmentTable = new Uint8Array( 255 ); // Maximum data segments
     this.segmentTableIndex = 0;
     this.buffersInPage = 0;
     this.serial = Math.floor( Math.random() * Math.pow(2,32) );
@@ -123,9 +123,9 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     segmentDataView.setUint32( 0, 1937076303, true ) // Magic Signature 'Opus'
     segmentDataView.setUint32( 4, 1936154964, true ) // Magic Signature 'Tags'
     segmentDataView.setUint32( 8, 10, true ); // Vendor Length
-    segmentDataView.setUint32( 12, 1868720492, true ); // Vendor name 'Reco'
-    segmentDataView.setUint32( 16, 544437616, true ); // Vendor name 'rder'
-    segmentDataView.setUint16( 20, 3223089, true ); // Vendor name 'JS'
+    segmentDataView.setUint32( 12, 1868784978, true ); // Vendor name 'Reco'
+    segmentDataView.setUint32( 16, 1919247474, true ); // Vendor name 'rder'
+    segmentDataView.setUint16( 20, 21322, true ); // Vendor name 'JS'
     segmentDataView.setUint32( 22, 0, true ); // User Comment List Length
     this.segmentTableIndex = 1;
     this.segmentDataIndex = this.segmentTable[0] = 26;
