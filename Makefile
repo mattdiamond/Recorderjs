@@ -36,32 +36,32 @@ test:
 
 .PHONY: test
 
-$(LIBOPUS_DIR):
+$(LIBOPUS_DIR)/autogen.sh:
 	git submodule update --init --recursive
 	cd $(LIBOPUS_DIR); git checkout ${LIBOPUS_STABLE}
 
-$(LIBSPEEXDSP_DIR):
+$(LIBSPEEXDSP_DIR)/autogen.sh:
 	git submodule update --init --recursive
 	cd $(LIBSPEEXDSP_DIR); git checkout ${LIBSPEEXDSP_STABLE}
 
-$(LIBOPUS_OBJ): $(LIBOPUS_DIR)
+$(LIBOPUS_OBJ): $(LIBOPUS_DIR)/autogen.sh
 	cd $(LIBOPUS_DIR); ./autogen.sh
 	cd $(LIBOPUS_DIR); emconfigure ./configure --disable-extra-programs --disable-doc --disable-intrinsics --disable-rtcd
 	cd $(LIBOPUS_DIR); emmake make
 
-$(LIBSPEEXDSP_OBJ): $(LIBSPEEXDSP_DIR)
+$(LIBSPEEXDSP_OBJ): $(LIBSPEEXDSP_DIR)/autogen.sh
 	cd $(LIBSPEEXDSP_DIR); ./autogen.sh
 	cd $(LIBSPEEXDSP_DIR); emconfigure ./configure --disable-examples
 	cd $(LIBSPEEXDSP_DIR); emmake make
 
-$(LIBOPUS_ENCODER): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
+$(LIBOPUS_ENCODER): $(LIBOPUS_ENCODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 	emcc -o $@ $(EMCC_OPTS) -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_ENCODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $(LIBOPUS_ENCODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 
-$(LIBOPUS_DECODER): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
+$(LIBOPUS_DECODER): $(LIBOPUS_DECODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 	emcc -o $@ $(EMCC_OPTS) -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_DECODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $(LIBOPUS_DECODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 
-$(RECORDER):
+$(RECORDER): $(RECORDER_SRC)
 	npm run uglify -- $(RECORDER_SRC) -c -m -o $@
 
-$(WAVE_WORKER):
+$(WAVE_WORKER): $(WAVE_WORKER_SRC)
 	npm run uglify -- $(WAVE_WORKER_SRC) -c -m -o $@
