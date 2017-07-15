@@ -7,13 +7,11 @@ LIBOPUS_ENCODER_SRC=$(INPUT_DIR)/encoderWorker.js
 LIBOPUS_DECODER_SRC=$(INPUT_DIR)/decoderWorker.js
 LIBOPUS_ENCODER=$(OUTPUT_DIR)/encoderWorker.min.js
 LIBOPUS_DECODER=$(OUTPUT_DIR)/decoderWorker.min.js
-LIBOPUS_STABLE=tags/v1.2.1
 LIBOPUS_DIR=./opus
 LIBOPUS_OBJ=$(LIBOPUS_DIR)/.libs/libopus.a
 LIBOPUS_ENCODER_EXPORTS:='_opus_encoder_create','_opus_encode_float','_opus_encoder_ctl'
 LIBOPUS_DECODER_EXPORTS:='_opus_decoder_create','_opus_decode_float','_opus_decoder_destroy'
 
-LIBSPEEXDSP_STABLE=tags/SpeexDSP-1.2rc3
 LIBSPEEXDSP_DIR=./speexdsp
 LIBSPEEXDSP_OBJ=$(LIBSPEEXDSP_DIR)/libspeexdsp/.libs/libspeexdsp.a
 LIBSPEEXDSP_EXPORTS:='_speex_resampler_init','_speex_resampler_process_interleaved_float','_speex_resampler_destroy'
@@ -37,12 +35,10 @@ test:
 .PHONY: test
 
 $(LIBOPUS_DIR)/autogen.sh:
-	git submodule update --init --recursive
-	cd $(LIBOPUS_DIR); git checkout ${LIBOPUS_STABLE}
+	git submodule update
 
 $(LIBSPEEXDSP_DIR)/autogen.sh:
-	git submodule update --init --recursive
-	cd $(LIBSPEEXDSP_DIR); git checkout ${LIBSPEEXDSP_STABLE}
+	git submodule update
 
 $(LIBOPUS_OBJ): $(LIBOPUS_DIR)/autogen.sh
 	cd $(LIBOPUS_DIR); ./autogen.sh

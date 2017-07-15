@@ -140,13 +140,20 @@ Install autoconf, automake, libtool and pckconfig.
 On Mac you can do this using [MacPorts](https://www.macports.org/install.php)
 `sudo port install automake autoconf libtool pkgconfig`
 
-Make the dependencies using command `make`!
+Install npm dependencies:
+`npm install`
 
+checkout, compile and create the dist from sources:
 
----------
-### Running the unit tests
+`npm run make`
 
-`make test`
+Running the unit tests:
+
+`npm test`
+
+Clean the dist folder and git submodules:
+
+`make clean`
 
 
 ---------
