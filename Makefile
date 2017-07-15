@@ -34,18 +34,18 @@ test:
 
 .PHONY: test
 
-$(LIBOPUS_DIR)/autogen.sh:
-	git submodule update
+$(LIBOPUS_DIR):
+	git submodule update --init
 
-$(LIBSPEEXDSP_DIR)/autogen.sh:
-	git submodule update
+$(LIBSPEEXDSP_DIR):
+	git submodule update --init
 
-$(LIBOPUS_OBJ): $(LIBOPUS_DIR)/autogen.sh
+$(LIBOPUS_OBJ): $(LIBOPUS_DIR)
 	cd $(LIBOPUS_DIR); ./autogen.sh
 	cd $(LIBOPUS_DIR); emconfigure ./configure --disable-extra-programs --disable-doc --disable-intrinsics --disable-rtcd
 	cd $(LIBOPUS_DIR); emmake make
 
-$(LIBSPEEXDSP_OBJ): $(LIBSPEEXDSP_DIR)/autogen.sh
+$(LIBSPEEXDSP_OBJ): $(LIBSPEEXDSP_DIR)
 	cd $(LIBSPEEXDSP_DIR); ./autogen.sh
 	cd $(LIBSPEEXDSP_DIR); emconfigure ./configure --disable-examples
 	cd $(LIBSPEEXDSP_DIR); emmake make
