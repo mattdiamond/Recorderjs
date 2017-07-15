@@ -137,27 +137,27 @@ Prebuilt sources are included in the dist folder. However below are instructions
 [Install EMScripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
 
 Install autoconf, automake, libtool and pckconfig. On Mac you can do this using [MacPorts](https://www.macports.org/install.php):
-```
+```bash
 sudo port install automake autoconf libtool pkgconfig
 ```
 
 Install npm dependencies:
-```
+```bash
 npm install
 ```
 
 checkout, compile and create the dist from sources:
-```
+```bash
 npm run make
 ```
 
 Running the unit tests:
-```
+```bash
 npm test
 ```
 
 Clean the dist folder and git submodules:
-```
+```bash
 make clean
 ```
 
