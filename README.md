@@ -104,7 +104,7 @@ rec.clearStream()
 Recorder.isRecordingSupported()
 ```
 
-Will return a truthy value indicating if the browser supports recording.
+Returns a truthy value indicating if the browser supports recording.
 
 
 ---------
