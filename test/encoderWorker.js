@@ -75,7 +75,7 @@ describe('encoderWorker', function() {
     expect(_opus_encoder_ctl_spy).to.have.been.calledWith(encoder.encoder, 4002, sinon.match.any);
   });
 
-  it('should configure compexity', function () {
+  it('should configure complexity', function () {
     var encoder = new OggOpusEncoder({
       originalSampleRate: 44100,
       encoderComplexity: 10

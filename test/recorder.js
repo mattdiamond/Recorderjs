@@ -126,7 +126,7 @@ describe('Recorder', function(){
     var rec = new Recorder();
  
     return rec.initStream().then(function(){
-      expect(rec.stream).to.be.defined;
+      expect(rec.stream).to.not.be.undefined;
       expect(rec.stream).to.have.property('stop');
       expect(global.navigator.mediaDevices.getUserMedia).to.have.been.calledOnce;
       expect(rec.eventTarget.dispatchEvent).to.have.been.calledOnce;
@@ -144,7 +144,7 @@ describe('Recorder', function(){
 
     var rec = new Recorder();
     return rec.initStream().then(function(){
-      expect(rec.stream).to.be.defined;
+      expect(rec.stream).to.not.be.undefined;
       expect(rec.stream).to.have.property('stop');
       expect(global.navigator.getUserMedia).to.have.been.calledOnce;
       expect(rec.eventTarget.dispatchEvent).to.have.been.calledOnce;
@@ -157,7 +157,7 @@ describe('Recorder', function(){
     var rec = new Recorder();
     return rec.initStream().then(function(){
       return rec.initStream().then(function(){
-        expect(rec.stream).to.be.defined;
+        expect(rec.stream).to.not.be.undefined;
         expect(rec.stream).to.have.property('stop');
         expect(global.navigator.mediaDevices.getUserMedia).to.have.been.calledOnce;
         expect(rec.eventTarget.dispatchEvent).to.have.been.calledTwice;
@@ -170,7 +170,7 @@ describe('Recorder', function(){
   it('should clear the audio stream', function () {
     var rec = new Recorder();
     return rec.initStream().then(function(){
-      expect(rec.stream).to.be.defined;
+      expect(rec.stream).to.not.be.undefined;
       rec.clearStream();
       expect(rec.stream).to.be.undefined;
     });
@@ -188,7 +188,7 @@ describe('Recorder', function(){
 
     var rec = new Recorder();
     return rec.initStream().then(function(){
-      expect(rec.stream).to.be.defined;
+      expect(rec.stream).to.not.be.undefined;
       rec.clearStream();
       expect(stopTrack1).to.have.been.calledOnce;
       expect(stopTrack2).to.have.been.calledOnce;
