@@ -29,8 +29,8 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
   };
 
   var WavePCM = function( config ){
-    this.sampleRate = config['encoderSampleRate'] || 44100;
-    this.bitDepth = config['encoderBitDepth'] || 16;
+    this.sampleRate = config['wavSampleRate'] || 44100;
+    this.bitDepth = config['wavBitDepth'] || 16;
     this.recordedBuffers = [];
     this.bytesPerSample = this.bitDepth / 8;
   };

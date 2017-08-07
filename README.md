@@ -36,7 +36,8 @@ Creates a recorder instance.
 - **originalSampleRateOverride** - (*optional*) Override the ogg opus 'input sample rate' field. Google Speech API requires this field to be `16000`.
 - **resampleQuality** - (*optional*) Value between 0 and 10 which determines latency and processing for resampling. `0` is fastest with lowest quality. `10` is slowest with highest quality. Defaults to `3`.
 - **streamPages** - (*optional*) `dataAvailable` event will fire after each encoded page. Defaults to `false`.
-
+- **wavBitDepth** - (*optional*) Specifies the bit depth of the WAV file. Defaults to `16`. Supported values are `8`, `16`, `24` and `32` bits per sample.
+- **wavSampleRate** - (*optional*) Specifies the sample rate of the WAV file. Defaults to `44100`.
 
 ---------
 #### Instance Methods

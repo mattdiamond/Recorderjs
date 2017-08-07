@@ -24,6 +24,8 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     this.config.numberOfChannels = config.numberOfChannels || 1;
     this.config.originalSampleRate = this.audioContext.sampleRate;
     this.config.encoderSampleRate = config.encoderSampleRate || 48000;
+    this.config.wavSampleRate = config.wavSampleRate || 44100;
+    this.config.wavBitDepth = config.wavSampleRate || 16;
     this.config.encoderPath = config.encoderPath || 'encoderWorker.min.js';
     this.config.streamPages = config.streamPages || false;
     this.config.leaveStreamOpen = config.leaveStreamOpen || false;
