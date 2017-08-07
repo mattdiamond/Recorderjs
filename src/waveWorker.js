@@ -121,4 +121,11 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
     global['postMessage'](null);
     global['close']();
   };
+
+  // Exports for unit testing
+  global.WavePCM = WavePCM;
+
+  if ( typeof module == 'object' && module.exports ) {
+    module.exports = WavePCM
+  }
 })(root);
