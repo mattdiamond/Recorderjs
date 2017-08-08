@@ -88,6 +88,7 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('encoderApplication', 2049);
     expect(rec.config).to.have.property('encoderFrameSize', 20);
     expect(rec.config).to.have.property('resampleQuality', 3);
+    expect(rec.config).to.have.property('wavBitDepth', 16);
   });
 
   it('should create an instance with config', function () {
@@ -103,7 +104,8 @@ describe('Recorder', function(){
       maxBuffersPerPage: 1000,
       encoderApplication: 2048,
       encoderFrameSize: 40,
-      resampleQuality: 10
+      resampleQuality: 10,
+      wavBitDepth: 32
     });
 
     expect(global.AudioContext).to.have.been.calledWithNew;
@@ -120,6 +122,7 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('encoderApplication', 2048);
     expect(rec.config).to.have.property('encoderFrameSize', 40);
     expect(rec.config).to.have.property('resampleQuality', 10);
+    expect(rec.config).to.have.property('wavBitDepth', 32);
   });
 
   it('should initialize a new audio stream', function () {

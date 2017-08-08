@@ -34,18 +34,15 @@
   "scripts": {
     "make": "make",
     "test": "make test",
-    "uglify": "uglifyjs"
-  },
-  "dependencies": {
-    "lodash": "4.17.4"
+    "webpack": "webpack"
   },
   "devDependencies": {
     "chai": "4.1.0",
-    "mocha": "3.4.2",
+    "mocha": "^3.5.0",
     "promise": "8.0.1",
     "require-uncached": "1.0.3",
     "sinon": "2.3.8",
     "sinon-chai": "2.11.0",
-    "uglify-js": "3.0.24"
+    "webpack": "^3.5.1"
   }
 }

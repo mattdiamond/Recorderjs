@@ -16,7 +16,7 @@ describe('waveWorker', function() {
   });
 
   it('should throw an error if unsupported waveBitDepth value specified', function () {
-    expect(WavePCM({
+    expect(WavePCM.bind(WavePCM, {
       wavSampleRate: 44100,
       wavBitDepth: 40
     })).to.throw('Only 8, 16, 24 and 32 bits per sample are supported');
@@ -24,7 +24,7 @@ describe('waveWorker', function() {
 
   it('should initialize standard config', function () {
     var wavPCM = new WavePCM({
-      wavSampleRate: 44100,
+      wavSampleRate: 44100
     });
 
     expect(wavPCM).to.have.property('sampleRate', 44100);
@@ -38,7 +38,7 @@ describe('waveWorker', function() {
       wavBitDepth: 8
     });
 
-    expect(wavPCM).to.have.property('wavSampleRate', 44100);
+    expect(wavPCM).to.have.property('sampleRate', 44100);
     expect(wavPCM).to.have.property('bitDepth', 8);
     expect(wavPCM).to.have.property('bytesPerSample', 1);
   });

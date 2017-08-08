@@ -57,7 +57,7 @@ $(LIBOPUS_DECODER): $(LIBOPUS_DECODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 	emcc -o $@ $(EMCC_OPTS) -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_DECODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $(LIBOPUS_DECODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 
 $(RECORDER): $(RECORDER_SRC)
-	npm run uglify -- $(RECORDER_SRC) -c -m -o $@
+	npm run webpack -- --output-library Recorder --output-library-target umd --optimize-minimize $(RECORDER_SRC) $@
 
 $(WAVE_WORKER): $(WAVE_WORKER_SRC)
-	npm run uglify -- $(WAVE_WORKER_SRC) -c -m -o $@
+	npm run webpack -- --output-library WavePCM --output-library-target umd --optimize-minimize $(WAVE_WORKER_SRC) $@
