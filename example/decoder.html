@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 <html>
+
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Decode Example</title>
@@ -9,7 +10,9 @@
     li { margin: 1em; }
     audio { display: block; }
   </style>
+  <script data-main="scripts/main" src="scripts/require.js"></script>
 </head>
+
 <body>
   <h1>Decoder Example</h1>
   <p>Choose either a file from disk, or a file from a server.</p>
@@ -27,7 +30,6 @@
     <label>Wave file bit depth</label>
     <input id="bitDepth" type="number" value="16" />
   </div>
-
 
   <h2>Commands</h2>
   <input type="file" id="fileInput"/>
@@ -52,8 +54,8 @@
 
       wavWorker.postMessage({ 
         command:'init',
-        bitDepth: parseInt(bitDepth.value,10),
-        sampleRate: desiredSampleRate
+        wavBitDepth: parseInt(bitDepth.value,10),
+        wavSampleRate: desiredSampleRate
       });
 
       decoderWorker.onmessage = function(e){

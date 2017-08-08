@@ -3,7 +3,10 @@
 var root = (typeof self === 'object' && self.self === self && self) || (typeof global === 'object' && global.global === global && global) || this;
 
 (function( global ) {
+  
   var encoder;
+  var _ = require('lodash');
+
   global['onmessage'] = function( e ){
     switch( e['data']['command'] ){
 
@@ -29,8 +32,17 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
   };
 
   var WavePCM = function( config ){
-    this.sampleRate = config['wavSampleRate'] || 44100;
+
+    if ( !config['wavSampleRate'] ) {
+      throw new Error("wavSampleRate value is required to record. NOTE: Audio is not resampled!");
+    }
+
     this.bitDepth = config['wavBitDepth'] || 16;
+    if ( !_.includes( [8, 16, 24, 32]), this.bitDepth ) {
+      throw new Error("Only 8, 16, 24 and 32 bits per sample are supported");
+    }
+
+    this.sampleRate = config['wavSampleRate']; 
     this.recordedBuffers = [];
     this.bytesPerSample = this.bitDepth / 8;
   };
@@ -84,7 +96,7 @@ var root = (typeof self === 'object' && self.self === self && self) || (typeof g
             break;
 
           default:
-            throw "Only 8, 16, 24 and 32 bits per sample are supported";
+            throw new Error("Only 8, 16, 24 and 32 bits per sample are supported");
         }
       }
     }

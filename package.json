@@ -36,6 +36,9 @@
     "test": "make test",
     "uglify": "uglifyjs"
   },
+  "dependencies": {
+    "lodash": "4.17.4"
+  },
   "devDependencies": {
     "chai": "4.1.0",
     "mocha": "3.4.2",
