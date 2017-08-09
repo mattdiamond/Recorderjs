@@ -13,7 +13,9 @@
     "Streamer",
     "Audio",
     "Microphone",
-    "Recorder"
+    "Recorder",
+    "Wav",
+    "Wave"
   ],
   "license": "MIT",
   "main": "dist/recorder.min.js",
