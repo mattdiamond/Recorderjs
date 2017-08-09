@@ -1,24 +1,24 @@
 "use strict";
   
-var encoder;
+var recorder;
 
 global['onmessage'] = function( e ){
   switch( e['data']['command'] ){
 
     case 'encode':
-      if (encoder) {
-        encoder.record( e['data']['buffers'] );
+      if (recorder) {
+        recorder.record( e['data']['buffers'] );
       }
       break;
 
     case 'done':
-      if (encoder) {
-        encoder.requestData();
+      if (recorder) {
+        recorder.requestData();
       }
       break;
 
     case 'init':
-      encoder = new WavePCM( e['data'] );
+      recorder = new WavePCM( e['data'] );
       break;
 
     default:
@@ -133,5 +133,5 @@ WavePCM.prototype.requestData = function(){
   global['close']();
 };
 
-// Exports for unit testing
+
 module.exports = WavePCM

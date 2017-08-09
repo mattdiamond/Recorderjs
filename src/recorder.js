@@ -223,5 +223,4 @@ Recorder.prototype.streamPage = function( page ) {
 };
 
 
-// Exports
 module.exports = Recorder;

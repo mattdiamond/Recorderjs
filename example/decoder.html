@@ -67,7 +67,7 @@
         // e.data contains decoded buffers as float32 values
         else {
           wavWorker.postMessage({
-            command: 'record',
+            command: 'encode',
             buffers: e.data
           }, e.data.map(function(typedArray){
             return typedArray.buffer;
@@ -76,24 +76,28 @@
       };
 
       wavWorker.onmessage = function(e){
-        var fileName = new Date().toISOString() + ".wav";
-        var dataBlob = new Blob( [ e.data ], { type: "audio/wav" } );
-        var url = URL.createObjectURL( dataBlob );
+        
+        // null signifies that no more data is expected and worker is closed. 
+        if (e.data !== null) {
+          var fileName = new Date().toISOString() + ".wav";
+          var dataBlob = new Blob( [ e.data ], { type: "audio/wav" } );
+          var url = URL.createObjectURL( dataBlob );
 
-        var audio = document.createElement('audio');
-        audio.controls = true;
-        audio.src = URL.createObjectURL( dataBlob );
+          var audio = document.createElement('audio');
+          audio.controls = true;
+          audio.src = URL.createObjectURL( dataBlob );
 
-        var link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        link.innerHTML = link.download;
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          link.innerHTML = link.download;
 
-        var li = document.createElement('li');
-        li.appendChild(link);
-        li.appendChild(audio);
+          var li = document.createElement('li');
+          li.appendChild(link);
+          li.appendChild(audio);
 
-        recordingslist.appendChild(li);
+          recordingslist.appendChild(li);
+        }
       };
 
       decoderWorker.postMessage({
