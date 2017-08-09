@@ -43,33 +43,27 @@ describe('encoderWorker', function() {
   });
 
   it('should initialize config', function () {
-    var encoder = new OggOpusEncoder({
-      originalSampleRate: 44100
-    });
+    var encoder = new OggOpusEncoder();
 
-    expect(encoder).to.have.property('numberOfChannels', 1);
-    expect(encoder).to.have.property('encoderSampleRate', 48000);
-    expect(encoder).to.have.property('maxBuffersPerPage', 40);
-    expect(encoder).to.have.property('encoderApplication', 2049);
-    expect(encoder).to.have.property('encoderFrameSize', 20);
-    expect(encoder).to.have.property('bufferLength', 4096);
-    expect(encoder).to.have.property('resampleQuality', 3);
-    expect(encoder).to.have.property('originalSampleRate', 44100);
+    expect(encoder.config).to.have.property('numberOfChannels', 1);
+    expect(encoder.config).to.have.property('encoderSampleRate', 48000);
+    expect(encoder.config).to.have.property('maxBuffersPerPage', 40);
+    expect(encoder.config).to.have.property('encoderApplication', 2049);
+    expect(encoder.config).to.have.property('encoderFrameSize', 20);
+    expect(encoder.config).to.have.property('bufferLength', 4096);
+    expect(encoder.config).to.have.property('resampleQuality', 3);
+    expect(encoder.config).to.have.property('originalSampleRate', 44100);
   });
 
   it('should initialize encoder', function () {
-    var encoder = new OggOpusEncoder({
-      originalSampleRate: 44100
-    });
+    var encoder = new OggOpusEncoder();
 
     expect(_opus_encoder_create_spy).to.have.been.calledOnce;
-    expect(_opus_encoder_ctl_spy).not.to.have.been.called;
   });
 
-  it('should configure bitRate', function () {
+  it('should configure encoderBitRate', function () {
     var encoder = new OggOpusEncoder({
-      originalSampleRate: 44100,
-      bitRate: 16000
+      encoderBitRate: 16000
     });
 
     expect(_opus_encoder_ctl_spy).to.have.been.calledWith(encoder.encoder, 4002, sinon.match.any);
@@ -77,7 +71,6 @@ describe('encoderWorker', function() {
 
   it('should configure complexity', function () {
     var encoder = new OggOpusEncoder({
-      originalSampleRate: 44100,
       encoderComplexity: 10
     });
 
@@ -98,9 +91,7 @@ describe('encoderWorker', function() {
       }
     }
 
-    new OggOpusEncoder({
-      originalSampleRate: 44100
-    });
+    new OggOpusEncoder();
 
   });
 
@@ -119,7 +110,6 @@ describe('encoderWorker', function() {
     }
 
     new OggOpusEncoder({
-      originalSampleRate: 44100,
       originalSampleRateOverride: 16000
     });
 
@@ -141,9 +131,7 @@ describe('encoderWorker', function() {
       }
     }
 
-    new OggOpusEncoder({
-      originalSampleRate: 44100
-    });
+    new OggOpusEncoder();
   });
 
 });

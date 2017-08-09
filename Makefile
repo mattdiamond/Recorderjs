@@ -51,13 +51,15 @@ $(LIBSPEEXDSP_OBJ): $(LIBSPEEXDSP_DIR)
 	cd $(LIBSPEEXDSP_DIR); emmake make
 
 $(LIBOPUS_ENCODER): $(LIBOPUS_ENCODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
-	emcc -o $@ $(EMCC_OPTS) -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_ENCODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $(LIBOPUS_ENCODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
+	npm run webpack -- --output-library EncoderWorker --output-library-target umd --optimize-minimize $(LIBOPUS_ENCODER_SRC) $@
+	emcc -o $@ $(EMCC_OPTS) -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_ENCODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $@ $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 
 $(LIBOPUS_DECODER): $(LIBOPUS_DECODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
-	emcc -o $@ $(EMCC_OPTS) -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_DECODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $(LIBOPUS_DECODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
+	npm run webpack -- --output-library DecoderWorker --output-library-target umd --optimize-minimize $(LIBOPUS_DECODER_SRC) $@
+	emcc -o $@ $(EMCC_OPTS) -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_DECODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $@ $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 
 $(RECORDER): $(RECORDER_SRC)
 	npm run webpack -- --output-library Recorder --output-library-target umd --optimize-minimize $(RECORDER_SRC) $@
 
 $(WAVE_WORKER): $(WAVE_WORKER_SRC)
-	npm run webpack -- --output-library WavePCM --output-library-target umd --optimize-minimize $(WAVE_WORKER_SRC) $@
+	npm run webpack -- --output-library WaveWorker --output-library-target umd --optimize-minimize $(WAVE_WORKER_SRC) $@
