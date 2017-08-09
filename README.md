@@ -23,20 +23,20 @@ Creates a recorder instance.
 #### Config
 
 - **bufferLength**        - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to `4096`.
-- **encoderApplication**  - (*optional*) Specifies the encoder application. Supported values are: `2048` - Voice, `2049` - Full Band Audio, `2051` - Restricted Low Delay. Defaults to `2049`.
-- **encoderBitRate**      - (*optional*) (*optional*) Specifies the target bitrate in bits/sec. The encoder selects an application-specific default when this is not specified.
+- **encoderApplication**  - (*optional*) Supported values are: `2048` - Voice, `2049` - Full Band Audio, `2051` - Restricted Low Delay. Defaults to `2049`.
+- **encoderBitRate**      - (*optional*) Target bitrate in bits/sec. The encoder selects an application-specific default when this is not specified.
 - **encoderComplexity**   - (*optional*) Value between 0 and 10 which determines latency and processing for encoding. `0` is fastest with lowest complexity. `10` is slowest with highest complexity. The encoder selects a default when this is not specified.
 - **encoderFrameSize**    - (*optional*) Specifies the frame size in ms used for encoding. Defaults to `20`.
 - **encoderPath**         - (*optional*) Path to `encoderWorker.min.js` or `waveWorker.min.js` worker script. Defaults to `encoderWorker.min.js`
 - **encoderSampleRate**   - (*optional*) Specifies the sample rate to encode at. Defaults to `48000`. Supported values are `8000`, `12000`, `16000`, `24000` or `48000`.
 - **leaveStreamOpen**     - (*optional*) Keep the stream around when trying to `stop` recording, so you can re-`start` without re-`initStream`. Defaults to `false`.
-- **maxBuffersPerPage**   - (*optional*) Specifies the maximum number of buffers to use before generating an Ogg page. This can be used to lower the streaming latency. The lower the value the more overhead the ogg stream will incur. Defaults to `40`.
+- **maxBuffersPerPage**   - (*optional*) Maximum number of buffers to use before generating an Ogg page. This can be used to lower the streaming latency. The lower the value the more overhead the ogg stream will incur. Defaults to `40`.
 - **monitorGain**         - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between `0` and `1`. Defaults to `0`
 - **numberOfChannels**    - (*optional*) The number of channels to record. `1` = mono, `2` = stereo. Defaults to `1`. Maximum `2` channels are supported.
 - **originalSampleRateOverride** - (*optional*) Override the ogg opus 'input sample rate' field. Google Speech API requires this field to be `16000`.
 - **resampleQuality**     - (*optional*) Value between 0 and 10 which determines latency and processing for resampling. `0` is fastest with lowest quality. `10` is slowest with highest quality. Defaults to `3`.
 - **streamPages**         - (*optional*) `dataAvailable` event will fire after each encoded page. Defaults to `false`.
-- **wavBitDepth**         - (*optional*) Specifies the bit depth of the WAV file. Defaults to `16`. Supported values are `8`, `16`, `24` and `32` bits per sample. Only applies to `waveWorker.min.js`
+- **wavBitDepth**         - (*optional*) Desired bit depth of the WAV file. Defaults to `16`. Supported values are `8`, `16`, `24` and `32` bits per sample. Only applies to `waveWorker.min.js`
 
 
 ---------
