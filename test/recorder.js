@@ -40,6 +40,7 @@ describe('Recorder', function(){
     global.AudioContext.prototype.createMediaStreamSource = sandbox.stub().returns({ 
       connect: sandbox.stub()
     });
+    global.AudioContext.prototype.sampleRate = 44100;
 
     global.Event = sandbox.stub();
     global.CustomEvent = sandbox.stub();
@@ -89,6 +90,7 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('encoderFrameSize', 20);
     expect(rec.config).to.have.property('resampleQuality', 3);
     expect(rec.config).to.have.property('wavBitDepth', 16);
+    expect(rec.config).to.have.property('wavSampleRate', 44100);
   });
 
   it('should create an instance with config', function () {
@@ -123,6 +125,7 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('encoderFrameSize', 40);
     expect(rec.config).to.have.property('resampleQuality', 10);
     expect(rec.config).to.have.property('wavBitDepth', 32);
+    expect(rec.config).to.have.property('wavSampleRate', 44100);
   });
 
   it('should initialize a new audio stream', function () {

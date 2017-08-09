@@ -35,7 +35,8 @@ var Recorder = function( config ){
       }
     },
     streamPages: false,
-    wavBitDepth: 16
+    wavBitDepth: 16,
+    wavSampleRate: this.audioContext.sampleRate
   }, config );
 
   this.setMonitorGain( this.config.monitorGain );

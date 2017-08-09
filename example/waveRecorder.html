@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Ogg Opus Encoder Example</title>
+  <script src="../dist/recorder.min.js"></script>
+  <style type='text/css'>
+    ul { list-style: none; }
+    li { margin: 1em; }
+    audio { display: block; }
+  </style>
+</head>
+<body>
+
+  <h1>Wave Recorder example</h1>
+  <p>Before you enable monitoring, make sure to either plug in headphones or turn the volume down.</p>
+  <p>This ogg opus implementation does not support more than 2 channels.</p>
+
+  <h2>Options</h2>
+
+  <div>
+    <label>monitorGain</label>
+    <input id="monitorGain" type="number" value="0" />
+  </div>
+
+  <div>
+    <label>numberOfChannels</label>
+    <input id="numberOfChannels" type="number" value="1" />
+  </div>
+
+  <div>
+    <label>bitDepth</label>
+    <input id="bitDepth" type="number" value="16" />
+  </div>
+
+  <h2>Commands</h2>
+  <button id="init">init</button>
+  <button id="start" disabled>start</button>
+  <button id="pause" disabled>pause</button>
+  <button id="resume" disabled>resume</button>
+  <button id="stopButton" disabled>stop</button>
+
+  <h2>Recordings</h2>
+  <ul id="recordingslist"></ul>
+
+  <h2>Log</h2>
+  <pre id="log"></pre>
+
+  <script>
+    var recorder;
+
+    start.addEventListener( "click", function(){ recorder.start(); });
+    pause.addEventListener( "click", function(){ recorder.pause(); });
+    resume.addEventListener( "click", function(){ recorder.resume(); });
+    stopButton.addEventListener( "click", function(){ recorder.stop(); });
+    init.addEventListener( "click", function(){
+
+      if (!Recorder.isRecordingSupported()) {
+        return screenLogger("Recording features are not supported in your browser.");
+      }
+
+      recorder = new Recorder({
+        monitorGain: parseInt(monitorGain.value, 10),
+        numberOfChannels: parseInt(numberOfChannels.value, 10),
+        wavBitDepth: parseInt(bitDepth.value,10),
+        encoderPath: "../dist/waveWorker.min.js"
+      });
+
+      recorder.addEventListener( "start", function(e){
+        screenLogger('Recorder is started');
+        init.disabled = start.disabled = resume.disabled = true;
+        pause.disabled = stopButton.disabled = false;
+      });
+
+      recorder.addEventListener( "stop", function(e){
+        screenLogger('Recorder is stopped');
+        init.disabled = false;
+        pause.disabled = resume.disabled = stopButton.disabled = start.disabled = true;
+      });
+
+      recorder.addEventListener( "pause", function(e){
+        screenLogger('Recorder is paused');
+        init.disabled = pause.disabled = start.disabled = true;
+        resume.disabled = stopButton.disabled = false;
+      });
+
+      recorder.addEventListener( "resume", function(e){
+        screenLogger('Recorder is resuming');
+        init.disabled = start.disabled = resume.disabled = true;
+        pause.disabled = stopButton.disabled = false;
+      });
+
+      recorder.addEventListener( "streamError", function(e){
+        screenLogger('Error encountered: ' + e.error.name );
+      });
+
+      recorder.addEventListener( "streamReady", function(e){
+        init.disabled = pause.disabled = resume.disabled = stopButton.disabled = true;
+        start.disabled = false;
+        screenLogger('Audio stream is ready.');
+      });
+
+      recorder.addEventListener( "dataAvailable", function(e){
+        var dataBlob = new Blob( [e.detail], { type: 'audio/wav' } );
+        var fileName = new Date().toISOString() + ".wav";
+        var url = URL.createObjectURL( dataBlob );
+
+        var audio = document.createElement('audio');
+        audio.controls = true;
+        audio.src = url;
+
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.innerHTML = link.download;
+
+        var li = document.createElement('li');
+        li.appendChild(link);
+        li.appendChild(audio);
+
+        recordingslist.appendChild(li);
+      });
+
+      recorder.initStream();
+    });
+
+    function screenLogger(text, data) {
+      log.innerHTML += "\n" + text + " " + (data || '');
+    }
+
+  </script>
+</body>
+</html>
