@@ -62,7 +62,7 @@ var OggOpusEncoder = function( config ){
     this.interleavedBuffers = new Float32Array( this.config.bufferLength * this.config.numberOfChannels );
   }
 
-}
+};
 
 OggOpusEncoder._opus_encoder_create = _opus_encoder_create;
 OggOpusEncoder._opus_encoder_ctl = _opus_encoder_ctl;

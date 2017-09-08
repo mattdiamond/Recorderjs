@@ -9,7 +9,7 @@ Encoded and muxed audio will be returned as typedArray in `dataAvailable` event.
 ---------
 #### Constructor
 
-The `Recorder` object is available in the global namespace and supports importing from module exports and AMD.
+The `Recorder` object is available in the global namespace and supports CommonJS and AMD imports.
 
 ```js
 var rec = new Recorder([config]);
@@ -135,11 +135,18 @@ Unsupported:
 
 Prebuilt sources are included in the dist folder. However below are instructions if you want to build them yourself. Opus and speex are compiled without SIMD optimizations. Performace is significantly worse with SIMD optimizations enabled.
 
+[Inatall Node.js](https://nodejs.org/en/download/)
+
 [Install EMScripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
 
-Install autoconf, automake, libtool and pckconfig. On Mac you can do this using [MacPorts](https://www.macports.org/install.php):
+Mac: Install autotools using [MacPorts](https://www.macports.org/install.php)
 ```bash
-sudo port install automake autoconf libtool pkgconfig
+port install automake autoconf libtool pkgconfig
+```
+
+Window: Install autotools using [MSYS2](http://www.msys2.org/)
+```bash
+pacman -S make automake autoconf automake libtool pkgconfig
 ```
 
 Install npm dependencies:

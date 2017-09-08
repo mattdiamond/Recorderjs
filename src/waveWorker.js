@@ -91,7 +91,7 @@ WavePCM.prototype.record = function( buffers ){
           break;
 
         case 1:
-          reducedData[ outputIndex ] = ( sample + 1 ) * 128;
+          reducedData[ outputIndex ] = ( sample + 1 ) * 128; // 8 bit is signed integer.
           break;
 
         default:
