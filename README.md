@@ -135,19 +135,19 @@ Unsupported:
 
 Prebuilt sources are included in the dist folder. However below are instructions if you want to build them yourself. Opus and speex are compiled without SIMD optimizations. Performace is significantly worse with SIMD optimizations enabled.
 
-[Inatall Node.js](https://nodejs.org/en/download/)
-
-[Install EMScripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
-
 Mac: Install autotools using [MacPorts](https://www.macports.org/install.php)
 ```bash
 port install automake autoconf libtool pkgconfig
 ```
 
-Window: Install autotools using [MSYS2](http://www.msys2.org/)
+Windows: Install autotools using [MSYS2](http://www.msys2.org/)
 ```bash
 pacman -S make automake autoconf automake libtool pkgconfig
 ```
+
+[Inatall Node.js](https://nodejs.org/en/download/)
+
+[Install EMScripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
 
 Install npm dependencies:
 ```bash
