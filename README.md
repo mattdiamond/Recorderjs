@@ -142,7 +142,7 @@ port install automake autoconf libtool pkgconfig
 
 Windows: Install autotools using [MSYS2](http://www.msys2.org/)
 ```bash
-pacman -S make automake autoconf automake libtool pkgconfig
+pacman -S make autoconf automake libtool pkgconfig
 ```
 
 [Inatall Node.js](https://nodejs.org/en/download/)
