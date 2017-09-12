@@ -99,6 +99,7 @@ Recorder.prototype.initStream = function(){
 
   var onStreamError = function( e ){
     that.eventTarget.dispatchEvent( new global.ErrorEvent( "streamError", { error: e } ) );
+    throw e;
   }
 
   var constraints = { audio : this.config.streamOptions };
