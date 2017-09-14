@@ -95,12 +95,12 @@ Recorder.prototype.initStream = function(){
     that.sourceNode.connect( that.monitorNode );
     that.eventTarget.dispatchEvent( new global.Event( "streamReady" ) );
     return stream;
-  }
+  };
 
   var onStreamError = function( e ){
     that.eventTarget.dispatchEvent( new global.ErrorEvent( "streamError", { error: e } ) );
     throw e;
-  }
+  };
 
   var constraints = { audio : this.config.streamOptions };
 
