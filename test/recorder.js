@@ -230,4 +230,14 @@ describe('Recorder', function(){
     });
   });
 
+  it('should call promise catch callback', function () {
+    global.navigator.mediaDevices.getUserMedia = () => Promise.reject(new Error('PermissionDeniedError'));
+    var rec = new Recorder();
+    return rec.initStream().then(() => { 
+      throw new Error('Unexpected promise resolving.');
+    }, ev => {
+      expect(ev).instanceof(Error);
+      expect(ev.message).to.equal('PermissionDeniedError')
+    })
+  })
 });
