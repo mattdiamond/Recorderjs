@@ -3,6 +3,7 @@
 var Recorder = function( config ){
 
   var that = this;
+  var AudioContext = global.AudioContext || global.webkitAudioContext;
 
   if ( !Recorder.isRecordingSupported() ) {
     throw new Error("Recording is not supported in this browser");
@@ -10,7 +11,7 @@ var Recorder = function( config ){
 
   this.state = "inactive";
   this.eventTarget = global.document.createDocumentFragment();
-  this.audioContext = new global.AudioContext();
+  this.audioContext = new AudioContext();
   this.monitorNode = this.audioContext.createGain();
   this.config = Object.assign({
     bufferLength: 4096,
@@ -47,7 +48,9 @@ var Recorder = function( config ){
 };
 
 Recorder.isRecordingSupported = function(){
-  return global.AudioContext && global.navigator && ( global.navigator.getUserMedia || ( global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia ) );
+  var AudioContext = global.AudioContext || global.webkitAudioContext;
+  var getUserMedia = global.navigator && ( global.navigator.getUserMedia || ( global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia ) );
+  return AudioContext && getUserMedia;
 };
 
 Recorder.prototype.addEventListener = function( type, listener, useCapture ){
