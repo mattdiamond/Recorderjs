@@ -26,15 +26,7 @@ var Recorder = function( config ){
     numberOfChannels: 1,
     originalSampleRate: this.audioContext.sampleRate,
     resampleQuality: 3,
-    streamOptions: {
-      optional: [],
-      mandatory: {
-        googEchoCancellation: false,
-        googAutoGainControl: false,
-        googNoiseSuppression: false,
-        googHighpassFilter: false
-      }
-    },
+    mediaTrackConstraints: true,
     streamPages: false,
     wavBitDepth: 16,
     wavSampleRate: this.audioContext.sampleRate
@@ -105,7 +97,7 @@ Recorder.prototype.initStream = function(){
     throw e;
   };
 
-  var constraints = { audio : this.config.streamOptions };
+  var constraints = { audio : this.config.mediaTrackConstraints };
 
   if ( this.stream ) {
     this.eventTarget.dispatchEvent( new global.Event( "streamReady" ) );

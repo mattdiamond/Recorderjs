@@ -102,6 +102,8 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('streamPages', false);
     expect(rec.config).to.have.property('leaveStreamOpen', false);
     expect(rec.config).to.have.property('maxBuffersPerPage', 40);
+    expect(rec.config).to.have.property('mediaTrackConstraints', true);
+    expect(rec.config).to.have.property('monitorGain', 0);
     expect(rec.config).to.have.property('encoderApplication', 2049);
     expect(rec.config).to.have.property('encoderFrameSize', 20);
     expect(rec.config).to.have.property('resampleQuality', 3);
@@ -127,6 +129,8 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('streamPages', false);
     expect(rec.config).to.have.property('leaveStreamOpen', false);
     expect(rec.config).to.have.property('maxBuffersPerPage', 40);
+    expect(rec.config).to.have.property('mediaTrackConstraints', true);
+    expect(rec.config).to.have.property('monitorGain', 0);
     expect(rec.config).to.have.property('encoderApplication', 2049);
     expect(rec.config).to.have.property('encoderFrameSize', 20);
     expect(rec.config).to.have.property('resampleQuality', 3);
