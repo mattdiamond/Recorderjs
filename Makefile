@@ -34,10 +34,7 @@ test:
 
 .PHONY: test
 
-$(LIBOPUS_DIR)/autogen.sh:
-	git submodule update --init
-
-$(LIBSPEEXDSP_DIR)/autogen.sh:
+$(LIBOPUS_DIR) $(LIBSPEEXDSP_DIR) $(LIBOPUS_DIR)/autogen.sh $(LIBSPEEXDSP_DIR)/autogen.sh:
 	git submodule update --init
 
 $(LIBOPUS_OBJ): $(LIBOPUS_DIR)

@@ -66,6 +66,22 @@ describe('Recorder', function(){
     global.Promise = Promise;
   });
 
+  var mockWebkit = function(){
+    delete global.AudioContext;
+    global.webkitAudioContext = sandbox.stub();
+    global.webkitAudioContext.prototype.createGain = sandbox.stub().returns({ 
+      connect: sandbox.stub(),
+      gain: {}
+    });
+    global.webkitAudioContext.prototype.createScriptProcessor = sandbox.stub().returns({
+      connect: sandbox.stub()
+    });
+    global.webkitAudioContext.prototype.createMediaStreamSource = sandbox.stub().returns({ 
+      connect: sandbox.stub()
+    });
+    global.webkitAudioContext.prototype.sampleRate = 44100;
+  };
+
   afterEach(function () {
     sandbox.restore();
   });
@@ -86,6 +102,35 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('streamPages', false);
     expect(rec.config).to.have.property('leaveStreamOpen', false);
     expect(rec.config).to.have.property('maxBuffersPerPage', 40);
+    expect(rec.config).to.have.property('mediaTrackConstraints', true);
+    expect(rec.config).to.have.property('monitorGain', 0);
+    expect(rec.config).to.have.property('encoderApplication', 2049);
+    expect(rec.config).to.have.property('encoderFrameSize', 20);
+    expect(rec.config).to.have.property('resampleQuality', 3);
+    expect(rec.config).to.have.property('wavBitDepth', 16);
+    expect(rec.config).to.have.property('wavSampleRate', 44100);
+  });
+
+  it('should support Recording with Safari Webkit', function () {
+    mockWebkit();
+    expect(Recorder.isRecordingSupported()).to.be.ok;
+  });
+
+  it('should create an instance with Safari Webkit', function () {
+    mockWebkit();
+    var rec = new Recorder();
+    expect(global.webkitAudioContext).to.have.been.calledWithNew;
+    expect(rec.state).to.equal('inactive');
+    expect(rec.config).to.have.property('bufferLength', 4096);
+    expect(rec.config).to.have.property('monitorGain', 0);
+    expect(rec.config).to.have.property('numberOfChannels', 1);
+    expect(rec.config).to.have.property('encoderSampleRate', 48000);
+    expect(rec.config).to.have.property('encoderPath', 'encoderWorker.min.js');
+    expect(rec.config).to.have.property('streamPages', false);
+    expect(rec.config).to.have.property('leaveStreamOpen', false);
+    expect(rec.config).to.have.property('maxBuffersPerPage', 40);
+    expect(rec.config).to.have.property('mediaTrackConstraints', true);
+    expect(rec.config).to.have.property('monitorGain', 0);
     expect(rec.config).to.have.property('encoderApplication', 2049);
     expect(rec.config).to.have.property('encoderFrameSize', 20);
     expect(rec.config).to.have.property('resampleQuality', 3);
