@@ -1,6 +1,6 @@
 INPUT_DIR=./src
 OUTPUT_DIR=./dist
-EMCC_OPTS=-O3 --llvm-lto 1 --memory-init-file 0 -s NO_DYNAMIC_EXECUTION=1 -s NO_FILESYSTEM=1 -s WASM=1
+EMCC_OPTS=-O3 --llvm-lto 1 --memory-init-file 0 -s NO_DYNAMIC_EXECUTION=1 -s WASM=1 -s EXPORT_ALL=1
 
 LIBOPUS_ENCODER_SRC=$(INPUT_DIR)/encoderWorker.js
 LIBOPUS_DECODER_SRC=$(INPUT_DIR)/decoderWorker.js
@@ -21,10 +21,12 @@ RECORDER_SRC=$(INPUT_DIR)/recorder.js
 WAVE_WORKER=$(OUTPUT_DIR)/waveWorker.min.js
 WAVE_WORKER_SRC=$(INPUT_DIR)/waveWorker.js
 
+#export EMCC_DEBUG := 1
+
 default: $(LIBOPUS_ENCODER) $(LIBOPUS_DECODER) $(RECORDER) $(WAVE_WORKER) test
 
 clean:
-	rm -rf $(OUTPUT_DIR) $(LIBOPUS_DIR) $(LIBSPEEXDSP_DIR)
+	rm -rf $(OUTPUT_DIR)
 	mkdir $(OUTPUT_DIR)
 
 test:
