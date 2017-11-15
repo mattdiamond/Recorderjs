@@ -1,11 +1,9 @@
 "use strict";
 
-var mainReady = new Promise();
-var Module = {
-  "_main": mainReady.resolve
-};
-
 var encoder;
+var mainReady = new Promise();
+Module["_main"] = mainReady.resolve;
+
 global['onmessage'] = function( e ){
   switch( e['data']['command'] ){
 
