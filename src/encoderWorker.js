@@ -4,7 +4,8 @@ var encoder;
 var mainReady = new Promise(function(){});
 global["Module"] = {
   "onRuntimeInitialized": mainReady.resolve,
-  "printErr": function(text){ console.error(text); }
+  "printErr": function(text){ console.error(text); },
+  "print": function(text){ console.log(text); }
 };
 
 global['onmessage'] = function( e ){
