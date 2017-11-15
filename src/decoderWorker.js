@@ -51,6 +51,9 @@ var OggOpusDecoder = function( config ){
   this._opus_decode_float = global['Module']._opus_decode_float;
   this._free = global['Module']._free;
   this._malloc = global['Module']._malloc;
+  this.HEAPU8 = global['Module'].HEAPU8;
+  this.HEAP32 = global['Module'].HEAP32;
+  this.HEAPF32 = global['Module'].HEAPF32;
 
   this.outputBuffers = [];
 };
@@ -82,10 +85,10 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
         if ( packetLength < 255 ) {
           var outputSampleLength = this._opus_decode_float( this.decoder, this.decoderBufferPointer, this.decoderBufferIndex, this.decoderOutputPointer, this.decoderOutputMaxLength, 0);
           var resampledLength = Math.ceil( outputSampleLength * this.config.outputBufferSampleRate / this.config.decoderSampleRate );
-          HEAP32[ this.decoderOutputLengthPointer >> 2 ] = outputSampleLength;
-          HEAP32[ this.resampleOutputLengthPointer >> 2 ] = resampledLength;
+          this.HEAP32[ this.decoderOutputLengthPointer >> 2 ] = outputSampleLength;
+          this.HEAP32[ this.resampleOutputLengthPointer >> 2 ] = resampledLength;
           this._speex_resampler_process_interleaved_float( this.resampler, this.decoderOutputPointer, this.decoderOutputLengthPointer, this.resampleOutputBufferPointer, this.resampleOutputLengthPointer );
-          this.sendToOutputBuffers( HEAPF32.subarray( this.resampleOutputBufferPointer >> 2, (this.resampleOutputBufferPointer >> 2) + resampledLength * this.numberOfChannels ) );
+          this.sendToOutputBuffers( this.HEAPF32.subarray( this.resampleOutputBufferPointer >> 2, (this.resampleOutputBufferPointer >> 2) + resampledLength * this.numberOfChannels ) );
           this.decoderBufferIndex = 0;
         }
       }
@@ -126,7 +129,7 @@ OggOpusDecoder.prototype.initCodec = function() {
 
   this.decoderBufferMaxLength = 4000;
   this.decoderBufferPointer = this._malloc( this.decoderBufferMaxLength );
-  this.decoderBuffer = HEAPU8.subarray( this.decoderBufferPointer, this.decoderBufferPointer + this.decoderBufferMaxLength );
+  this.decoderBuffer = this.HEAPU8.subarray( this.decoderBufferPointer, this.decoderBufferPointer + this.decoderBufferMaxLength );
   this.decoderBufferIndex = 0;
 
   this.decoderOutputLengthPointer = this._malloc( 4 );

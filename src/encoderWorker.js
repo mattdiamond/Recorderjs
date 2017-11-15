@@ -57,6 +57,9 @@ var OggOpusEncoder = function( config ){
   this._opus_encode_float = global['Module']._opus_encode_float;
   this._free = global['Module']._free;
   this._malloc = global['Module']._malloc;
+  this.HEAPU8 = global['Module'].HEAPU8;
+  this.HEAP32 = global['Module'].HEAP32;
+  this.HEAPF32 = global['Module'].HEAPF32;
 
   this.pageIndex = 0;
   this.granulePosition = 0;
@@ -221,16 +224,16 @@ OggOpusEncoder.prototype.initCodec = function() {
   }
 
   this.encoderSamplesPerChannel = this.config.encoderSampleRate * this.config.encoderFrameSize / 1000;
-  this.encoderSamplesPerChannelPointer = _malloc( 4 );
-  HEAP32[ this.encoderSamplesPerChannelPointer >> 2 ] = this.encoderSamplesPerChannel;
+  this.encoderSamplesPerChannelPointer = this._malloc( 4 );
+  this.HEAP32[ this.encoderSamplesPerChannelPointer >> 2 ] = this.encoderSamplesPerChannel;
 
   this.encoderBufferLength = this.encoderSamplesPerChannel * this.config.numberOfChannels;
   this.encoderBufferPointer = this._malloc( this.encoderBufferLength * 4 ); // 4 bytes per sample
-  this.encoderBuffer = HEAPF32.subarray( this.encoderBufferPointer >> 2, (this.encoderBufferPointer >> 2) + this.encoderBufferLength );
+  this.encoderBuffer = this.HEAPF32.subarray( this.encoderBufferPointer >> 2, (this.encoderBufferPointer >> 2) + this.encoderBufferLength );
 
   this.encoderOutputMaxLength = 4000;
   this.encoderOutputPointer = this._malloc( this.encoderOutputMaxLength );
-  this.encoderOutputBuffer = HEAPU8.subarray( this.encoderOutputPointer, this.encoderOutputPointer + this.encoderOutputMaxLength );
+  this.encoderOutputBuffer = this.HEAPU8.subarray( this.encoderOutputPointer, this.encoderOutputPointer + this.encoderOutputMaxLength );
 };
 
 OggOpusEncoder.prototype.initResampler = function() {
@@ -241,11 +244,11 @@ OggOpusEncoder.prototype.initResampler = function() {
   this.resampleBufferIndex = 0;
   this.resampleSamplesPerChannel = this.config.originalSampleRate * this.config.encoderFrameSize / 1000;
   this.resampleSamplesPerChannelPointer = this._malloc( 4 );
-  HEAP32[ this.resampleSamplesPerChannelPointer >> 2 ] = this.resampleSamplesPerChannel;
+  this.HEAP32[ this.resampleSamplesPerChannelPointer >> 2 ] = this.resampleSamplesPerChannel;
 
   this.resampleBufferLength = this.resampleSamplesPerChannel * this.config.numberOfChannels;
-  this.resampleBufferPointer = _malloc( this.resampleBufferLength * 4 ); // 4 bytes per sample
-  this.resampleBuffer = HEAPF32.subarray( this.resampleBufferPointer >> 2, (this.resampleBufferPointer >> 2) + this.resampleBufferLength );
+  this.resampleBufferPointer = this._malloc( this.resampleBufferLength * 4 ); // 4 bytes per sample
+  this.resampleBuffer = this.HEAPF32.subarray( this.resampleBufferPointer >> 2, (this.resampleBufferPointer >> 2) + this.resampleBufferLength );
 };
 
 OggOpusEncoder.prototype.interleave = function( buffers ) {
