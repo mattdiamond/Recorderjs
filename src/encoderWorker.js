@@ -1,11 +1,12 @@
 "use strict";
 
 var encoder;
-var mainReady = new Promise(function(){});
+var mainReadyResolve;
+var mainReady = new Promise(function(resolve){ mainReadyResolve = resolve; });
 global["Module"] = {
   "onRuntimeInitialized": function(){
     console.log("Module ready");
-    mainReady.resolve();
+    mainReadyResolve();
   }
 };
 
