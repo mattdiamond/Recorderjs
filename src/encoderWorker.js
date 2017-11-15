@@ -3,7 +3,7 @@
 var encoder;
 var mainReady = new Promise(function(){});
 global["Module"] = {
-  "_main": mainReady.resolve
+  "onRuntimeInitialized": mainReady.resolve
 };
 
 global['onmessage'] = function( e ){
