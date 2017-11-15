@@ -1,7 +1,7 @@
 "use strict";
 
 var encoder;
-var mainReady = new Promise();
+var mainReady = new Promise(function(){});
 global["Module"] = {
   "_main": mainReady.resolve
 };
