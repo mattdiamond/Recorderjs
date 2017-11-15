@@ -1,5 +1,10 @@
 "use strict";
 
+var mainReady = new Promise();
+var Module = {
+  "_main": mainReady.resolve
+};
+
 var encoder;
 global['onmessage'] = function( e ){
   switch( e['data']['command'] ){
@@ -17,7 +22,9 @@ global['onmessage'] = function( e ){
       break;
 
     case 'init':
-      encoder = new OggOpusEncoder( e['data'] );
+      mainReady.then(function(){
+        encoder = new OggOpusEncoder( e['data'] );
+      });
       break;
 
     default:
@@ -64,13 +71,13 @@ var OggOpusEncoder = function( config ){
 
 };
 
-OggOpusEncoder._opus_encoder_create = _opus_encoder_create;
-OggOpusEncoder._opus_encoder_ctl = _opus_encoder_ctl;
-OggOpusEncoder._speex_resampler_process_interleaved_float = _speex_resampler_process_interleaved_float;
-OggOpusEncoder._speex_resampler_init = _speex_resampler_init;
-OggOpusEncoder._opus_encode_float = _opus_encode_float;
-OggOpusEncoder._free = _free;
-OggOpusEncoder._malloc = _malloc;
+OggOpusEncoder._opus_encoder_create = Module._opus_encoder_create;
+OggOpusEncoder._opus_encoder_ctl = Module._opus_encoder_ctl;
+OggOpusEncoder._speex_resampler_process_interleaved_float = Module._speex_resampler_process_interleaved_float;
+OggOpusEncoder._speex_resampler_init = Module._speex_resampler_init;
+OggOpusEncoder._opus_encode_float = Module._opus_encode_float;
+OggOpusEncoder._free = Module._free;
+OggOpusEncoder._malloc = Module._malloc;
 
 OggOpusEncoder.prototype.encode = function( buffers ) {
   var samples = this.interleave( buffers );
