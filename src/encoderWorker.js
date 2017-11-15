@@ -3,7 +3,8 @@
 var encoder;
 var mainReady = new Promise(function(){});
 global["Module"] = {
-  "onRuntimeInitialized": mainReady.resolve
+  "onRuntimeInitialized": mainReady.resolve,
+  "printErr": function(text){ console.error(text); }
 };
 
 global['onmessage'] = function( e ){
