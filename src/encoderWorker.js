@@ -4,7 +4,7 @@ var encoder;
 var mainReady = new Promise(function(){});
 global["Module"] = {
   "onRuntimeInitialized": function(){
-    console.log("Initialized Module")
+    console.log("Module ready");
     mainReady.resolve();
   }
 };
@@ -25,6 +25,7 @@ global['onmessage'] = function( e ){
       break;
 
     case 'init':
+      console.log("init called");
       mainReady.then(function(){
         console.log("Initializing Encoder");
         encoder = new OggOpusEncoder( e['data'] );
