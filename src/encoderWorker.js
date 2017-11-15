@@ -24,7 +24,6 @@ global['onmessage'] = function( e ){
     case 'init':
       mainReady.then(function(){
         encoder = new OggOpusEncoder( e['data'] );
-        console.log("Encoder initialized!");
       });
       break;
 
