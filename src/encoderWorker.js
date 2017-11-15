@@ -2,9 +2,12 @@
 
 var encoder;
 var mainReady = new Promise(function(){});
-Object.assign( global["Module"], {
-  "onRuntimeInitialized": mainReady.resolve
-});
+global["Module"] = {
+  "onRuntimeInitialized": function(){
+    console.log("Initialized Module")
+    mainReady.resolve();
+  }
+};
 
 global['onmessage'] = function( e ){
   switch( e['data']['command'] ){
@@ -23,6 +26,7 @@ global['onmessage'] = function( e ){
 
     case 'init':
       mainReady.then(function(){
+        console.log("Initializing Encoder");
         encoder = new OggOpusEncoder( e['data'] );
       });
       break;
