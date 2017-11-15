@@ -2,11 +2,9 @@
 
 var encoder;
 var mainReady = new Promise(function(){});
-global["Module"] = {
-  "onRuntimeInitialized": mainReady.resolve,
-  "printErr": function(text){ console.error(text); },
-  "print": function(text){ console.log(text); }
-};
+Object.assign( global["Module"], {
+  "onRuntimeInitialized": mainReady.resolve
+});
 
 global['onmessage'] = function( e ){
   switch( e['data']['command'] ){
