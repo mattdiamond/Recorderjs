@@ -4,8 +4,8 @@ var encoder;
 var mainReadyResolve;
 var mainReady = new Promise(function(resolve){ mainReadyResolve = resolve; });
 
-global["Module"] = {
-  "onRuntimeInitialized": mainReadyResolve
+global['Module'] = {
+  'onRuntimeInitialized': mainReadyResolve
 };
 
 global['onmessage'] = function( e ){
@@ -50,13 +50,13 @@ var OggOpusEncoder = function( config ){
     serial: Math.floor( Math.random() * Math.pow(2,32) )
   }, config );
 
-  this._opus_encoder_create = global["Module"]._opus_encoder_create;
-  this._opus_encoder_ctl = global["Module"]._opus_encoder_ctl;
-  this._speex_resampler_process_interleaved_float = global["Module"]._speex_resampler_process_interleaved_float;
-  this._speex_resampler_init = global["Module"]._speex_resampler_init;
-  this._opus_encode_float = global["Module"]._opus_encode_float;
-  this._free = global["Module"]._free;
-  this._malloc = global["Module"]._malloc;
+  this._opus_encoder_create = global['Module']._opus_encoder_create;
+  this._opus_encoder_ctl = global['Module']._opus_encoder_ctl;
+  this._speex_resampler_process_interleaved_float = global['Module']._speex_resampler_process_interleaved_float;
+  this._speex_resampler_init = global['Module']._speex_resampler_init;
+  this._opus_encode_float = global['Module']._opus_encode_float;
+  this._free = global['Module']._free;
+  this._malloc = global['Module']._malloc;
 
   this.pageIndex = 0;
   this.granulePosition = 0;

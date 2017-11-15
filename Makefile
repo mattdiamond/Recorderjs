@@ -1,6 +1,6 @@
 INPUT_DIR=./src
 OUTPUT_DIR=./dist
-EMCC_OPTS=-O0 --llvm-lto 1 --memory-init-file 0 -s NO_DYNAMIC_EXECUTION=1 -s NO_FILESYSTEM=1 -s WASM=1
+EMCC_OPTS=-O3 --llvm-lto 1 --memory-init-file 0 -s NO_DYNAMIC_EXECUTION=1 -s NO_FILESYSTEM=1 -s WASM=1
 
 LIBOPUS_ENCODER_SRC=$(INPUT_DIR)/encoderWorker.js
 LIBOPUS_DECODER_SRC=$(INPUT_DIR)/decoderWorker.js
