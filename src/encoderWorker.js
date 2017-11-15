@@ -2,7 +2,9 @@
 
 var encoder;
 var mainReady = new Promise();
-Module["_main"] = mainReady.resolve;
+global["Module"] = {
+  "_main": mainReady.resolve
+};
 
 global['onmessage'] = function( e ){
   switch( e['data']['command'] ){
