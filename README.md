@@ -1,6 +1,6 @@
 # Opus & Wave Recorder
 
-A javascript library to encode the output of Web Audio API nodes in Ogg Opus or WAV format. Audio encoded and decoded using libopus v1.2.1. Audio resampling is performed by speexDSP 1.2RC3.
+A javascript library to encode the output of Web Audio API nodes in Ogg Opus or WAV format using WebAssembly. Audio encoded and decoded using libopus v1.2.1. Audio resampling is performed by speexDSP 1.2RC3.
 Encoded and muxed audio will be returned as typedArray in `dataAvailable` event.
 
 ### Usage

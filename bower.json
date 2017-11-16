@@ -4,7 +4,9 @@
   "main": [
     "dist/recorder.min.js",
     "dist/encoderWorker.min.js",
+    "dist/encoderWorker.min.wasm",
     "dist/decoderWorker.min.js",
+    "dist/decoderWorker.min.wasm",
     "dist/waveWorker.min.js"
   ],
   "license": [
@@ -26,7 +28,8 @@
     "Streamer",
     "Audio",
     "Microphone",
-    "Recorder"
+    "Recorder",
+    "WebAssembly"
   ],
   "repository": {
     "type": "git",
