@@ -4,10 +4,6 @@ var encoder;
 var mainReadyResolve;
 var mainReady = new Promise(function(resolve){ mainReadyResolve = resolve; });
 
-global['Module'] = {
-  'onRuntimeInitialized': mainReadyResolve
-};
-
 global['onmessage'] = function( e ){
   mainReady.then(function(){
     switch( e['data']['command'] ){
@@ -25,7 +21,7 @@ global['onmessage'] = function( e ){
         break;
 
       case 'init':
-        encoder = new OggOpusEncoder( e['data'] );
+        encoder = new OggOpusEncoder( e['data'], Module );
         break;
 
       default:
@@ -34,7 +30,12 @@ global['onmessage'] = function( e ){
   });
 };
 
-var OggOpusEncoder = function( config ){
+
+var OggOpusEncoder = function( config, Module ){
+
+  if ( !Module ) {
+    throw new Error('Module with exports required to initialize an encoder instance');
+  }
 
   this.config = Object.assign({ 
     bufferLength: 4096, // Define size of incoming buffer
@@ -50,16 +51,16 @@ var OggOpusEncoder = function( config ){
     serial: Math.floor( Math.random() * Math.pow(2,32) )
   }, config );
 
-  this._opus_encoder_create = global['Module']._opus_encoder_create;
-  this._opus_encoder_ctl = global['Module']._opus_encoder_ctl;
-  this._speex_resampler_process_interleaved_float = global['Module']._speex_resampler_process_interleaved_float;
-  this._speex_resampler_init = global['Module']._speex_resampler_init;
-  this._opus_encode_float = global['Module']._opus_encode_float;
-  this._free = global['Module']._free;
-  this._malloc = global['Module']._malloc;
-  this.HEAPU8 = global['Module'].HEAPU8;
-  this.HEAP32 = global['Module'].HEAP32;
-  this.HEAPF32 = global['Module'].HEAPF32;
+  this._opus_encoder_create = Module._opus_encoder_create;
+  this._opus_encoder_ctl = Module._opus_encoder_ctl;
+  this._speex_resampler_process_interleaved_float = Module._speex_resampler_process_interleaved_float;
+  this._speex_resampler_init = Module._speex_resampler_init;
+  this._opus_encode_float = Module._opus_encode_float;
+  this._free = Module._free;
+  this._malloc = Module._malloc;
+  this.HEAPU8 = Module.HEAPU8;
+  this.HEAP32 = Module.HEAP32;
+  this.HEAPF32 = Module.HEAPF32;
 
   this.pageIndex = 0;
   this.granulePosition = 0;
@@ -205,7 +206,7 @@ OggOpusEncoder.prototype.initChecksumTable = function(){
 
 OggOpusEncoder.prototype.setOpusControl = function( control, value ){
     var location = this._malloc( 4 );
-    HEAP32[ location >> 2 ] = value;
+    this.HEAP32[ location >> 2 ] = value;
     this._opus_encoder_ctl( this.encoder, control, location );
     this._free( location );
 };
@@ -287,4 +288,12 @@ OggOpusEncoder.prototype.segmentPacket = function( packetLength ) {
 };
 
 
-module.exports = OggOpusEncoder;
+if (!Module) {
+  Module = {};
+}
+
+Module['mainReady'] = mainReady;
+Module['OggOpusEncoder'] = OggOpusEncoder;
+Module['onRuntimeInitialized'] = mainReadyResolve;
+
+module.exports = Module;

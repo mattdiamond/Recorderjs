@@ -4,10 +4,6 @@ var decoder;
 var mainReadyResolve;
 var mainReady = new Promise(function(resolve){ mainReadyResolve = resolve; });
 
-global['Module'] = {
-  'onRuntimeInitialized': mainReadyResolve
-};
-
 global['onmessage'] = function( e ){
   mainReady.then(function(){
     switch( e['data']['command'] ){
@@ -25,7 +21,7 @@ global['onmessage'] = function( e ){
         break;
 
       case 'init':
-        decoder = new OggOpusDecoder( e['data'] );
+        decoder = new OggOpusDecoder( e['data'], Module );
         break;
 
       default:
@@ -34,8 +30,13 @@ global['onmessage'] = function( e ){
   });
 };
 
-var OggOpusDecoder = function( config ){
+var OggOpusDecoder = function( config, Module ){
 
+  if ( !Module ) {
+    throw new Error('Module with exports required to initialize a decoder instance');
+  }
+
+  this.mainReady = mainReady; // Expose for unit testing
   this.config = Object.assign({ 
     bufferLength: 4096, // Define size of outgoing buffer
     decoderSampleRate: 48000, // Desired decoder sample rate.
@@ -43,17 +44,17 @@ var OggOpusDecoder = function( config ){
     resampleQuality: 3, // Value between 0 and 10 inclusive. 10 being highest quality.
   }, config );
 
-  this._opus_decoder_create = global['Module']._opus_decoder_create;
-  this._opus_decoder_destroy = global['Module']._opus_decoder_destroy;
-  this._speex_resampler_process_interleaved_float = global['Module']._speex_resampler_process_interleaved_float;
-  this._speex_resampler_init = global['Module']._speex_resampler_init;
-  this._speex_resampler_destroy = global['Module']._speex_resampler_destroy;
-  this._opus_decode_float = global['Module']._opus_decode_float;
-  this._free = global['Module']._free;
-  this._malloc = global['Module']._malloc;
-  this.HEAPU8 = global['Module'].HEAPU8;
-  this.HEAP32 = global['Module'].HEAP32;
-  this.HEAPF32 = global['Module'].HEAPF32;
+  this._opus_decoder_create = Module._opus_decoder_create;
+  this._opus_decoder_destroy = Module._opus_decoder_destroy;
+  this._speex_resampler_process_interleaved_float = Module._speex_resampler_process_interleaved_float;
+  this._speex_resampler_init = Module._speex_resampler_init;
+  this._speex_resampler_destroy = Module._speex_resampler_destroy;
+  this._opus_decode_float = Module._opus_decode_float;
+  this._free = Module._free;
+  this._malloc = Module._malloc;
+  this.HEAPU8 = Module.HEAPU8;
+  this.HEAP32 = Module.HEAP32;
+  this.HEAPF32 = Module.HEAPF32;
 
   this.outputBuffers = [];
 };
@@ -202,4 +203,12 @@ OggOpusDecoder.prototype.sendToOutputBuffers = function( mergedBuffers ){
 };
 
 
-module.exports = OggOpusDecoder;
+if (!Module) {
+  Module = {};
+}
+
+Module['mainReady'] = mainReady;
+Module['OggOpusDecoder'] = OggOpusDecoder;
+Module['onRuntimeInitialized'] = mainReadyResolve;
+
+module.exports = Module;

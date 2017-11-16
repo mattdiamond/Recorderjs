@@ -29,7 +29,7 @@ clean:
 	mkdir $(OUTPUT_DIR)
 
 test:
-	mocha
+	cd $(OUTPUT_DIR); node --expose-wasm ../test.js
 
 .PHONY: test
 
