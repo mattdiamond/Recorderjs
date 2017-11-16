@@ -9,29 +9,29 @@ global['Module'] = {
 };
 
 global['onmessage'] = function( e ){
-  switch( e['data']['command'] ){
+  mainReady.then(function(){
+    switch( e['data']['command'] ){
 
-    case 'encode':
-      if (encoder){
-        encoder.encode( e['data']['buffers'] );
-      }
-      break;
+      case 'encode':
+        if (encoder){
+          encoder.encode( e['data']['buffers'] );
+        }
+        break;
 
-    case 'done':
-      if (encoder) {
-        encoder.encodeFinalFrame();
-      }
-      break;
+      case 'done':
+        if (encoder) {
+          encoder.encodeFinalFrame();
+        }
+        break;
 
-    case 'init':
-      mainReady.then(function(){
+      case 'init':
         encoder = new OggOpusEncoder( e['data'] );
-      });
-      break;
+        break;
 
-    default:
-      // Ignore any unknown commands and continue recieving commands
-  }
+      default:
+        // Ignore any unknown commands and continue recieving commands
+    }
+  });
 };
 
 var OggOpusEncoder = function( config ){
