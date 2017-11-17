@@ -3,6 +3,8 @@
 A javascript library to encode the output of Web Audio API nodes in Ogg Opus or WAV format using WebAssembly. Audio encoded and decoded using libopus v1.2.1. Audio resampling is performed by speexDSP 1.2RC3.
 Encoded and muxed audio will be returned as typedArray in `dataAvailable` event.
 
+For legacy asm.js, please use version 1.2.0
+
 ### Usage
 
 
@@ -115,7 +117,7 @@ Returns a truthy value indicating if the browser supports recording.
 Supported:
 - Chrome v58
 - Firefox v53
-- Microsoft Edge
+- Microsoft Edge v41
 - Opera v44
 - Safari v11
 - iOS 11 Safari
@@ -129,8 +131,8 @@ Unsupported:
 ### Known Issues
 
 - Firefox does not support sample rates above 48000Hz: https://bugzilla.mozilla.org/show_bug.cgi?id=1124981
-- Safari v11 does not sample rates above 44100Hz
-- Safari v11 native opus playback not yet supported
+- macOS Safari v11 does not sample rates above 44100Hz
+- macOS Safari v11 native opus playback not yet supported
 - iOS 11 Safari native opus playback not yet supported
 - Microsoft Edge native opus playback not yet supported
 
