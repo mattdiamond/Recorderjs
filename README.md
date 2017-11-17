@@ -119,7 +119,7 @@ Supported:
 - Firefox v53
 - Microsoft Edge v41
 - Opera v44
-- Safari v11
+- macOS Safari v11
 - iOS 11 Safari
 
 Unsupported:
