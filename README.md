@@ -120,7 +120,7 @@ Supported:
 - Microsoft Edge v41
 - Opera v44
 - macOS Safari v11
-- iOS 11 Safari
+- iOS Safari v11
 
 Unsupported:
 - IE 11 and below
@@ -133,7 +133,7 @@ Unsupported:
 - Firefox does not support sample rates above 48000Hz: https://bugzilla.mozilla.org/show_bug.cgi?id=1124981
 - macOS Safari v11 does not sample rates above 44100Hz
 - macOS Safari v11 native opus playback not yet supported
-- iOS 11 Safari native opus playback not yet supported
+- iOS Safari v11 native opus playback not yet supported
 - Microsoft Edge native opus playback not yet supported
 
 
