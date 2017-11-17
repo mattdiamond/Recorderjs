@@ -29,6 +29,7 @@ clean:
 	mkdir $(OUTPUT_DIR)
 
 test:
+	# Tests need to run relative to `dist` folder for wasm file import
 	cd $(OUTPUT_DIR); node --expose-wasm ../test.js
 
 .PHONY: test
