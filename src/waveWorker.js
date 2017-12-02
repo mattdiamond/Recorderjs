@@ -36,7 +36,7 @@ var WavePCM = function( config ){
     throw new Error("wavSampleRate value is required to record. NOTE: Audio is not resampled!");
   }
 
-  if ( [8, 16, 24, 32].indexOf( config['wavBitDepth'] ) < 1 ) {
+  if ( [8, 16, 24, 32].indexOf( config['wavBitDepth'] ) === -1 ) {
     throw new Error("Only 8, 16, 24 and 32 bits per sample are supported");
   }
 
