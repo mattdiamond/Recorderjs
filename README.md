@@ -1,7 +1,9 @@
 # Opus & Wave Recorder
 
-A javascript library to encode the output of Web Audio API nodes in Ogg Opus or WAV format. Audio encoded and decoded using libopus v1.2.1. Audio resampling is performed by speexDSP 1.2RC3.
+A javascript library to encode the output of Web Audio API nodes in Ogg Opus or WAV format using WebAssembly. Audio encoded and decoded using libopus v1.2.1. Audio resampling is performed by speexDSP 1.2RC3.
 Encoded and muxed audio will be returned as typedArray in `dataAvailable` event.
+
+For legacy asm.js, please use version 1.2.0
 
 ### Usage
 
@@ -20,7 +22,7 @@ Creates a recorder instance.
 
 
 ---------
-#### Config
+#### Config options for OGG OPUS encoder
 
 - **bufferLength**                - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to `4096`.
 - **encoderApplication**          - (*optional*) Supported values are: `2048` - Voice, `2049` - Full Band Audio, `2051` - Restricted Low Delay. Defaults to `2049`.
@@ -37,7 +39,18 @@ Creates a recorder instance.
 - **originalSampleRateOverride**  - (*optional*) Override the ogg opus 'input sample rate' field. Google Speech API requires this field to be `16000`.
 - **resampleQuality**             - (*optional*) Value between 0 and 10 which determines latency and processing for resampling. `0` is fastest with lowest quality. `10` is slowest with highest quality. Defaults to `3`.
 - **streamPages**                 - (*optional*) `dataAvailable` event will fire after each encoded page. Defaults to `false`.
-- **wavBitDepth**                 - (*optional*) Desired bit depth of the WAV file. Defaults to `16`. Supported values are `8`, `16`, `24` and `32` bits per sample. Only applies to `waveWorker.min.js`
+
+
+---------
+#### Config Options for WAV recorder
+
+- **bufferLength**                - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to `4096`.
+- **encoderPath**                 - (*optional*) Path to `encoderWorker.min.js` or `waveWorker.min.js` worker script. Defaults to `encoderWorker.min.js`
+- **leaveStreamOpen**             - (*optional*) Keep the stream around when trying to `stop` recording, so you can re-`start` without re-`initStream`. Defaults to `false`.
+- **mediaTrackConstraints**       - (*optional*) Object to specify [media track constraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints). Defaults to `true`.
+- **monitorGain**                 - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between `0` and `1`. Defaults to `0`
+- **numberOfChannels**            - (*optional*) The number of channels to record. `1` = mono, `2` = stereo. Defaults to `1`. Maximum `2` channels are supported.
+- **wavBitDepth**                 - (*optional*) Desired bit depth of the WAV file. Defaults to `16`. Supported values are `8`, `16`, `24` and `32` bits per sample.
 
 
 ---------
@@ -115,10 +128,10 @@ Returns a truthy value indicating if the browser supports recording.
 Supported:
 - Chrome v58
 - Firefox v53
-- Microsoft Edge
+- Microsoft Edge v41
 - Opera v44
-- Safari v11
-- iOS 11 Safari
+- macOS Safari v11
+- iOS Safari v11
 
 Unsupported:
 - IE 11 and below
@@ -129,9 +142,9 @@ Unsupported:
 ### Known Issues
 
 - Firefox does not support sample rates above 48000Hz: https://bugzilla.mozilla.org/show_bug.cgi?id=1124981
-- Safari v11 does not sample rates above 44100Hz
-- Safari v11 native opus playback not yet supported
-- iOS 11 Safari native opus playback not yet supported
+- macOS Safari v11 does not sample rates above 44100Hz
+- macOS Safari v11 native opus playback not yet supported
+- iOS Safari v11 native opus playback not yet supported
 - Microsoft Edge native opus playback not yet supported
 
 

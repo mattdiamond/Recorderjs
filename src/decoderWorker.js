@@ -1,32 +1,42 @@
 "use strict";
 
 var decoder;
+var mainReadyResolve;
+var mainReady = new Promise(function(resolve){ mainReadyResolve = resolve; });
+
 global['onmessage'] = function( e ){
-  switch( e['data']['command'] ){
+  mainReady.then(function(){
+    switch( e['data']['command'] ){
 
-    case 'decode':
-      if (decoder){
-        decoder.decode( e['data']['pages'] );
-      }
-      break;
+      case 'decode':
+        if (decoder){
+          decoder.decode( e['data']['pages'] );
+        }
+        break;
 
-    case 'done':
-      if (decoder) {
-        decoder.sendLastBuffer();
-      }
-      break;
+      case 'done':
+        if (decoder) {
+          decoder.sendLastBuffer();
+        }
+        break;
 
-    case 'init':
-      decoder = new OggOpusDecoder( e['data'] );
-      break;
+      case 'init':
+        decoder = new OggOpusDecoder( e['data'], Module );
+        break;
 
-    default:
-      // Ignore any unknown commands and continue recieving commands
-  }
+      default:
+        // Ignore any unknown commands and continue recieving commands
+    }
+  });
 };
 
-var OggOpusDecoder = function( config ){
+var OggOpusDecoder = function( config, Module ){
 
+  if ( !Module ) {
+    throw new Error('Module with exports required to initialize a decoder instance');
+  }
+
+  this.mainReady = mainReady; // Expose for unit testing
   this.config = Object.assign({ 
     bufferLength: 4096, // Define size of outgoing buffer
     decoderSampleRate: 48000, // Desired decoder sample rate.
@@ -34,17 +44,22 @@ var OggOpusDecoder = function( config ){
     resampleQuality: 3, // Value between 0 and 10 inclusive. 10 being highest quality.
   }, config );
 
+  this._opus_decoder_create = Module._opus_decoder_create;
+  this._opus_decoder_destroy = Module._opus_decoder_destroy;
+  this._speex_resampler_process_interleaved_float = Module._speex_resampler_process_interleaved_float;
+  this._speex_resampler_init = Module._speex_resampler_init;
+  this._speex_resampler_destroy = Module._speex_resampler_destroy;
+  this._opus_decode_float = Module._opus_decode_float;
+  this._free = Module._free;
+  this._malloc = Module._malloc;
+  this.HEAPU8 = Module.HEAPU8;
+  this.HEAP32 = Module.HEAP32;
+  this.HEAPF32 = Module.HEAPF32;
+
   this.outputBuffers = [];
 };
 
-OggOpusDecoder._opus_decoder_create = _opus_decoder_create;
-OggOpusDecoder._opus_decoder_destroy = _opus_decoder_destroy;
-OggOpusDecoder._speex_resampler_process_interleaved_float = _speex_resampler_process_interleaved_float;
-OggOpusDecoder._speex_resampler_init = _speex_resampler_init;
-OggOpusDecoder._speex_resampler_destroy = _speex_resampler_destroy;
-OggOpusDecoder._opus_decode_float = _opus_decode_float;
-OggOpusDecoder._free = _free;
-OggOpusDecoder._malloc = _malloc;
+
 
 OggOpusDecoder.prototype.decode = function( typedArray ) {
   var dataView = new DataView( typedArray.buffer );
@@ -69,12 +84,12 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
         this.decoderBufferIndex += packetLength;
 
         if ( packetLength < 255 ) {
-          var outputSampleLength = OggOpusDecoder._opus_decode_float( this.decoder, this.decoderBufferPointer, this.decoderBufferIndex, this.decoderOutputPointer, this.decoderOutputMaxLength, 0);
+          var outputSampleLength = this._opus_decode_float( this.decoder, this.decoderBufferPointer, this.decoderBufferIndex, this.decoderOutputPointer, this.decoderOutputMaxLength, 0);
           var resampledLength = Math.ceil( outputSampleLength * this.config.outputBufferSampleRate / this.config.decoderSampleRate );
-          HEAP32[ this.decoderOutputLengthPointer >> 2 ] = outputSampleLength;
-          HEAP32[ this.resampleOutputLengthPointer >> 2 ] = resampledLength;
-          OggOpusDecoder._speex_resampler_process_interleaved_float( this.resampler, this.decoderOutputPointer, this.decoderOutputLengthPointer, this.resampleOutputBufferPointer, this.resampleOutputLengthPointer );
-          this.sendToOutputBuffers( HEAPF32.subarray( this.resampleOutputBufferPointer >> 2, (this.resampleOutputBufferPointer >> 2) + resampledLength * this.numberOfChannels ) );
+          this.HEAP32[ this.decoderOutputLengthPointer >> 2 ] = outputSampleLength;
+          this.HEAP32[ this.resampleOutputLengthPointer >> 2 ] = resampledLength;
+          this._speex_resampler_process_interleaved_float( this.resampler, this.decoderOutputPointer, this.decoderOutputLengthPointer, this.resampleOutputBufferPointer, this.resampleOutputLengthPointer );
+          this.sendToOutputBuffers( this.HEAPF32.subarray( this.resampleOutputBufferPointer >> 2, (this.resampleOutputBufferPointer >> 2) + resampledLength * this.numberOfChannels ) );
           this.decoderBufferIndex = 0;
         }
       }
@@ -103,41 +118,41 @@ OggOpusDecoder.prototype.init = function(){
 OggOpusDecoder.prototype.initCodec = function() {
 
   if ( this.decoder ) {
-    OggOpusDecoder._opus_decoder_destroy( this.decoder );
-    OggOpusDecoder._free( this.decoderBufferPointer );
-    OggOpusDecoder._free( this.decoderOutputLengthPointer );
-    OggOpusDecoder._free( this.decoderOutputPointer );
+    this._opus_decoder_destroy( this.decoder );
+    this._free( this.decoderBufferPointer );
+    this._free( this.decoderOutputLengthPointer );
+    this._free( this.decoderOutputPointer );
   }
 
-  var errReference = OggOpusDecoder._malloc( 4 );
-  this.decoder = OggOpusDecoder._opus_decoder_create( this.config.decoderSampleRate, this.numberOfChannels, errReference );
-  OggOpusDecoder._free( errReference );
+  var errReference = this._malloc( 4 );
+  this.decoder = this._opus_decoder_create( this.config.decoderSampleRate, this.numberOfChannels, errReference );
+  this._free( errReference );
 
   this.decoderBufferMaxLength = 4000;
-  this.decoderBufferPointer = OggOpusDecoder._malloc( this.decoderBufferMaxLength );
-  this.decoderBuffer = HEAPU8.subarray( this.decoderBufferPointer, this.decoderBufferPointer + this.decoderBufferMaxLength );
+  this.decoderBufferPointer = this._malloc( this.decoderBufferMaxLength );
+  this.decoderBuffer = this.HEAPU8.subarray( this.decoderBufferPointer, this.decoderBufferPointer + this.decoderBufferMaxLength );
   this.decoderBufferIndex = 0;
 
-  this.decoderOutputLengthPointer = OggOpusDecoder._malloc( 4 );
+  this.decoderOutputLengthPointer = this._malloc( 4 );
   this.decoderOutputMaxLength = this.config.decoderSampleRate * this.numberOfChannels * 120 / 1000; // Max 120ms frame size
-  this.decoderOutputPointer = OggOpusDecoder._malloc( this.decoderOutputMaxLength * 4 ); // 4 bytes per sample
+  this.decoderOutputPointer = this._malloc( this.decoderOutputMaxLength * 4 ); // 4 bytes per sample
 };
 
 OggOpusDecoder.prototype.initResampler = function() {
 
   if ( this.resampler ) {
-    OggOpusDecoder._speex_resampler_destroy( this.resampler );
-    OggOpusDecoder._free( this.resampleOutputLengthPointer );
-    OggOpusDecoder._free( this.resampleOutputBufferPointer );
+    this._speex_resampler_destroy( this.resampler );
+    this._free( this.resampleOutputLengthPointer );
+    this._free( this.resampleOutputBufferPointer );
   }
 
-  var errLocation = OggOpusDecoder._malloc( 4 );
-  this.resampler = OggOpusDecoder._speex_resampler_init( this.numberOfChannels, this.config.decoderSampleRate, this.config.outputBufferSampleRate, this.config.resampleQuality, errLocation );
-  OggOpusDecoder._free( errLocation );
+  var errLocation = this._malloc( 4 );
+  this.resampler = this._speex_resampler_init( this.numberOfChannels, this.config.decoderSampleRate, this.config.outputBufferSampleRate, this.config.resampleQuality, errLocation );
+  this._free( errLocation );
 
-  this.resampleOutputLengthPointer = OggOpusDecoder._malloc( 4 );
+  this.resampleOutputLengthPointer = this._malloc( 4 );
   this.resampleOutputMaxLength = Math.ceil( this.decoderOutputMaxLength * this.config.outputBufferSampleRate / this.config.decoderSampleRate );
-  this.resampleOutputBufferPointer = OggOpusDecoder._malloc( this.resampleOutputMaxLength * 4 ); // 4 bytes per sample
+  this.resampleOutputBufferPointer = this._malloc( this.resampleOutputMaxLength * 4 ); // 4 bytes per sample
 };
 
 OggOpusDecoder.prototype.resetOutputBuffers = function(){
@@ -188,4 +203,12 @@ OggOpusDecoder.prototype.sendToOutputBuffers = function( mergedBuffers ){
 };
 
 
-module.exports = OggOpusDecoder;
+if (!Module) {
+  Module = {};
+}
+
+Module['mainReady'] = mainReady;
+Module['OggOpusDecoder'] = OggOpusDecoder;
+Module['onRuntimeInitialized'] = mainReadyResolve;
+
+module.exports = Module;

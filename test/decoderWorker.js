@@ -11,7 +11,7 @@ var expect = chai.expect;
 
 describe('decoderWorker', function() {
 
-  var OggOpusDecoder = require('../dist/decoderWorker.min');
+  var Module = require('../dist/decoderWorker.min');
   var sandbox = sinon.sandbox.create();
   var decoder;
   var _opus_decoder_create_spy;
@@ -19,20 +19,23 @@ describe('decoderWorker', function() {
   var _speex_resampler_process_interleaved_float_spy;
   var _speex_resampler_init_spy;
   var _opus_decode_float_spy;
-  var monoOpus = new Uint8Array(fs.readFileSync('test/sample/mono.opus'));
-  var stereoOpus = new Uint8Array(fs.readFileSync('test/sample/stereo.opus'));
-  var joinedMonoOpus = new Uint8Array(fs.readFileSync('test/sample/joinedMono.opus'));
+  var monoOpus = new Uint8Array(fs.readFileSync('../test/sample/mono.opus'));
+  var stereoOpus = new Uint8Array(fs.readFileSync('../test/sample/stereo.opus'));
+  var joinedMonoOpus = new Uint8Array(fs.readFileSync('../test/sample/joinedMono.opus'));
 
   beforeEach(function(){
     global.postMessage = sandbox.stub();
     global.close = sandbox.stub();
-    decoder = new OggOpusDecoder();
-    _opus_decoder_create_spy = sandbox.spy(OggOpusDecoder, '_opus_decoder_create');
-    _opus_decoder_destroy_spy = sandbox.spy(OggOpusDecoder, '_opus_decoder_destroy');
-    _speex_resampler_process_interleaved_float_spy = sandbox.spy(OggOpusDecoder, '_speex_resampler_process_interleaved_float');
-    _speex_resampler_init_spy = sandbox.spy(OggOpusDecoder, '_speex_resampler_init');
-    _speex_resampler_destroy_spy = sandbox.spy(OggOpusDecoder, '_speex_resampler_destroy');
-    _opus_decode_float_spy = sandbox.spy(OggOpusDecoder, '_opus_decode_float');
+
+    return Module.mainReady.then(function(){
+      _opus_decoder_create_spy = sandbox.spy(Module, '_opus_decoder_create');
+      _opus_decoder_destroy_spy = sandbox.spy(Module, '_opus_decoder_destroy');
+      _speex_resampler_process_interleaved_float_spy = sandbox.spy(Module, '_speex_resampler_process_interleaved_float');
+      _speex_resampler_init_spy = sandbox.spy(Module, '_speex_resampler_init');
+      _speex_resampler_destroy_spy = sandbox.spy(Module, '_speex_resampler_destroy');
+      _opus_decode_float_spy = sandbox.spy(Module, '_opus_decode_float');
+      decoder = new Module.OggOpusDecoder({}, Module);
+    });
   });
 
   afterEach(function () {
