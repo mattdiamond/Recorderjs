@@ -127,7 +127,13 @@ Recorder.prototype.resume = function() {
 };
 
 Recorder.prototype.setMonitorGain = function( gain ){
-  this.monitorNode.gain.value = gain;
+  // chrome has deprecated dezippering in M63, and will remove it in M64
+  // https://www.chromestatus.com/features/5287995770929152
+  if(this.monitorNode.gain.setTargetAtTime) {
+    this.monitorNode.gain.setTargetAtTime(gain, audioContext.currentTime, 0.01);
+  } else {
+    this.monitorNode.gain.value = gain;
+  }
 };
 
 Recorder.prototype.start = function(){
