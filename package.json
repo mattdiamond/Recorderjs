@@ -49,5 +49,8 @@
     "sinon": "^2.4.1",
     "sinon-chai": "^2.12.0",
     "webpack": "^3.5.1"
+  },
+  "dependencies": {
+    "get-user-media-promise": "^1.1.1"
   }
 }
