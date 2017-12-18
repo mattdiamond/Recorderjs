@@ -1,5 +1,5 @@
 {
-  "name": "opus-recorderjs",
+  "name": "opus-recorder",
   "description": "Record audio from the mic into ogg opus format",
   "main": [
     "dist/recorder.min.js",
@@ -29,10 +29,12 @@
     "Audio",
     "Microphone",
     "Recorder",
+    "Wav",
+    "Wave",
     "WebAssembly"
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/chris-rudmin/Recorderjs.git"
+    "url": "git://github.com/chris-rudmin/opus-recorder.git"
   }
 }
