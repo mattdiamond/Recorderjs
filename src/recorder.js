@@ -128,7 +128,7 @@ Recorder.prototype.initWorker = function(){
   }
 
   this.encoder.postMessage( this.config );
-}
+};
 
 Recorder.prototype.pause = function(){
   if ( this.state === "recording" ){
