@@ -1,5 +1,8 @@
 "use strict";
 
+var getUserMedia = require("get-user-media-promise");
+
+
 var Recorder = function( config ){
 
   var that = this;
@@ -40,9 +43,7 @@ var Recorder = function( config ){
 };
 
 Recorder.isRecordingSupported = function(){
-  var AudioContext = global.AudioContext || global.webkitAudioContext;
-  var getUserMedia = global.navigator && ( global.navigator.getUserMedia || ( global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia ) );
-  return AudioContext && getUserMedia;
+  return (global.AudioContext || global.webkitAudioContext) && getUserMedia.isSupported;
 };
 
 Recorder.prototype.addEventListener = function( type, listener, useCapture ){
@@ -104,15 +105,7 @@ Recorder.prototype.initStream = function(){
     return global.Promise.resolve( this.stream );
   }
 
-  if ( global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia ) {
-    return global.navigator.mediaDevices.getUserMedia( constraints ).then( onStreamInit, onStreamError );
-  }
-
-  if ( global.navigator.getUserMedia ) {
-    return new global.Promise( function( resolve, reject ) {
-      global.navigator.getUserMedia( constraints, resolve, reject );
-    }).then( onStreamInit, onStreamError );
-  }
+  return getUserMedia(constraints).then( onStreamInit, onStreamError );
 };
 
 Recorder.prototype.pause = function(){
@@ -134,7 +127,7 @@ Recorder.prototype.resume = function() {
 };
 
 Recorder.prototype.setMonitorGain = function( gain ){
-  this.monitorNode.gain.value = gain;
+  this.monitorNode.gain.setTargetAtTime(gain, this.audioContext.currentTime, 0.01);
 };
 
 Recorder.prototype.start = function(){
