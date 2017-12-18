@@ -154,7 +154,6 @@ Recorder.prototype.setMonitorGain = function( gain ){
 
 Recorder.prototype.start = function(){
   if ( this.state === "inactive" && this.stream ) {
-    var that = this;
 
     // First buffer can contain old data. Don't encode it.
     this.encodeBuffers = function(){
