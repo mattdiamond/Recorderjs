@@ -26,13 +26,15 @@ describe('Recorder unsupported', function(){
 describe('Recorder', function(){
 
   var sandbox = sinon.sandbox.create();
-  var Recorder = requireUncached('../dist/recorder.min');
+  var Recorder;
 
   beforeEach(function(){
     global.AudioContext = sandbox.stub();
     global.AudioContext.prototype.createGain = sandbox.stub().returns({ 
       connect: sandbox.stub(),
-      gain: {}
+      gain: {
+        setTargetAtTime: sandbox.stub()
+      }
     });
     global.AudioContext.prototype.createScriptProcessor = sandbox.stub().returns({
       connect: sandbox.stub()
@@ -64,6 +66,8 @@ describe('Recorder', function(){
     global.Worker.prototype.postMessage =  sandbox.stub();
 
     global.Promise = Promise;
+
+    Recorder = requireUncached('../dist/recorder.min');
   });
 
   var mockWebkit = function(){
@@ -71,7 +75,9 @@ describe('Recorder', function(){
     global.webkitAudioContext = sandbox.stub();
     global.webkitAudioContext.prototype.createGain = sandbox.stub().returns({ 
       connect: sandbox.stub(),
-      gain: {}
+      gain: {
+        setTargetAtTime: sandbox.stub()
+      }
     });
     global.webkitAudioContext.prototype.createScriptProcessor = sandbox.stub().returns({
       connect: sandbox.stub()
@@ -192,6 +198,7 @@ describe('Recorder', function(){
     global.navigator.getUserMedia = sandbox.stub().yields({
       stop: sandbox.stub()
     });
+    Recorder = requireUncached('../dist/recorder.min');
 
     var rec = new Recorder();
     return rec.initStream().then(function(){
@@ -284,5 +291,12 @@ describe('Recorder', function(){
       expect(ev).instanceof(Error);
       expect(ev.message).to.equal('PermissionDeniedError')
     })
-  })
+  });
+
+  it('should set monitoring gain on init', function () {
+    var rec = new Recorder();
+    return rec.initStream().then(function(){
+      expect(rec.monitorNode.gain.setTargetAtTime).to.have.been.calledOnce;
+    });
+  });
 });
