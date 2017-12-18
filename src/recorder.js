@@ -110,6 +110,7 @@ Recorder.prototype.initStream = function(){
 };
 
 Recorder.prototype.initWorker = function(){
+  var that = this;
   this.encoder = new global.Worker( this.config.encoderPath );
 
   if (this.config.streamPages){
@@ -195,9 +196,8 @@ Recorder.prototype.storePage = function( page ) {
       detail: outputData
     }));
 
-    this.recordedPages = [];
-    this.eventTarget.dispatchEvent( new global.Event( 'stop' ) );
     this.initWorker();
+    this.eventTarget.dispatchEvent( new global.Event( 'stop' ) );
   }
 
   else {
@@ -208,8 +208,8 @@ Recorder.prototype.storePage = function( page ) {
 
 Recorder.prototype.streamPage = function( page ) {
   if ( page === null ) {
-    this.eventTarget.dispatchEvent( new global.Event( 'stop' ) );
     this.initWorker();
+    this.eventTarget.dispatchEvent( new global.Event( 'stop' ) );
   }
 
   else {
