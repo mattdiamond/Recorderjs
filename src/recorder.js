@@ -18,7 +18,6 @@ var Recorder = function( config ){
   this.monitorNode = this.audioContext.createGain();
   this.config = Object.assign({
     bufferLength: 4096,
-    command: "init",
     encoderApplication: 2049,
     encoderFrameSize: 20,
     encoderPath: 'encoderWorker.min.js',
@@ -35,6 +34,7 @@ var Recorder = function( config ){
     wavSampleRate: this.audioContext.sampleRate
   }, config );
 
+  this.initWorker();
   this.setMonitorGain( this.config.monitorGain );
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
   this.scriptProcessorNode.onaudioprocess = function( e ){
@@ -108,6 +108,25 @@ Recorder.prototype.initStream = function(){
   return getUserMedia(constraints).then( onStreamInit, onStreamError );
 };
 
+Recorder.prototype.initWorker = function(){
+  var that = this;
+  this.encoder = new global.Worker( this.config.encoderPath );
+
+  if (this.config.streamPages){
+    this.encoder.addEventListener( "message", function( e ) {
+      that.streamPage( e.data );
+    });
+  }
+
+  else {
+    this.recordedPages = [];
+    this.totalLength = 0;
+    this.encoder.addEventListener( "message", function( e ) {
+      that.storePage( e.data );
+    });
+  }
+};
+
 Recorder.prototype.pause = function(){
   if ( this.state === "recording" ){
     this.state = "paused";
@@ -132,22 +151,10 @@ Recorder.prototype.setMonitorGain = function( gain ){
 
 Recorder.prototype.start = function(){
   if ( this.state === "inactive" && this.stream ) {
-    var that = this;
-    this.encoder = new global.Worker( this.config.encoderPath );
 
-    if (this.config.streamPages){
-      this.encoder.addEventListener( "message", function( e ) {
-        that.streamPage( e.data );
-      });
-    }
-
-    else {
-      this.recordedPages = [];
-      this.totalLength = 0;
-      this.encoder.addEventListener( "message", function( e ) {
-        that.storePage( e.data );
-      });
-    }
+    this.encoder.postMessage(Object.assign({
+      command: 'init'
+    }, this.config));
 
     // First buffer can contain old data. Don't encode it.
     this.encodeBuffers = function(){
@@ -158,7 +165,6 @@ Recorder.prototype.start = function(){
     this.monitorNode.connect( this.audioContext.destination );
     this.scriptProcessorNode.connect( this.audioContext.destination );
     this.eventTarget.dispatchEvent( new global.Event( 'start' ) );
-    this.encoder.postMessage( this.config );
   }
 };
 
@@ -190,7 +196,7 @@ Recorder.prototype.storePage = function( page ) {
       detail: outputData
     }));
 
-    this.recordedPages = [];
+    this.initWorker();
     this.eventTarget.dispatchEvent( new global.Event( 'stop' ) );
   }
 
@@ -202,6 +208,7 @@ Recorder.prototype.storePage = function( page ) {
 
 Recorder.prototype.streamPage = function( page ) {
   if ( page === null ) {
+    this.initWorker();
     this.eventTarget.dispatchEvent( new global.Event( 'stop' ) );
   }
 
