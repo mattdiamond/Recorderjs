@@ -18,7 +18,6 @@ var Recorder = function( config ){
   this.monitorNode = this.audioContext.createGain();
   this.config = Object.assign({
     bufferLength: 4096,
-    command: "init",
     encoderApplication: 2049,
     encoderFrameSize: 20,
     encoderPath: 'encoderWorker.min.js',
@@ -126,8 +125,6 @@ Recorder.prototype.initWorker = function(){
       that.storePage( e.data );
     });
   }
-
-  this.encoder.postMessage( this.config );
 };
 
 Recorder.prototype.pause = function(){
@@ -154,6 +151,10 @@ Recorder.prototype.setMonitorGain = function( gain ){
 
 Recorder.prototype.start = function(){
   if ( this.state === "inactive" && this.stream ) {
+
+    this.encoder.postMessage(Object.assign({
+      command: 'init'
+    }, this.config));
 
     // First buffer can contain old data. Don't encode it.
     this.encodeBuffers = function(){
