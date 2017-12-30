@@ -86,6 +86,7 @@ describe('Recorder', function(){
       connect: sandbox.stub()
     });
     global.webkitAudioContext.prototype.sampleRate = 44100;
+    Recorder = requireUncached('../dist/recorder.min');
   };
 
   afterEach(function () {
@@ -119,13 +120,11 @@ describe('Recorder', function(){
 
   it('should support Recording with Safari Webkit', function () {
     mockWebkit();
-    Recorder = requireUncached('../dist/recorder.min');
     expect(Recorder.isRecordingSupported()).to.be.ok;
   });
 
   it('should create an instance with Safari Webkit', function () {
     mockWebkit();
-    Recorder = requireUncached('../dist/recorder.min');
     var rec = new Recorder();
     expect(global.webkitAudioContext).to.have.been.calledWithNew;
     expect(rec.state).to.equal('inactive');
