@@ -41,15 +41,14 @@ var Recorder = function( config ){
 };
 
 Recorder.isRecordingSupported = function(){
-  return (global.AudioContext || global.webkitAudioContext) && getUserMedia.isSupported;
+  return AudioContext && getUserMedia.isSupported;
 };
-
-Recorder.prototype.audioContext = Recorder.isRecordingSupported() && new AudioContext();
-
 
 Recorder.prototype.addEventListener = function( type, listener, useCapture ){
   this.eventTarget.addEventListener( type, listener, useCapture );
 };
+
+Recorder.prototype.audioContext = Recorder.isRecordingSupported() && new AudioContext();
 
 Recorder.prototype.clearStream = function() {
   if ( this.stream ) {

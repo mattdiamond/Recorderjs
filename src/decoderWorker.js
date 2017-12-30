@@ -17,6 +17,7 @@ global['onmessage'] = function( e ){
       case 'done':
         if (decoder) {
           decoder.sendLastBuffer();
+          global['close']();
         }
         break;
 
@@ -60,7 +61,6 @@ var OggOpusDecoder = function( config, Module ){
 };
 
 
-
 OggOpusDecoder.prototype.decode = function( typedArray ) {
   var dataView = new DataView( typedArray.buffer );
   this.getPageBoundaries( dataView ).map( function( pageStart ) {
@@ -92,6 +92,11 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
           this.sendToOutputBuffers( this.HEAPF32.subarray( this.resampleOutputBufferPointer >> 2, (this.resampleOutputBufferPointer >> 2) + resampledLength * this.numberOfChannels ) );
           this.decoderBufferIndex = 0;
         }
+      }
+
+      // End of stream
+      if ( headerType & 4 ) {
+        this.sendLastBuffer();
       }
     }
   }, this );
@@ -169,7 +174,6 @@ OggOpusDecoder.prototype.resetOutputBuffers = function(){
 OggOpusDecoder.prototype.sendLastBuffer = function(){
   this.sendToOutputBuffers( new Float32Array( ( this.config.bufferLength - this.outputBufferIndex ) * this.numberOfChannels ) );
   global['postMessage'](null);
-  global['close']();
 };
 
 OggOpusDecoder.prototype.sendToOutputBuffers = function( mergedBuffers ){

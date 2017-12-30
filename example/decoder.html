@@ -104,10 +104,6 @@
         command: 'decode',
         pages: typedArray
       }, [typedArray.buffer] );
-
-      decoderWorker.postMessage({
-        command: 'done'
-      });
     };
 
     fileInput.onchange = function(e){
