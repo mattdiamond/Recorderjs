@@ -119,11 +119,13 @@ describe('Recorder', function(){
 
   it('should support Recording with Safari Webkit', function () {
     mockWebkit();
+    Recorder = requireUncached('../dist/recorder.min');
     expect(Recorder.isRecordingSupported()).to.be.ok;
   });
 
   it('should create an instance with Safari Webkit', function () {
     mockWebkit();
+    Recorder = requireUncached('../dist/recorder.min');
     var rec = new Recorder();
     expect(global.webkitAudioContext).to.have.been.calledWithNew;
     expect(rec.state).to.equal('inactive');
@@ -316,5 +318,11 @@ describe('Recorder', function(){
     expect(global.Worker).to.have.been.calledOnce;
     rec.streamPage(null);
     expect(global.Worker).to.have.been.calledTwice;
+  });
+
+  it('should share audioContext', function () {
+    var rec1 = new Recorder();
+    var rec2 = new Recorder();
+    expect(rec1.audioContext).to.equal(rec2.audioContext);
   });
 });
