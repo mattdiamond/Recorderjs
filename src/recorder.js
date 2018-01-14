@@ -30,7 +30,6 @@ var Recorder = function( config ){
     wavSampleRate: this.audioContext.sampleRate
   }, config );
 
-  this.resetRecordedData();
   this.initWorker();
   this.setMonitorGain( this.config.monitorGain );
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
@@ -106,6 +105,8 @@ Recorder.prototype.initWorker = function(){
   var streamPage = function( e ) { self.streamPage( e.data ); };
   var storePage = function( e ) { self.storePage( e.data ); };
 
+  this.recordedPages = [];
+  this.totalLength = 0;
   this.encoder = new global.Worker( this.config.encoderPath );
   this.encoder.addEventListener( "message", this.config.streamPages ? streamPage : storePage );
 };
@@ -115,24 +116,6 @@ Recorder.prototype.pause = function(){
     this.state = "paused";
     this.onpause();
   }
-};
-
-Recorder.prototype.requestData = function() {
-    var outputData = new Uint8Array( this.totalLength );
-    var outputIndex = 0;
-
-    for ( var i = 0; i < this.recordedPages.length; i++ ) {
-      outputData.set( this.recordedPages[i], outputIndex );
-      outputIndex += this.recordedPages[i].length;
-    }
-
-    this.ondataavailable( outputData );
-    this.resetRecordedData();
-};
-
-Recorder.prototype.resetRecordedData = function() {
-  this.recordedPages = [];
-  this.totalLength = 0;
 };
 
 Recorder.prototype.resume = function() {
@@ -181,7 +164,15 @@ Recorder.prototype.stop = function(){
 
 Recorder.prototype.storePage = function( page ) {
   if ( page === null ) {
-    this.requestData();
+    var outputData = new Uint8Array( this.totalLength );
+    var outputIndex = 0;
+
+    for ( var i = 0; i < this.recordedPages.length; i++ ) {
+      outputData.set( this.recordedPages[i], outputIndex );
+      outputIndex += this.recordedPages[i].length;
+    }
+
+    this.ondataavailable( outputData );
     this.initWorker();
     this.onstop();
   }

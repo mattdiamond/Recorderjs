@@ -41,15 +41,18 @@ describe('Recorder', function(){
     global.AudioContext = sandbox.stub();
     global.AudioContext.prototype.createGain = sandbox.stub().returns({ 
       connect: sandbox.stub(),
+      disconnect: sandbox.stub(),
       gain: {
         setTargetAtTime: sandbox.stub()
       }
     });
     global.AudioContext.prototype.createScriptProcessor = sandbox.stub().returns({
-      connect: sandbox.stub()
+      connect: sandbox.stub(),
+      disconnect: sandbox.stub()
     });
     global.AudioContext.prototype.createMediaStreamSource = sandbox.stub().returns({ 
-      connect: sandbox.stub()
+      connect: sandbox.stub(),
+      disconnect: sandbox.stub()
     });
     global.AudioContext.prototype.sampleRate = 44100;
 
@@ -249,6 +252,36 @@ describe('Recorder', function(){
       expect(rec.scriptProcessorNode.connect).to.have.been.calledWith( rec.audioContext.destination );
       expect(rec.onstart).to.have.been.calledOnce;
       expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ command: 'init' });
+    });
+  });
+
+  it('should stop recording', function () {
+    var rec = new Recorder();
+    var clearStreamSpy = sinon.spy(rec, 'clearStream');
+    return rec.initStream().then(function(){
+      rec.start();
+      rec.stop();
+      expect(rec.state).to.equal('inactive');
+      expect(rec.monitorNode.disconnect).to.have.been.calledOnce;
+      expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
+      expect(clearStreamSpy).to.have.been.calledOnce;
+      expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
+    });
+  });
+
+  it('should stop recording and leave stream open', function () {
+    var rec = new Recorder({
+      leaveStreamOpen: true
+    });
+    var clearStreamSpy = sinon.spy(rec, 'clearStream');
+    return rec.initStream().then(function(){
+      rec.start();
+      rec.stop();
+      expect(rec.state).to.equal('inactive');
+      expect(rec.monitorNode.disconnect).to.have.been.calledOnce;
+      expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
+      expect(clearStreamSpy).not.to.have.been.called;
+      expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
     });
   });
 
