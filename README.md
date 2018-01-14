@@ -78,13 +78,6 @@ rec.pause()
 
 **pause** will keep the stream and monitoring alive, but will not be recording the buffers. Will raise the pause event. Subsequent calls to **resume** will add to the current recording.
 
-
-```js
-rec.requestData()
-```
-
-**requestData** Will raise the `dataavailable` event, and continue recording into a new buffer.
-
 ```js
 rec.resume()
 ```
@@ -132,8 +125,7 @@ Returns a truthy value indicating if the browser supports recording.
 ```js
 rec.ondataavailable( arrayBuffer )
 ```
-
-Called whith an array buffer of audio data. If `streamPages` is `true`, this will be called with each page of encoded audio.  If `streamPages` is `false`, this will be called when the recording is finished with the complete data.
+A callback which returns an array buffer of audio data. If `streamPages` is `true`, this will be called with each page of encoded audio.  If `streamPages` is `false`, this will be called when the recording is finished with the complete data.
 
 
 ```js
@@ -153,13 +145,13 @@ A callback which occurs when media recording resumes after being paused.
 rec.onstart()
 ```
 
-An callback which occurs when media recording starts.
+A callback which occurs when media recording starts.
 
 ```js
 rec.onstop()
 ```
 
-An callback which occurs when media recording ends.
+A callback which occurs when media recording ends.
 
 
 ---------
