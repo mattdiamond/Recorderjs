@@ -1,10 +1,19 @@
 # Opus & Wave Recorder
 
-A javascript library to encode the output of Web Audio API nodes in Ogg Opus or WAV format using WebAssembly. Audio encoded and decoded using libopus v1.2.1. Audio resampling is performed by speexDSP 1.2RC3.
-Encoded and muxed audio will be returned as typedArray in `dataAvailable` event.
+A javascript library to encode the output of Web Audio API nodes in Ogg Opus or WAV format using WebAssembly.
+Encoded and muxed audio will be returned as typedArray in `ondataAvailable`.
 
-For legacy asm.js, please use version 1.2.0
+#### Libraries Used
 
+- Libopus: v1.2.1 compiled with emscripten 1.37.28
+- speexDSP: 1.2RC3 compiled with emscripten 1.37.28
+
+#### Required Files
+
+The required files are in the `dist` folder. Unminified files are in `dist/unminified`.
+
+
+---------
 ### Usage
 
 
@@ -56,18 +65,12 @@ Creates a recorder instance.
 ---------
 #### Instance Methods
 
-```js
-rec.addEventListener( type, listener[, useCapture] )
-```
-
-**addEventListener** will add an event listener to the event target. Available events are `streamError`, `streamReady`, `dataAvailable`, `start`, `pause`, `resume` and `stop`.
 
 ```js
 rec.initStream()
 ```
 
-**initStream** will request the user for permission to access the the audio stream and raise `streamReady` or `streamError`.
-Returns a Promise which resolves the audio stream when it is ready.
+**initStream** will request the user for permission to access the the audio stream. Returns a Promise which resolves the audio stream when it is ready.
 
 ```js
 rec.pause()
@@ -75,11 +78,12 @@ rec.pause()
 
 **pause** will keep the stream and monitoring alive, but will not be recording the buffers. Will raise the pause event. Subsequent calls to **resume** will add to the current recording.
 
+
 ```js
-rec.removeEventListener( type, listener[, useCapture] )
+rec.requestData()
 ```
 
-**removeEventListener** will remove an event listener from the event target.
+**requestData** Will raise the `dataavailable` event, and continue recording into a new buffer.
 
 ```js
 rec.resume()
@@ -120,6 +124,42 @@ Recorder.isRecordingSupported()
 ```
 
 Returns a truthy value indicating if the browser supports recording.
+
+
+---------
+#### Callback Handlers
+
+```js
+rec.ondataavailable( arrayBuffer )
+```
+
+Called whith an array buffer of audio data. If `streamPages` is `true`, this will be called with each page of encoded audio.  If `streamPages` is `false`, this will be called when the recording is finished with the complete data.
+
+
+```js
+rec.onpause()
+```
+
+A callback which occurs when media recording is paused.
+
+```js
+rec.onresume()
+```
+
+A callback which occurs when media recording resumes after being paused.
+
+
+```js
+rec.onstart()
+```
+
+An callback which occurs when media recording starts.
+
+```js
+rec.onstop()
+```
+
+An callback which occurs when media recording ends.
 
 
 ---------
@@ -187,8 +227,3 @@ Clean the dist folder and git submodules:
 make clean
 ```
 
-
----------
-### Required Files
-
-The required files to record audio to ogg/opus are `dist/recorder.min.js` and `dist/encoderWorker.min.js`. Optionally `dist/decoderWorker.min.js` will help decode ogg/opus files and `dist/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm. The source files `src/encoderWorker.js` and `src/decoderWorker.js` do not work without building process; it will produce an error `ReferenceError: _malloc is not defined`. You need to either use compiled file in `dist/` folder or build by yourself.

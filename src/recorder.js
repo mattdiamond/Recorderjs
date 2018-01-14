@@ -5,14 +5,11 @@ var AudioContext = global.AudioContext || global.webkitAudioContext;
 
 var Recorder = function( config ){
 
-  var that = this;
-
   if ( !Recorder.isRecordingSupported() ) {
     throw new Error("Recording is not supported in this browser");
   }
 
   this.state = "inactive";
-  this.eventTarget = global.document.createDocumentFragment();
   this.monitorNode = this.audioContext.createGain();
   this.config = Object.assign({
     bufferLength: 4096,
@@ -32,22 +29,23 @@ var Recorder = function( config ){
     wavSampleRate: this.audioContext.sampleRate
   }, config );
 
+  this.resetRecordedData();
   this.initWorker();
   this.setMonitorGain( this.config.monitorGain );
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
-  this.scriptProcessorNode.onaudioprocess = function( e ){
-    that.encodeBuffers( e.inputBuffer );
+  this.scriptProcessorNode.onaudioprocess = ( e ) => {
+    this.encodeBuffers( e.inputBuffer );
   };
 };
 
+
+// Static Methods
 Recorder.isRecordingSupported = function(){
   return AudioContext && getUserMedia.isSupported;
 };
 
-Recorder.prototype.addEventListener = function( type, listener, useCapture ){
-  this.eventTarget.addEventListener( type, listener, useCapture );
-};
 
+// Instance Methods
 Recorder.prototype.audioContext = Recorder.isRecordingSupported() && new AudioContext();
 
 Recorder.prototype.clearStream = function() {
@@ -82,26 +80,22 @@ Recorder.prototype.encodeBuffers = function( inputBuffer ){
 };
 
 Recorder.prototype.initStream = function(){
-  var that = this;
 
-  var onStreamInit = function( stream ){
-    that.stream = stream;
-    that.sourceNode = that.audioContext.createMediaStreamSource( stream );
-    that.sourceNode.connect( that.scriptProcessorNode );
-    that.sourceNode.connect( that.monitorNode );
-    that.eventTarget.dispatchEvent( new global.Event( "streamReady" ) );
+  var onStreamInit = ( stream ) => {
+    this.stream = stream;
+    this.sourceNode = this.audioContext.createMediaStreamSource( stream );
+    this.sourceNode.connect( this.scriptProcessorNode );
+    this.sourceNode.connect( this.monitorNode );
     return stream;
   };
 
-  var onStreamError = function( e ){
-    that.eventTarget.dispatchEvent( new global.ErrorEvent( "streamError", { error: e } ) );
+  var onStreamError = ( e ) => {
     throw e;
   };
 
   var constraints = { audio : this.config.mediaTrackConstraints };
 
   if ( this.stream ) {
-    this.eventTarget.dispatchEvent( new global.Event( "streamReady" ) );
     return global.Promise.resolve( this.stream );
   }
 
@@ -109,39 +103,43 @@ Recorder.prototype.initStream = function(){
 };
 
 Recorder.prototype.initWorker = function(){
-  var that = this;
   this.encoder = new global.Worker( this.config.encoderPath );
-
-  if (this.config.streamPages){
-    this.encoder.addEventListener( "message", function( e ) {
-      that.streamPage( e.data );
-    });
-  }
-
-  else {
-    this.recordedPages = [];
-    this.totalLength = 0;
-    this.encoder.addEventListener( "message", function( e ) {
-      that.storePage( e.data );
-    });
-  }
+  this.encoder.addEventListener( "message", this.config.streamPages ? ( e ) => {
+    this.streamPage( e.data );
+  } : ( e ) => {
+    this.storePage( e.data );
+  });
 };
 
 Recorder.prototype.pause = function(){
   if ( this.state === "recording" ){
     this.state = "paused";
-    this.eventTarget.dispatchEvent( new global.Event( 'pause' ) );
+    this.onpause();
   }
 };
 
-Recorder.prototype.removeEventListener = function( type, listener, useCapture ){
-  this.eventTarget.removeEventListener( type, listener, useCapture );
+Recorder.prototype.requestData = function() {
+    var outputData = new Uint8Array( this.totalLength );
+    var outputIndex = 0;
+
+    for ( var i = 0; i < this.recordedPages.length; i++ ) {
+      outputData.set( this.recordedPages[i], outputIndex );
+      outputIndex += this.recordedPages[i].length;
+    }
+
+    this.ondataavailable( outputData );
+    this.resetRecordedData();
+};
+
+Recorder.prototype.resetRecordedData = function() {
+  this.recordedPages = [];
+  this.totalLength = 0;
 };
 
 Recorder.prototype.resume = function() {
   if ( this.state === "paused" ) {
     this.state = "recording";
-    this.eventTarget.dispatchEvent( new global.Event( 'resume' ) );
+    this.onresume();
   }
 };
 
@@ -164,7 +162,7 @@ Recorder.prototype.start = function(){
     this.state = "recording";
     this.monitorNode.connect( this.audioContext.destination );
     this.scriptProcessorNode.connect( this.audioContext.destination );
-    this.eventTarget.dispatchEvent( new global.Event( 'start' ) );
+    this.onstart();
   }
 };
 
@@ -184,20 +182,9 @@ Recorder.prototype.stop = function(){
 
 Recorder.prototype.storePage = function( page ) {
   if ( page === null ) {
-    var outputData = new Uint8Array( this.totalLength );
-    var outputIndex = 0;
-
-    for ( var i = 0; i < this.recordedPages.length; i++ ) {
-      outputData.set( this.recordedPages[i], outputIndex );
-      outputIndex += this.recordedPages[i].length;
-    }
-
-    this.eventTarget.dispatchEvent( new global.CustomEvent( 'dataAvailable', {
-      detail: outputData
-    }));
-
+    this.requestData();
     this.initWorker();
-    this.eventTarget.dispatchEvent( new global.Event( 'stop' ) );
+    this.onstop();
   }
 
   else {
@@ -209,15 +196,21 @@ Recorder.prototype.storePage = function( page ) {
 Recorder.prototype.streamPage = function( page ) {
   if ( page === null ) {
     this.initWorker();
-    this.eventTarget.dispatchEvent( new global.Event( 'stop' ) );
+    this.onstop();
   }
 
   else {
-    this.eventTarget.dispatchEvent( new global.CustomEvent( 'dataAvailable', {
-      detail: page
-    }));
+    this.ondataavailable(page);
   }
 };
+
+
+// Callback Handlers
+Recorder.prototype.ondataavailable = function(){};
+Recorder.prototype.onpause = function(){};
+Recorder.prototype.onresume = function(){};
+Recorder.prototype.onstart = function(){};
+Recorder.prototype.onstop = function(){};
 
 
 module.exports = Recorder;

@@ -302,10 +302,10 @@ OggOpusEncoder.prototype.initChecksumTable = function(){
 };
 
 OggOpusEncoder.prototype.setOpusControl = function( control, value ){
-    var location = this._malloc( 4 );
-    this.HEAP32[ location >> 2 ] = value;
-    this._opus_encoder_ctl( this.encoder, control, location );
-    this._free( location );
+  var location = this._malloc( 4 );
+  this.HEAP32[ location >> 2 ] = value;
+  this._opus_encoder_ctl( this.encoder, control, location );
+  this._free( location );
 };
 
 OggOpusEncoder.prototype.initCodec = function() {
@@ -910,6 +910,9 @@ function cwrap (ident, returnType, argTypes) {
   }
 }
 
+
+
+
 /** @type {function(number, number, string, boolean=)} */
 function setValue(ptr, value, type, noSafe) {
   type = type || 'i8';
@@ -925,6 +928,7 @@ function setValue(ptr, value, type, noSafe) {
       default: abort('invalid type for setValue: ' + type);
     }
 }
+
 
 /** @type {function(number, string, boolean=)} */
 function getValue(ptr, type, noSafe) {
@@ -943,11 +947,17 @@ function getValue(ptr, type, noSafe) {
   return null;
 }
 
+
 var ALLOC_NORMAL = 0; // Tries to use _malloc()
 var ALLOC_STACK = 1; // Lives for the duration of the current function call
 var ALLOC_STATIC = 2; // Cannot be freed
 var ALLOC_DYNAMIC = 3; // Cannot be freed except through sbrk
 var ALLOC_NONE = 4; // Do not allocate
+
+
+
+
+
 
 // allocate(): This is for internal use. You can use it yourself as well, but the interface
 //             is a little tricky (see docs right below). The reason is that it is optimized
@@ -1031,12 +1041,14 @@ function allocate(slab, types, allocator, ptr) {
   return ret;
 }
 
+
 // Allocate memory during any stage of startup - static memory early on, dynamic memory later, malloc when ready
 function getMemory(size) {
   if (!staticSealed) return staticAlloc(size);
   if (!runtimeInitialized) return dynamicAlloc(size);
   return _malloc(size);
 }
+
 
 /** @type {function(number, number=)} */
 function Pointer_stringify(ptr, length) {
@@ -1071,6 +1083,7 @@ function Pointer_stringify(ptr, length) {
   return UTF8ToString(ptr);
 }
 
+
 // Given a pointer 'ptr' to a null-terminated ASCII-encoded string in the emscripten HEAP, returns
 // a copy of that string as a Javascript String object.
 
@@ -1083,12 +1096,14 @@ function AsciiToString(ptr) {
   }
 }
 
+
 // Copies the given Javascript String object 'str' to the emscripten HEAP at address 'outPtr',
 // null-terminated and encoded in ASCII form. The copy will require at most str.length+1 bytes of space in the HEAP.
 
 function stringToAscii(str, outPtr) {
   return writeAsciiToMemory(str, outPtr, false);
 }
+
 
 // Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the given array that contains uint8 values, returns
 // a copy of that string as a Javascript String object.
@@ -1140,12 +1155,14 @@ function UTF8ArrayToString(u8Array, idx) {
   }
 }
 
+
 // Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the emscripten HEAP, returns
 // a copy of that string as a Javascript String object.
 
 function UTF8ToString(ptr) {
   return UTF8ArrayToString(HEAPU8,ptr);
 }
+
 
 // Copies the given Javascript String object 'str' to the given byte array at address 'outIdx',
 // encoded in UTF8 form and null-terminated. The copy will require at most str.length*4+1 bytes of space in the HEAP.
@@ -1211,6 +1228,7 @@ function stringToUTF8Array(str, outU8Array, outIdx, maxBytesToWrite) {
   return outIdx - startIdx;
 }
 
+
 // Copies the given Javascript String object 'str' to the emscripten HEAP at address 'outPtr',
 // null-terminated and encoded in UTF8 form. The copy will require at most str.length*4+1 bytes of space in the HEAP.
 // Use the function lengthBytesUTF8 to compute the exact number of bytes (excluding null terminator) that this function will write.
@@ -1219,6 +1237,7 @@ function stringToUTF8Array(str, outU8Array, outIdx, maxBytesToWrite) {
 function stringToUTF8(str, outPtr, maxBytesToWrite) {
   return stringToUTF8Array(str, HEAPU8,outPtr, maxBytesToWrite);
 }
+
 
 // Returns the number of bytes the given Javascript string takes if encoded as a UTF8 byte array, EXCLUDING the null terminator byte.
 
@@ -1245,6 +1264,7 @@ function lengthBytesUTF8(str) {
   }
   return len;
 }
+
 
 // Given a pointer 'ptr' to a null-terminated UTF16LE-encoded string in the emscripten HEAP, returns
 // a copy of that string as a Javascript String object.
@@ -1273,6 +1293,7 @@ function UTF16ToString(ptr) {
     }
   }
 }
+
 
 // Copies the given Javascript String object 'str' to the emscripten HEAP at address 'outPtr',
 // null-terminated and encoded in UTF16 form. The copy will require at most str.length*4+2 bytes of space in the HEAP.
@@ -1305,11 +1326,13 @@ function stringToUTF16(str, outPtr, maxBytesToWrite) {
   return outPtr - startPtr;
 }
 
+
 // Returns the number of bytes the given Javascript string takes if encoded as a UTF16 byte array, EXCLUDING the null terminator byte.
 
 function lengthBytesUTF16(str) {
   return str.length*2;
 }
+
 
 function UTF32ToString(ptr) {
   var i = 0;
@@ -1330,6 +1353,7 @@ function UTF32ToString(ptr) {
     }
   }
 }
+
 
 // Copies the given Javascript String object 'str' to the emscripten HEAP at address 'outPtr',
 // null-terminated and encoded in UTF32 form. The copy will require at most str.length*4+4 bytes of space in the HEAP.
@@ -1367,6 +1391,7 @@ function stringToUTF32(str, outPtr, maxBytesToWrite) {
   return outPtr - startPtr;
 }
 
+
 // Returns the number of bytes the given Javascript string takes if encoded as a UTF16 byte array, EXCLUDING the null terminator byte.
 
 function lengthBytesUTF32(str) {
@@ -1382,14 +1407,6 @@ function lengthBytesUTF32(str) {
   return len;
 }
 
-// Allocate heap space for a JS string, and write it there.
-// It is the responsibility of the caller to free() that memory.
-function allocateUTF8(str) {
-  var size = lengthBytesUTF8(str) + 1;
-  var ret = _malloc(size);
-  if (ret) stringToUTF8Array(str, HEAP8, ret, size);
-  return ret;
-}
 
 function demangle(func) {
   return func;
@@ -1427,6 +1444,7 @@ function stackTrace() {
   if (Module['extraStackTrace']) js += '\n' + Module['extraStackTrace']();
   return demangleAll(js);
 }
+
 
 // Memory management
 
@@ -1516,7 +1534,6 @@ if (Module['buffer']) {
   {
     buffer = new ArrayBuffer(TOTAL_MEMORY);
   }
-  Module['buffer'] = buffer;
 }
 updateGlobalBufferViews();
 
@@ -1529,6 +1546,17 @@ function getTotalMemory() {
   HEAP32[0] = 0x63736d65; /* 'emsc' */
 HEAP16[1] = 0x6373;
 if (HEAPU8[2] !== 0x73 || HEAPU8[3] !== 0x63) throw 'Runtime error: expected the system to be little-endian!';
+
+Module['HEAP'] = HEAP;
+Module['buffer'] = buffer;
+Module['HEAP8'] = HEAP8;
+Module['HEAP16'] = HEAP16;
+Module['HEAP32'] = HEAP32;
+Module['HEAPU8'] = HEAPU8;
+Module['HEAPU16'] = HEAPU16;
+Module['HEAPU32'] = HEAPU32;
+Module['HEAPF32'] = HEAPF32;
+Module['HEAPF64'] = HEAPF64;
 
 function callRuntimeCallbacks(callbacks) {
   while(callbacks.length > 0) {
@@ -1601,21 +1629,26 @@ function addOnPreRun(cb) {
   __ATPRERUN__.unshift(cb);
 }
 
+
 function addOnInit(cb) {
   __ATINIT__.unshift(cb);
 }
+
 
 function addOnPreMain(cb) {
   __ATMAIN__.unshift(cb);
 }
 
+
 function addOnExit(cb) {
   __ATEXIT__.unshift(cb);
 }
 
+
 function addOnPostRun(cb) {
   __ATPOSTRUN__.unshift(cb);
 }
+
 
 // Deprecated: This function should not be called because it is unsafe and does not provide
 // a maximum length limit of how many bytes it is allowed to write. Prefer calling the
@@ -1637,9 +1670,11 @@ function writeStringToMemory(string, buffer, dontAddNull) {
   if (dontAddNull) HEAP8[end] = lastChar; // Restore the value under the null character.
 }
 
+
 function writeArrayToMemory(array, buffer) {
   HEAP8.set(array, buffer);
 }
+
 
 function writeAsciiToMemory(str, buffer, dontAddNull) {
   for (var i = 0; i < str.length; ++i) {
@@ -1648,6 +1683,7 @@ function writeAsciiToMemory(str, buffer, dontAddNull) {
   // Null-terminate the pointer to the HEAP.
   if (!dontAddNull) HEAP8[((buffer)>>0)]=0;
 }
+
 
 function unSign(value, bits, ignore) {
   if (value >= 0) {
@@ -1689,7 +1725,6 @@ var Math_imul = Math.imul;
 var Math_fround = Math.fround;
 var Math_round = Math.round;
 var Math_min = Math.min;
-var Math_max = Math.max;
 var Math_clz32 = Math.clz32;
 var Math_trunc = Math.trunc;
 
@@ -1715,6 +1750,7 @@ function addRunDependency(id) {
   }
 }
 
+
 function removeRunDependency(id) {
   runDependencies--;
   if (Module['monitorRunDependencies']) {
@@ -1732,6 +1768,7 @@ function removeRunDependency(id) {
     }
   }
 }
+
 
 Module["preloadedImages"] = {}; // maps url to image data
 Module["preloadedAudios"] = {}; // maps url to audio data
@@ -2041,7 +2078,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 35552;
+STATICTOP = STATIC_BASE + 35872;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -2050,7 +2087,7 @@ STATICTOP = STATIC_BASE + 35552;
 
 
 
-var STATIC_BUMP = 35552;
+var STATIC_BUMP = 35872;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -2152,6 +2189,8 @@ staticSealed = true; // seal the static portion of memory
 
 var ASSERTIONS = false;
 
+// All functions here should be maybeExported from jsifier.js
+
 /** @type {function(string, boolean=, number=)} */
 function intArrayFromString(stringy, dontAddNull, length) {
   var len = length > 0 ? length : lengthBytesUTF8(stringy)+1;
@@ -2175,6 +2214,8 @@ function intArrayToString(array) {
   }
   return ret.join('');
 }
+
+
 
 
 
@@ -2208,6 +2249,7 @@ var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
 
 Module["asm"] = asm;
+var _emscripten_get_global_libc = Module["_emscripten_get_global_libc"] = function() {  return Module["asm"]["_emscripten_get_global_libc"].apply(null, arguments) };
 var _free = Module["_free"] = function() {  return Module["asm"]["_free"].apply(null, arguments) };
 var _malloc = Module["_malloc"] = function() {  return Module["asm"]["_malloc"].apply(null, arguments) };
 var _memcpy = Module["_memcpy"] = function() {  return Module["asm"]["_memcpy"].apply(null, arguments) };
@@ -2237,58 +2279,6 @@ var dynCall_viiiiiii = Module["dynCall_viiiiiii"] = function() {  return Module[
 // === Auto-generated postamble setup entry stuff ===
 
 Module['asm'] = asm;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2426,7 +2416,15 @@ function abort(what) {
   ABORT = true;
   EXITSTATUS = 1;
 
-  throw 'abort(' + what + '). Build with -s ASSERTIONS=1 for more info.';
+  var extra = '\nIf this abort() is unexpected, build with -s ASSERTIONS=1 which can give more information.';
+
+  var output = 'abort(' + what + ') at ' + stackTrace() + extra;
+  if (abortDecorators) {
+    abortDecorators.forEach(function(decorator) {
+      output = decorator(output, what);
+    });
+  }
+  throw output;
 }
 Module['abort'] = abort;
 
