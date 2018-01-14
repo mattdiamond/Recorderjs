@@ -1,9 +1,10 @@
 "use strict";
 
-var getUserMedia = require("get-user-media-promise");
+var getUserMedia = global.navigator && global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia;
 var AudioContext = global.AudioContext || global.webkitAudioContext;
 
 var Recorder = function( config ){
+  var self = this;
 
   if ( !Recorder.isRecordingSupported() ) {
     throw new Error("Recording is not supported in this browser");
@@ -33,15 +34,15 @@ var Recorder = function( config ){
   this.initWorker();
   this.setMonitorGain( this.config.monitorGain );
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
-  this.scriptProcessorNode.onaudioprocess = ( e ) => {
-    this.encodeBuffers( e.inputBuffer );
+  this.scriptProcessorNode.onaudioprocess = function( e ) {
+    self.encodeBuffers( e.inputBuffer );
   };
 };
 
 
 // Static Methods
 Recorder.isRecordingSupported = function(){
-  return AudioContext && getUserMedia.isSupported;
+  return AudioContext && getUserMedia;
 };
 
 
@@ -80,35 +81,33 @@ Recorder.prototype.encodeBuffers = function( inputBuffer ){
 };
 
 Recorder.prototype.initStream = function(){
-
-  var onStreamInit = ( stream ) => {
-    this.stream = stream;
-    this.sourceNode = this.audioContext.createMediaStreamSource( stream );
-    this.sourceNode.connect( this.scriptProcessorNode );
-    this.sourceNode.connect( this.monitorNode );
+  var self = this;
+  var onStreamInit = function( stream ) {
+    self.stream = stream;
+    self.sourceNode = self.audioContext.createMediaStreamSource( stream );
+    self.sourceNode.connect( self.scriptProcessorNode );
+    self.sourceNode.connect( self.monitorNode );
     return stream;
   };
 
-  var onStreamError = ( e ) => {
+  var onStreamError = function( e ) {
     throw e;
   };
-
-  var constraints = { audio : this.config.mediaTrackConstraints };
 
   if ( this.stream ) {
     return global.Promise.resolve( this.stream );
   }
 
-  return getUserMedia(constraints).then( onStreamInit, onStreamError );
+  return getUserMedia({ audio : this.config.mediaTrackConstraints }).then( onStreamInit, onStreamError );
 };
 
 Recorder.prototype.initWorker = function(){
+  var self = this;
+  var streamPage = function( e ) { self.streamPage( e.data ); };
+  var storePage = function( e ) { self.storePage( e.data ); };
+
   this.encoder = new global.Worker( this.config.encoderPath );
-  this.encoder.addEventListener( "message", this.config.streamPages ? ( e ) => {
-    this.streamPage( e.data );
-  } : ( e ) => {
-    this.storePage( e.data );
-  });
+  this.encoder.addEventListener( "message", this.config.streamPages ? streamPage : storePage );
 };
 
 Recorder.prototype.pause = function(){
