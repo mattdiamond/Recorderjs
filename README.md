@@ -65,13 +65,6 @@ Creates a recorder instance.
 ---------
 #### Instance Methods
 
-
-```js
-rec.initStream()
-```
-
-**initStream** will request the user for permission to access the the audio stream. Returns a Promise which resolves the audio stream when it is ready.
-
 ```js
 rec.pause()
 ```
@@ -91,10 +84,10 @@ rec.setMonitorGain( gain )
 **setMonitorGain** will set the volume on what will be passed to the monitor. Monitor level does not affect the recording volume. Gain is an a-weighted value between `0` and `1`.
 
 ```js
-rec.start()
+rec.start( [sourceNode] )
 ```
 
-**start** will initalize the worker and begin capturing audio if the audio stream is ready. Will raise the `start` event when started.
+**start** will initalize the worker, audio context, and an audio stream and begin capturing audio. Will callback `onstart` when started. Optionally accepts a source node which can be used in place of initializing the microphone stream. For iOS support, `start` needs to be initiated from a user action.
 
 ```js
 rec.stop()
@@ -106,7 +99,7 @@ rec.stop()
 rec.clearStream()
 ```
 
-**clearStream** will stop and delete the stream got from `initStream`, you will only ever call this manually if you have `config.leaveStreamOpen` set to `true`.
+**clearStream** will stop and delete the stream as well as close the audio context. You will only ever call this manually if you have `config.leaveStreamOpen` set to `true`.
 
 
 ---------

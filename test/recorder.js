@@ -66,13 +66,6 @@ describe('Recorder', function(){
       stop: sandbox.stub()
     });
 
-    global.document = {};
-    global.document.createDocumentFragment = sandbox.stub().returns({
-      addEventListener: sandbox.stub(),
-      removeEventListener: sandbox.stub(),
-      dispatchEvent: sandbox.stub()
-    });
-
     global.Worker = sandbox.stub();
     global.Worker.prototype.addEventListener = sandbox.stub();
     global.Worker.prototype.postMessage =  sandbox.stub();
@@ -111,7 +104,6 @@ describe('Recorder', function(){
 
   it('should create an instance without config', function () {
     var rec = new Recorder();
-    expect(global.AudioContext).to.have.been.calledWithNew;
     expect(rec.state).to.equal('inactive');
     expect(rec.config).to.have.property('bufferLength', 4096);
     expect(rec.config).to.have.property('monitorGain', 0);
@@ -127,7 +119,6 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('encoderFrameSize', 20);
     expect(rec.config).to.have.property('resampleQuality', 3);
     expect(rec.config).to.have.property('wavBitDepth', 16);
-    expect(rec.config).to.have.property('wavSampleRate', 44100);
   });
 
   it('should support Recording with Safari Webkit', function () {
@@ -138,7 +129,6 @@ describe('Recorder', function(){
   it('should create an instance with Safari Webkit', function () {
     mockWebkit();
     var rec = new Recorder();
-    expect(global.webkitAudioContext).to.have.been.calledWithNew;
     expect(rec.state).to.equal('inactive');
     expect(rec.config).to.have.property('bufferLength', 4096);
     expect(rec.config).to.have.property('monitorGain', 0);
@@ -154,7 +144,6 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('encoderFrameSize', 20);
     expect(rec.config).to.have.property('resampleQuality', 3);
     expect(rec.config).to.have.property('wavBitDepth', 16);
-    expect(rec.config).to.have.property('wavSampleRate', 44100);
   });
 
   it('should create an instance with config', function () {
@@ -174,7 +163,6 @@ describe('Recorder', function(){
       wavBitDepth: 32
     });
 
-    expect(global.AudioContext).to.have.been.calledWithNew;
     expect(rec.state).to.equal('inactive');
     expect(rec.config).to.have.property('bufferLength', 2048);
     expect(rec.config).to.have.property('monitorGain', 100);
@@ -189,26 +177,42 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('encoderFrameSize', 40);
     expect(rec.config).to.have.property('resampleQuality', 10);
     expect(rec.config).to.have.property('wavBitDepth', 32);
-    expect(rec.config).to.have.property('wavSampleRate', 44100);
   });
 
-  it('should initialize a new audio stream', function () {
+  it('should start recording', function( done ){
     var rec = new Recorder();
- 
-    return rec.initStream().then(function(){
-      expect(rec.stream).to.not.be.undefined;
-      expect(rec.stream).to.have.property('stop');
-      expect(global.navigator.mediaDevices.getUserMedia).to.have.been.calledOnce;
-    });
+    rec.onstart = function(){
+      expect(rec.state).to.equal('recording');
+      expect(rec.sourceNode.connect).to.have.been.calledTwice;
+      expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ 
+        command: 'init',
+        wavSampleRate: 44100,
+        originalSampleRate: 44100
+      });
+      done();
+    };
 
+    rec.start();
+  });
+
+  it('should start recording with a new audio stream', function( done ){
+    var rec = new Recorder();
+    rec.onstart = function(){
+      expect(rec.stream).not.to.be.undefined;
+      expect(rec.stream).to.have.property('stop');
+      expect(rec.sourceNode).not.to.be.undefined;
+      expect(global.navigator.mediaDevices.getUserMedia).to.have.been.calledOnce;
+      expect(rec.audioContext.createMediaStreamSource).to.have.been.calledWith(rec.stream);
+      done();
+    };
+
+    rec.start();
   });
 
   it('should use the existing audio stream if already initialized', function () {
     var rec = new Recorder();
     return rec.initStream().then(function(){
       return rec.initStream().then(function(){
-        expect(rec.stream).to.not.be.undefined;
-        expect(rec.stream).to.have.property('stop');
         expect(global.navigator.mediaDevices.getUserMedia).to.have.been.calledOnce;
       });
     });
@@ -241,17 +245,6 @@ describe('Recorder', function(){
       expect(stopTrack1).to.have.been.calledOnce;
       expect(stopTrack2).to.have.been.calledOnce;
       expect(rec.stream).to.be.undefined;
-    });
-  });
-
-  it('should start recording', function () {
-    var rec = new Recorder();
-    return rec.initStream().then(function(){
-      rec.start();
-      expect(rec.state).to.equal('recording');
-      expect(rec.scriptProcessorNode.connect).to.have.been.calledWith( rec.audioContext.destination );
-      expect(rec.onstart).to.have.been.calledOnce;
-      expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ command: 'init' });
     });
   });
 

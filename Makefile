@@ -1,15 +1,14 @@
 INPUT_DIR=./src
 OUTPUT_DIR=./dist
-OUTPUT_DIR_UNMINIFIED=./dist/unminified
 EMCC_OPTS=-O3 --llvm-lto 1 --memory-init-file 0 -s NO_DYNAMIC_EXECUTION=1 -s NO_FILESYSTEM=1 -s WASM=1
 DEFAULT_EXPORTS:='_malloc','_free'
 
 LIBOPUS_ENCODER_SRC=$(INPUT_DIR)/encoderWorker.js
 LIBOPUS_DECODER_SRC=$(INPUT_DIR)/decoderWorker.js
 LIBOPUS_ENCODER_MIN=$(OUTPUT_DIR)/encoderWorker.min.js
-LIBOPUS_ENCODER=$(OUTPUT_DIR_UNMINIFIED)/encoderWorker.js
+LIBOPUS_ENCODER=$(OUTPUT_DIR)/encoderWorker.js
 LIBOPUS_DECODER_MIN=$(OUTPUT_DIR)/decoderWorker.min.js
-LIBOPUS_DECODER=$(OUTPUT_DIR_UNMINIFIED)/decoderWorker.js
+LIBOPUS_DECODER=$(OUTPUT_DIR)/decoderWorker.js
 LIBOPUS_DIR=./opus
 LIBOPUS_OBJ=$(LIBOPUS_DIR)/.libs/libopus.a
 LIBOPUS_ENCODER_EXPORTS:='_opus_encoder_create','_opus_encode_float','_opus_encoder_ctl'
@@ -20,11 +19,11 @@ LIBSPEEXDSP_OBJ=$(LIBSPEEXDSP_DIR)/libspeexdsp/.libs/libspeexdsp.a
 LIBSPEEXDSP_EXPORTS:='_speex_resampler_init','_speex_resampler_process_interleaved_float','_speex_resampler_destroy'
 
 RECORDER_MIN=$(OUTPUT_DIR)/recorder.min.js
-RECORDER=$(OUTPUT_DIR_UNMINIFIED)/recorder.js
+RECORDER=$(OUTPUT_DIR)/recorder.js
 RECORDER_SRC=$(INPUT_DIR)/recorder.js
 
 WAVE_WORKER_MIN=$(OUTPUT_DIR)/waveWorker.min.js
-WAVE_WORKER=$(OUTPUT_DIR_UNMINIFIED)/waveWorker.js
+WAVE_WORKER=$(OUTPUT_DIR)/waveWorker.js
 WAVE_WORKER_SRC=$(INPUT_DIR)/waveWorker.js
 
 
@@ -33,7 +32,6 @@ default: $(LIBOPUS_ENCODER) $(LIBOPUS_ENCODER_MIN) $(LIBOPUS_DECODER) $(LIBOPUS_
 clean:
 	rm -rf $(OUTPUT_DIR) $(LIBOPUS_DIR) $(LIBSPEEXDSP_DIR)
 	mkdir $(OUTPUT_DIR)
-	mkdir $(OUTPUT_DIR_UNMINIFIED)
 
 test:
 	# Tests need to run relative to `dist` folder for wasm file import

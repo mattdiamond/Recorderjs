@@ -4,14 +4,12 @@ var getUserMedia = global.navigator && global.navigator.mediaDevices && global.n
 var AudioContext = global.AudioContext || global.webkitAudioContext;
 
 var Recorder = function( config ){
-  var self = this;
 
   if ( !Recorder.isRecordingSupported() ) {
     throw new Error("Recording is not supported in this browser");
   }
 
   this.state = "inactive";
-  this.monitorNode = this.audioContext.createGain();
   this.config = Object.assign({
     bufferLength: 4096,
     encoderApplication: 2049,
@@ -22,33 +20,22 @@ var Recorder = function( config ){
     maxBuffersPerPage: 40,
     monitorGain: 0,
     numberOfChannels: 1,
-    originalSampleRate: this.audioContext.sampleRate,
     resampleQuality: 3,
     mediaTrackConstraints: true,
     streamPages: false,
     wavBitDepth: 16,
-    wavSampleRate: this.audioContext.sampleRate
   }, config );
 
   this.initWorker();
-  this.setMonitorGain( this.config.monitorGain );
-  this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
-  this.scriptProcessorNode.onaudioprocess = function( e ) {
-    self.encodeBuffers( e.inputBuffer );
-  };
 };
 
 
 // Static Methods
 Recorder.isRecordingSupported = function(){
-  return AudioContext && getUserMedia;
+  return AudioContext && getUserMedia && global.WebAssembly;
 };
 
-
-// Instance Methods
-Recorder.prototype.audioContext = Recorder.isRecordingSupported() && new AudioContext();
-
-Recorder.prototype.clearStream = function() {
+Recorder.prototype.clearStream = function(){
   if ( this.stream ) {
 
     if ( this.stream.getTracks ) {
@@ -62,6 +49,11 @@ Recorder.prototype.clearStream = function() {
     }
 
     delete this.stream;
+  }
+
+  if ( this.audioContext ){
+    this.audioContext.close();
+    delete this.audioContext;
   }
 };
 
@@ -79,25 +71,24 @@ Recorder.prototype.encodeBuffers = function( inputBuffer ){
   }
 };
 
+Recorder.prototype.getAudioContext = function( sourceNode ){
+  if (sourceNode && sourceNode.context) {
+    return sourceNode.context;
+  }
+
+  if ( this.audioContext ) {
+    return this.audioContext;
+  }
+
+  return new AudioContext();
+};
+
 Recorder.prototype.initStream = function(){
-  var self = this;
-  var onStreamInit = function( stream ) {
-    self.stream = stream;
-    self.sourceNode = self.audioContext.createMediaStreamSource( stream );
-    self.sourceNode.connect( self.scriptProcessorNode );
-    self.sourceNode.connect( self.monitorNode );
-    return stream;
-  };
-
-  var onStreamError = function( e ) {
-    throw e;
-  };
-
   if ( this.stream ) {
     return global.Promise.resolve( this.stream );
   }
 
-  return getUserMedia({ audio : this.config.mediaTrackConstraints }).then( onStreamInit, onStreamError );
+  return getUserMedia({ audio : this.config.mediaTrackConstraints });
 };
 
 Recorder.prototype.initWorker = function(){
@@ -125,26 +116,55 @@ Recorder.prototype.resume = function() {
   }
 };
 
-Recorder.prototype.setMonitorGain = function( gain ){
-  this.monitorNode.gain.setTargetAtTime(gain, this.audioContext.currentTime, 0.01);
+Recorder.prototype.setupAudioGraph = function(){
+  var self = this;
+  this.monitorNode = this.audioContext.createGain();
+  this.setMonitorGain( this.config.monitorGain );
+  this.monitorNode.connect( this.audioContext.destination );
+  this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
+  this.scriptProcessorNode.connect( this.audioContext.destination );
+  this.scriptProcessorNode.onaudioprocess = function( e ) {
+    self.encodeBuffers( e.inputBuffer );
+  };
 };
 
-Recorder.prototype.start = function(){
-  if ( this.state === "inactive" && this.stream ) {
+Recorder.prototype.setMonitorGain = function( gain ){
+  this.config.monitorGain = gain;
 
-    this.encoder.postMessage(Object.assign({
-      command: 'init'
-    }, this.config));
+  if ( this.monitorNode && this.audioContext ) {
+    this.monitorNode.gain.setTargetAtTime(gain, this.audioContext.currentTime, 0.01);
+  }
+};
 
-    // First buffer can contain old data. Don't encode it.
-    this.encodeBuffers = function(){
-      delete this.encodeBuffers;
+Recorder.prototype.start = function( sourceNode ){
+  if ( this.state === "inactive" ) {
+    var self = this;
+    var onSourceReady = function( sourceNode ){
+      self.sourceNode = sourceNode;
+      self.sourceNode.connect( self.monitorNode );
+      self.sourceNode.connect( self.scriptProcessorNode );
+      self.onstart();
     };
 
     this.state = "recording";
-    this.monitorNode.connect( this.audioContext.destination );
-    this.scriptProcessorNode.connect( this.audioContext.destination );
-    this.onstart();
+    this.audioContext = this.getAudioContext( sourceNode );
+    this.setupAudioGraph();
+    this.encoder.postMessage( Object.assign({
+      command: 'init',
+      originalSampleRate: this.audioContext.sampleRate,
+      wavSampleRate: this.audioContext.sampleRate
+    }, this.config));
+
+    if ( sourceNode && sourceNode.context ) {
+      onSourceReady( sourceNode );
+    }
+
+    else {
+      this.initStream().then( function( stream ){
+        self.stream = stream;
+        onSourceReady( self.audioContext.createMediaStreamSource( stream ) );
+      });
+    }
   }
 };
 
@@ -153,6 +173,7 @@ Recorder.prototype.stop = function(){
     this.state = "inactive";
     this.monitorNode.disconnect();
     this.scriptProcessorNode.disconnect();
+    this.sourceNode.disconnect();
 
     if ( !this.config.leaveStreamOpen ) {
       this.clearStream();
