@@ -1,7 +1,7 @@
 # Opus & Wave Recorder
 
 A javascript library to encode the output of Web Audio API nodes in Ogg Opus or WAV format using WebAssembly.
-Encoded and muxed audio will be returned as typedArray in `ondataAvailable`.
+
 
 #### Libraries Used
 
@@ -10,7 +10,7 @@ Encoded and muxed audio will be returned as typedArray in `ondataAvailable`.
 
 #### Required Files
 
-The required files are in the `dist` folder. Unminified files are in `dist/unminified`.
+The required files are in the `dist` folder. Unminified sources are in `dist-unminified`.
 
 
 ---------
@@ -87,7 +87,7 @@ rec.setMonitorGain( gain )
 rec.start( [sourceNode] )
 ```
 
-**start** will initalize the worker, audio context, and an audio stream and begin capturing audio. Will callback `onstart` when started. Optionally accepts a source node which can be used in place of initializing the microphone stream. For iOS support, `start` needs to be initiated from a user action.
+**start** Initalizes the worker, audio context, and an audio stream and begin capturing audio. Returns a promise which resolves when recording is started. Will callback `onstart` when started. Optionally accepts a source node which can be used in place of initializing the microphone stream. For iOS support, `start` needs to be initiated from a user action.
 
 ```js
 rec.stop()
@@ -171,6 +171,7 @@ Unsupported:
 - macOS Safari v11 native opus playback not yet supported
 - iOS Safari v11 native opus playback not yet supported
 - Microsoft Edge native opus playback not yet supported
+- iOS Safari requires `rec.start()` to be called from a user initiated event
 
 
 ---------

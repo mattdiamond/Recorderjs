@@ -71,24 +71,32 @@ Recorder.prototype.encodeBuffers = function( inputBuffer ){
   }
 };
 
-Recorder.prototype.getAudioContext = function( sourceNode ){
+Recorder.prototype.initAudioContext = function( sourceNode ){
   if (sourceNode && sourceNode.context) {
     return sourceNode.context;
   }
 
-  if ( this.audioContext ) {
-    return this.audioContext;
+  if ( !this.audioContext ) {
+    this.audioContext = new AudioContext();
   }
 
-  return new AudioContext();
+  return this.audioContext;
 };
 
-Recorder.prototype.initStream = function(){
-  if ( this.stream ) {
-    return global.Promise.resolve( this.stream );
+Recorder.prototype.initSourceNode = function( sourceNode ){
+  if ( sourceNode && sourceNode.context ) {
+    return global.Promise.resolve( sourceNode );
   }
 
-  return getUserMedia({ audio : this.config.mediaTrackConstraints });
+  if ( this.stream && this.sourceNode ) {
+    return global.Promise.resolve( this.sourceNode );
+  }
+
+  var self = this;
+  return getUserMedia({ audio : this.config.mediaTrackConstraints }).then( function( stream ){
+    self.stream = stream;
+    return self.audioContext.createMediaStreamSource( stream );
+  });
 };
 
 Recorder.prototype.initWorker = function(){
@@ -139,32 +147,22 @@ Recorder.prototype.setMonitorGain = function( gain ){
 Recorder.prototype.start = function( sourceNode ){
   if ( this.state === "inactive" ) {
     var self = this;
-    var onSourceReady = function( sourceNode ){
-      self.sourceNode = sourceNode;
-      self.sourceNode.connect( self.monitorNode );
-      self.sourceNode.connect( self.scriptProcessorNode );
-      self.onstart();
-    };
-
     this.state = "recording";
-    this.audioContext = this.getAudioContext( sourceNode );
-    this.setupAudioGraph();
+    this.initAudioContext( sourceNode );
+
     this.encoder.postMessage( Object.assign({
       command: 'init',
       originalSampleRate: this.audioContext.sampleRate,
       wavSampleRate: this.audioContext.sampleRate
     }, this.config));
 
-    if ( sourceNode && sourceNode.context ) {
-      onSourceReady( sourceNode );
-    }
-
-    else {
-      this.initStream().then( function( stream ){
-        self.stream = stream;
-        onSourceReady( self.audioContext.createMediaStreamSource( stream ) );
-      });
-    }
+    this.setupAudioGraph();
+    return this.initSourceNode( sourceNode ).then( function( sourceNode ){
+      self.sourceNode = sourceNode;
+      self.sourceNode.connect( self.monitorNode );
+      self.sourceNode.connect( self.scriptProcessorNode );
+      self.onstart();
+    });
   }
 };
 

@@ -55,6 +55,7 @@ describe('Recorder', function(){
       disconnect: sandbox.stub()
     });
     global.AudioContext.prototype.sampleRate = 44100;
+    global.AudioContext.prototype.close = sandbox.stub();
 
     global.Event = sandbox.stub();
     global.CustomEvent = sandbox.stub();
@@ -80,15 +81,18 @@ describe('Recorder', function(){
     global.webkitAudioContext = sandbox.stub();
     global.webkitAudioContext.prototype.createGain = sandbox.stub().returns({ 
       connect: sandbox.stub(),
+      disconnect: sandbox.stub(),
       gain: {
         setTargetAtTime: sandbox.stub()
       }
     });
     global.webkitAudioContext.prototype.createScriptProcessor = sandbox.stub().returns({
-      connect: sandbox.stub()
+      connect: sandbox.stub(),
+      disconnect: sandbox.stub()
     });
     global.webkitAudioContext.prototype.createMediaStreamSource = sandbox.stub().returns({ 
-      connect: sandbox.stub()
+      connect: sandbox.stub(),
+      disconnect: sandbox.stub()
     });
     global.webkitAudioContext.prototype.sampleRate = 44100;
     requireRecorder();
@@ -179,9 +183,9 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('wavBitDepth', 32);
   });
 
-  it('should start recording', function( done ){
+  it('should start recording', function(){
     var rec = new Recorder();
-    rec.onstart = function(){
+    return rec.start().then( function(){
       expect(rec.state).to.equal('recording');
       expect(rec.sourceNode.connect).to.have.been.calledTwice;
       expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ 
@@ -189,30 +193,28 @@ describe('Recorder', function(){
         wavSampleRate: 44100,
         originalSampleRate: 44100
       });
-      done();
-    };
-
-    rec.start();
+    });
   });
 
-  it('should start recording with a new audio stream', function( done ){
+  it('should start recording with a new audio stream', function(){
     var rec = new Recorder();
-    rec.onstart = function(){
+    return rec.start().then( function(){
       expect(rec.stream).not.to.be.undefined;
       expect(rec.stream).to.have.property('stop');
       expect(rec.sourceNode).not.to.be.undefined;
       expect(global.navigator.mediaDevices.getUserMedia).to.have.been.calledOnce;
       expect(rec.audioContext.createMediaStreamSource).to.have.been.calledWith(rec.stream);
-      done();
-    };
-
-    rec.start();
+    });
   });
 
-  it('should use the existing audio stream if already initialized', function () {
-    var rec = new Recorder();
-    return rec.initStream().then(function(){
-      return rec.initStream().then(function(){
+  it('should use the existing audio stream if already initialized', function(){
+    var rec = new Recorder({
+      leaveStreamOpen: true
+    });
+
+    return rec.start().then( function(){
+      rec.stop();
+      return rec.start().then( function(){
         expect(global.navigator.mediaDevices.getUserMedia).to.have.been.calledOnce;
       });
     });
@@ -220,10 +222,20 @@ describe('Recorder', function(){
 
   it('should clear the audio stream', function () {
     var rec = new Recorder();
-    return rec.initStream().then(function(){
+    return rec.start().then(function(){
       expect(rec.stream).to.not.be.undefined;
-      rec.clearStream();
+      rec.stop();
       expect(rec.stream).to.be.undefined;
+    });
+  });
+
+  it('should close the audio context', function () {
+    var rec = new Recorder();
+    return rec.start().then(function(){
+      expect(rec.audioContext).to.not.be.undefined;
+      rec.stop();
+      expect(rec.audioContext).to.be.undefined;
+      expect(global.AudioContext.prototype.close).to.have.been.calledOnce;
     });
   });
 
@@ -239,9 +251,9 @@ describe('Recorder', function(){
 
     requireRecorder();
     var rec = new Recorder();
-    return rec.initStream().then(function(){
+    return rec.start().then(function(){
       expect(rec.stream).to.not.be.undefined;
-      rec.clearStream();
+      rec.stop();
       expect(stopTrack1).to.have.been.calledOnce;
       expect(stopTrack2).to.have.been.calledOnce;
       expect(rec.stream).to.be.undefined;
@@ -251,13 +263,15 @@ describe('Recorder', function(){
   it('should stop recording', function () {
     var rec = new Recorder();
     var clearStreamSpy = sinon.spy(rec, 'clearStream');
-    return rec.initStream().then(function(){
-      rec.start();
+    return rec.start().then(function(){
       rec.stop();
       expect(rec.state).to.equal('inactive');
       expect(rec.monitorNode.disconnect).to.have.been.calledOnce;
       expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
+      expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
       expect(clearStreamSpy).to.have.been.calledOnce;
+      expect(rec.stream).to.be.undefined;
+      expect(rec.audioContext).to.be.undefined;
       expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
     });
   });
@@ -267,34 +281,29 @@ describe('Recorder', function(){
       leaveStreamOpen: true
     });
     var clearStreamSpy = sinon.spy(rec, 'clearStream');
-    return rec.initStream().then(function(){
-      rec.start();
+    return rec.start().then(function(){
       rec.stop();
       expect(rec.state).to.equal('inactive');
       expect(rec.monitorNode.disconnect).to.have.been.calledOnce;
       expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
+      expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
       expect(clearStreamSpy).not.to.have.been.called;
+      expect(rec.stream).not.to.be.undefined;
+      expect(rec.audioContext).not.to.be.undefined;
       expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
     });
   });
 
-  it('should call initStream promise catch', function () {
+  it('should call initSourceNode promise catch', function () {
     global.navigator.mediaDevices.getUserMedia = () => Promise.reject(new Error('PermissionDeniedError'));
     requireRecorder();
     var rec = new Recorder();
-    return rec.initStream().then(() => { 
+    return rec.initSourceNode().then(() => { 
       throw new Error('Unexpected promise resolving.');
     }, ev => {
       expect(ev).instanceof(Error);
       expect(ev.message).to.equal('PermissionDeniedError')
     })
-  });
-
-  it('should set monitoring gain on init', function () {
-    var rec = new Recorder();
-    return rec.initStream().then(function(){
-      expect(rec.monitorNode.gain.setTargetAtTime).to.have.been.calledOnce;
-    });
   });
 
   it('should init worker', function () {
@@ -316,11 +325,5 @@ describe('Recorder', function(){
     expect(global.Worker).to.have.been.calledOnce;
     rec.streamPage(null);
     expect(global.Worker).to.have.been.calledTwice;
-  });
-
-  it('should share audioContext', function () {
-    var rec1 = new Recorder();
-    var rec2 = new Recorder();
-    expect(rec1.audioContext).to.equal(rec2.audioContext);
   });
 });
