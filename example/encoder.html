@@ -99,7 +99,7 @@
       };
 
       recorder.onstreamerror = function(e){
-        screenLogger('Error encountered: ' + e.error.name );
+        screenLogger('Error encountered: ' + e.message );
       };
 
       recorder.ondataavailable = function( typedArray ){
