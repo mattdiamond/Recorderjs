@@ -86,6 +86,20 @@ Recorder.prototype.initAudioContext = function( sourceNode ){
   return this.audioContext;
 };
 
+Recorder.prototype.initAudioGraph = function(){
+  var self = this;
+
+  this.monitorNode = this.audioContext.createGain();
+  this.setMonitorGain( this.config.monitorGain );
+  this.monitorNode.connect( this.audioContext.destination );
+
+  this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
+  this.scriptProcessorNode.connect( this.audioContext.destination );
+  this.scriptProcessorNode.onaudioprocess = function( e ) {
+    self.encodeBuffers( e.inputBuffer );
+  };
+};
+
 Recorder.prototype.initSourceNode = function( sourceNode ){
   if ( sourceNode && sourceNode.context ) {
     return global.Promise.resolve( sourceNode );
@@ -127,20 +141,6 @@ Recorder.prototype.resume = function() {
   }
 };
 
-Recorder.prototype.setupAudioGraph = function(){
-  var self = this;
-
-  this.monitorNode = this.audioContext.createGain();
-  this.setMonitorGain( this.config.monitorGain );
-  this.monitorNode.connect( this.audioContext.destination );
-
-  this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
-  this.scriptProcessorNode.connect( this.audioContext.destination );
-  this.scriptProcessorNode.onaudioprocess = function( e ) {
-    self.encodeBuffers( e.inputBuffer );
-  };
-};
-
 Recorder.prototype.setMonitorGain = function( gain ){
   this.config.monitorGain = gain;
 
@@ -152,16 +152,21 @@ Recorder.prototype.setMonitorGain = function( gain ){
 Recorder.prototype.start = function( sourceNode ){
   if ( this.state === "inactive" ) {
     var self = this;
+
     this.state = "recording";
     this.initAudioContext( sourceNode );
-
     this.encoder.postMessage( Object.assign({
       command: 'init',
       originalSampleRate: this.audioContext.sampleRate,
       wavSampleRate: this.audioContext.sampleRate
     }, this.config));
 
-    this.setupAudioGraph();
+    // First buffer can contain old data. Don't encode it.
+    this.encodeBuffers = function(){
+      delete this.encodeBuffers;
+    };
+
+    this.initAudioGraph();
     return this.initSourceNode( sourceNode ).then( function( sourceNode ){
       self.sourceNode = sourceNode;
       self.sourceNode.connect( self.monitorNode );
