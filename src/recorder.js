@@ -2,6 +2,8 @@
 
 var AudioContext = global.AudioContext || global.webkitAudioContext;
 
+
+// Constructor
 var Recorder = function( config ){
 
   if ( !Recorder.isRecordingSupported() ) {
@@ -35,11 +37,12 @@ Recorder.isRecordingSupported = function(){
 };
 
 
+// Instance Methods
 Recorder.prototype.clearStream = function(){
   if ( this.stream ) {
 
     if ( this.stream.getTracks ) {
-      this.stream.getTracks().forEach(function ( track ) {
+      this.stream.getTracks().forEach( function( track ){
         track.stop();
       });
     }
@@ -212,7 +215,7 @@ Recorder.prototype.streamPage = function( page ) {
   }
 
   else {
-    this.ondataavailable(page);
+    this.ondataavailable( page );
   }
 };
 
