@@ -52,7 +52,6 @@
   <pre id="log"></pre>
 
   <script>
-
     start.addEventListener( "click", function(){ recorder.start(); });
     pause.addEventListener( "click", function(){ recorder.pause(); });
     resume.addEventListener( "click", function(){ recorder.resume(); });
@@ -72,25 +71,25 @@
 
     recorder.onstart = function(e){
       screenLogger('Recorder is started');
-      init.disabled = start.disabled = resume.disabled = true;
+      start.disabled = resume.disabled = true;
       pause.disabled = stopButton.disabled = false;
     };
 
     recorder.onstop = function(e){
       screenLogger('Recorder is stopped');
-      init.disabled = false;
+      false;
       pause.disabled = resume.disabled = stopButton.disabled = start.disabled = true;
     };
 
     recorder.onpause = function(e){
       screenLogger('Recorder is paused');
-      init.disabled = pause.disabled = start.disabled = true;
+      pause.disabled = start.disabled = true;
       resume.disabled = stopButton.disabled = false;
     };
 
     recorder.onresume = function(e){
       screenLogger('Recorder is resuming');
-      init.disabled = start.disabled = resume.disabled = true;
+      start.disabled = resume.disabled = true;
       pause.disabled = stopButton.disabled = false;
     };
 
@@ -98,7 +97,7 @@
       screenLogger('Error encountered: ' + e.error.name );
     };
 
-    recorder.ondataavailable", function(e){
+    recorder.ondataavailable = function(e){
       var dataBlob = new Blob( [e.detail], { type: 'audio/ogg' } );
       var fileName = new Date().toISOString() + ".opus";
       var url = URL.createObjectURL( dataBlob );
@@ -117,7 +116,7 @@
       li.appendChild(audio);
 
       recordingslist.appendChild(li);
-    });
+    };
 
     function screenLogger(text, data) {
       log.innerHTML += "\n" + text + " " + (data || '');
