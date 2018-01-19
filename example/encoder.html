@@ -52,76 +52,77 @@
   <pre id="log"></pre>
 
   <script>
+    function screenLogger(text, data) {
+      log.innerHTML += "\n" + text + " " + (data || '');
+    }
+
     start.addEventListener( "click", function(){ recorder.start(); });
     pause.addEventListener( "click", function(){ recorder.pause(); });
     resume.addEventListener( "click", function(){ recorder.resume(); });
     stopButton.addEventListener( "click", function(){ recorder.stop(); });
 
     if (!Recorder.isRecordingSupported()) {
-      return screenLogger("Recording features are not supported in your browser.");
+      screenLogger("Recording features are not supported in your browser.");
     }
 
-    var recorder = new Recorder({
-      monitorGain: parseInt(monitorGain.value, 10),
-      numberOfChannels: parseInt(numberOfChannels.value, 10),
-      encoderBitRate: parseInt(bitRate.value,10),
-      encoderSampleRate: parseInt(encoderSampleRate.value,10),
-      encoderPath: "../dist/encoderWorker.min.js"
-    });
+    else {
+      var recorder = new Recorder({
+        monitorGain: parseInt(monitorGain.value, 10),
+        numberOfChannels: parseInt(numberOfChannels.value, 10),
+        encoderBitRate: parseInt(bitRate.value,10),
+        encoderSampleRate: parseInt(encoderSampleRate.value,10),
+        encoderPath: "../dist/encoderWorker.min.js"
+      });
 
-    recorder.onstart = function(e){
-      screenLogger('Recorder is started');
-      start.disabled = resume.disabled = true;
-      pause.disabled = stopButton.disabled = false;
-    };
+      recorder.onstart = function(e){
+        screenLogger('Recorder is started');
+        start.disabled = resume.disabled = true;
+        pause.disabled = stopButton.disabled = false;
+      };
 
-    recorder.onstop = function(e){
-      screenLogger('Recorder is stopped');
-      false;
-      pause.disabled = resume.disabled = stopButton.disabled = start.disabled = true;
-    };
+      recorder.onstop = function(e){
+        screenLogger('Recorder is stopped');
+        false;
+        pause.disabled = resume.disabled = stopButton.disabled = start.disabled = true;
+      };
 
-    recorder.onpause = function(e){
-      screenLogger('Recorder is paused');
-      pause.disabled = start.disabled = true;
-      resume.disabled = stopButton.disabled = false;
-    };
+      recorder.onpause = function(e){
+        screenLogger('Recorder is paused');
+        pause.disabled = start.disabled = true;
+        resume.disabled = stopButton.disabled = false;
+      };
 
-    recorder.onresume = function(e){
-      screenLogger('Recorder is resuming');
-      start.disabled = resume.disabled = true;
-      pause.disabled = stopButton.disabled = false;
-    };
+      recorder.onresume = function(e){
+        screenLogger('Recorder is resuming');
+        start.disabled = resume.disabled = true;
+        pause.disabled = stopButton.disabled = false;
+      };
 
-    recorder.onstreamerror = function(e){
-      screenLogger('Error encountered: ' + e.error.name );
-    };
+      recorder.onstreamerror = function(e){
+        screenLogger('Error encountered: ' + e.error.name );
+      };
 
-    recorder.ondataavailable = function(e){
-      var dataBlob = new Blob( [e.detail], { type: 'audio/ogg' } );
-      var fileName = new Date().toISOString() + ".opus";
-      var url = URL.createObjectURL( dataBlob );
+      recorder.ondataavailable = function(e){
+        var dataBlob = new Blob( [e.detail], { type: 'audio/ogg' } );
+        var fileName = new Date().toISOString() + ".opus";
+        var url = URL.createObjectURL( dataBlob );
 
-      var audio = document.createElement('audio');
-      audio.controls = true;
-      audio.src = url;
+        var audio = document.createElement('audio');
+        audio.controls = true;
+        audio.src = url;
 
-      var link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      link.innerHTML = link.download;
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.innerHTML = link.download;
 
-      var li = document.createElement('li');
-      li.appendChild(link);
-      li.appendChild(audio);
+        var li = document.createElement('li');
+        li.appendChild(link);
+        li.appendChild(audio);
 
-      recordingslist.appendChild(li);
-    };
-
-    function screenLogger(text, data) {
-      log.innerHTML += "\n" + text + " " + (data || '');
+        recordingslist.appendChild(li);
+      };
     }
-
   </script>
 </body>
 </html>
