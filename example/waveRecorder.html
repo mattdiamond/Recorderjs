@@ -96,7 +96,7 @@
         screenLogger('Error encountered: ' + e.name );
       };
 
-      recorder.ondataAvailable = function( typedArray ){
+      recorder.ondataavailable = function( typedArray ){
         var dataBlob = new Blob( typedArray, { type: 'audio/wav' } );
         var fileName = new Date().toISOString() + ".wav";
         var url = URL.createObjectURL( dataBlob );
