@@ -21,19 +21,11 @@
   "license": "MIT",
   "main": "dist/recorder.min.js",
   "files": [
-    "dist/recorder.js",
     "dist/recorder.min.js",
-    "dist/encoderWorker.js",
     "dist/encoderWorker.min.js",
     "dist/encoderWorker.min.wasm",
-    "dist/encoderWorker.wasm",
-    "dist/encoderWorker.wast",
-    "dist/decoderWorker.js",
     "dist/decoderWorker.min.js",
     "dist/decoderWorker.min.wasm",
-    "dist/decoderWorker.wasm",
-    "dist/decoderWorker.wast",
-    "dist/waveWorker.js",
     "dist/waveWorker.min.js"
   ],
   "repository": {
