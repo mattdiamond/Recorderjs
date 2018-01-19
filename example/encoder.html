@@ -40,8 +40,7 @@
   </div>
 
   <h2>Commands</h2>
-  <button id="init">init</button>
-  <button id="start" disabled>start</button>
+  <button id="start">start</button>
   <button id="pause" disabled>pause</button>
   <button id="resume" disabled>resume</button>
   <button id="stopButton" disabled>stop</button>
@@ -53,82 +52,71 @@
   <pre id="log"></pre>
 
   <script>
-    var recorder;
 
     start.addEventListener( "click", function(){ recorder.start(); });
     pause.addEventListener( "click", function(){ recorder.pause(); });
     resume.addEventListener( "click", function(){ recorder.resume(); });
     stopButton.addEventListener( "click", function(){ recorder.stop(); });
-    init.addEventListener( "click", function(){
 
-      if (!Recorder.isRecordingSupported()) {
-        return screenLogger("Recording features are not supported in your browser.");
-      }
+    if (!Recorder.isRecordingSupported()) {
+      return screenLogger("Recording features are not supported in your browser.");
+    }
 
-      recorder = new Recorder({
-        monitorGain: parseInt(monitorGain.value, 10),
-        numberOfChannels: parseInt(numberOfChannels.value, 10),
-        encoderBitRate: parseInt(bitRate.value,10),
-        encoderSampleRate: parseInt(encoderSampleRate.value,10),
-        encoderPath: "../dist/encoderWorker.min.js"
-      });
+    var recorder = new Recorder({
+      monitorGain: parseInt(monitorGain.value, 10),
+      numberOfChannels: parseInt(numberOfChannels.value, 10),
+      encoderBitRate: parseInt(bitRate.value,10),
+      encoderSampleRate: parseInt(encoderSampleRate.value,10),
+      encoderPath: "../dist/encoderWorker.min.js"
+    });
 
-      recorder.addEventListener( "start", function(e){
-        screenLogger('Recorder is started');
-        init.disabled = start.disabled = resume.disabled = true;
-        pause.disabled = stopButton.disabled = false;
-      });
+    recorder.onstart = function(e){
+      screenLogger('Recorder is started');
+      init.disabled = start.disabled = resume.disabled = true;
+      pause.disabled = stopButton.disabled = false;
+    };
 
-      recorder.addEventListener( "stop", function(e){
-        screenLogger('Recorder is stopped');
-        init.disabled = false;
-        pause.disabled = resume.disabled = stopButton.disabled = start.disabled = true;
-      });
+    recorder.onstop = function(e){
+      screenLogger('Recorder is stopped');
+      init.disabled = false;
+      pause.disabled = resume.disabled = stopButton.disabled = start.disabled = true;
+    };
 
-      recorder.addEventListener( "pause", function(e){
-        screenLogger('Recorder is paused');
-        init.disabled = pause.disabled = start.disabled = true;
-        resume.disabled = stopButton.disabled = false;
-      });
+    recorder.onpause = function(e){
+      screenLogger('Recorder is paused');
+      init.disabled = pause.disabled = start.disabled = true;
+      resume.disabled = stopButton.disabled = false;
+    };
 
-      recorder.addEventListener( "resume", function(e){
-        screenLogger('Recorder is resuming');
-        init.disabled = start.disabled = resume.disabled = true;
-        pause.disabled = stopButton.disabled = false;
-      });
+    recorder.onresume = function(e){
+      screenLogger('Recorder is resuming');
+      init.disabled = start.disabled = resume.disabled = true;
+      pause.disabled = stopButton.disabled = false;
+    };
 
-      recorder.addEventListener( "streamError", function(e){
-        screenLogger('Error encountered: ' + e.error.name );
-      });
+    recorder.onstreamerror = function(e){
+      screenLogger('Error encountered: ' + e.error.name );
+    };
 
-      recorder.addEventListener( "streamReady", function(e){
-        init.disabled = pause.disabled = resume.disabled = stopButton.disabled = true;
-        start.disabled = false;
-        screenLogger('Audio stream is ready.');
-      });
+    recorder.ondataavailable", function(e){
+      var dataBlob = new Blob( [e.detail], { type: 'audio/ogg' } );
+      var fileName = new Date().toISOString() + ".opus";
+      var url = URL.createObjectURL( dataBlob );
 
-      recorder.addEventListener( "dataAvailable", function(e){
-        var dataBlob = new Blob( [e.detail], { type: 'audio/ogg' } );
-        var fileName = new Date().toISOString() + ".opus";
-        var url = URL.createObjectURL( dataBlob );
+      var audio = document.createElement('audio');
+      audio.controls = true;
+      audio.src = url;
 
-        var audio = document.createElement('audio');
-        audio.controls = true;
-        audio.src = url;
+      var link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.innerHTML = link.download;
 
-        var link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        link.innerHTML = link.download;
+      var li = document.createElement('li');
+      li.appendChild(link);
+      li.appendChild(audio);
 
-        var li = document.createElement('li');
-        li.appendChild(link);
-        li.appendChild(audio);
-
-        recordingslist.appendChild(li);
-      });
-
-      recorder.initStream();
+      recordingslist.appendChild(li);
     });
 
     function screenLogger(text, data) {

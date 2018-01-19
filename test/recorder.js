@@ -35,6 +35,7 @@ describe('Recorder', function(){
     sinon.spy(Recorder.prototype, 'onstop');
     sinon.spy(Recorder.prototype, 'onpause');
     sinon.spy(Recorder.prototype, 'onresume');
+    sinon.spy(Recorder.prototype, 'onstreamerror');
   };
 
   beforeEach(function(){
@@ -294,16 +295,18 @@ describe('Recorder', function(){
     });
   });
 
-  it('should call initSourceNode promise catch', function () {
+  it('should call start promise catch', function () {
     global.navigator.mediaDevices.getUserMedia = () => Promise.reject(new Error('PermissionDeniedError'));
     requireRecorder();
+
     var rec = new Recorder();
-    return rec.initSourceNode().then(() => { 
+    return rec.start().then( function(){ 
       throw new Error('Unexpected promise resolving.');
-    }, ev => {
+    }, function( ev ){
       expect(ev).instanceof(Error);
       expect(ev.message).to.equal('PermissionDeniedError')
-    })
+      expect(rec.onstreamerror).to.have.been.calledOnce;
+    });
   });
 
   it('should init worker', function () {

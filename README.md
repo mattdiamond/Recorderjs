@@ -146,6 +146,12 @@ rec.onstop()
 
 A callback which occurs when media recording ends.
 
+```js
+rec.onstreamerror( error )
+```
+
+A callback which occurs when a stream error occurs.
+
 
 ---------
 ### Browser Support

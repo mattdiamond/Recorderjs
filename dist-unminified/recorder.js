@@ -242,6 +242,9 @@ Recorder.prototype.start = function( sourceNode ){
       self.sourceNode.connect( self.monitorNode );
       self.sourceNode.connect( self.scriptProcessorNode );
       self.onstart();
+    }, function( error ){
+      self.onstreamerror( error );
+      throw error;
     });
   }
 };
@@ -300,6 +303,7 @@ Recorder.prototype.onpause = function(){};
 Recorder.prototype.onresume = function(){};
 Recorder.prototype.onstart = function(){};
 Recorder.prototype.onstop = function(){};
+Recorder.prototype.onstreamerror = function(){};
 
 
 module.exports = Recorder;
