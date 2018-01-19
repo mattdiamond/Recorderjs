@@ -129,9 +129,11 @@ Recorder.prototype.resume = function() {
 
 Recorder.prototype.setupAudioGraph = function(){
   var self = this;
+
   this.monitorNode = this.audioContext.createGain();
   this.setMonitorGain( this.config.monitorGain );
   this.monitorNode.connect( this.audioContext.destination );
+
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
   this.scriptProcessorNode.connect( this.audioContext.destination );
   this.scriptProcessorNode.onaudioprocess = function( e ) {
@@ -192,10 +194,10 @@ Recorder.prototype.storePage = function( page ) {
     var outputData = new Uint8Array( this.totalLength );
     var outputIndex = 0;
 
-    for ( var i = 0; i < this.recordedPages.length; i++ ) {
-      outputData.set( this.recordedPages[i], outputIndex );
-      outputIndex += this.recordedPages[i].length;
-    }
+    recordedPages.map( function( page ){
+      outputData.set( page, outputIndex );
+      outputIndex += page.length;
+    });
 
     this.ondataavailable( outputData );
     this.initWorker();
