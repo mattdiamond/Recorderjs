@@ -68,36 +68,36 @@
         encoderPath: "../dist/waveWorker.min.js"
       });
 
-      recorder.onstart = function(e){
+      recorder.onstart = function(){
         screenLogger('Recorder is started');
         start.disabled = resume.disabled = true;
         pause.disabled = stopButton.disabled = false;
       };
 
-      recorder.onstop = function(e){
+      recorder.onstop = function(){
         screenLogger('Recorder is stopped');
-        false;
-        pause.disabled = resume.disabled = stopButton.disabled = start.disabled = true;
+        start.disabled = false;
+        pause.disabled = resume.disabled = stopButton.disabled = true;
       };
 
-      recorder.onpause = function(e){
+      recorder.onpause = function(){
         screenLogger('Recorder is paused');
         pause.disabled = start.disabled = true;
         resume.disabled = stopButton.disabled = false;
       };
 
-      recorder.onresume = function(e){
+      recorder.onresume = function(){
         screenLogger('Recorder is resuming');
         start.disabled = resume.disabled = true;
         pause.disabled = stopButton.disabled = false;
       };
 
       recorder.onstreamError = function(e){
-        screenLogger('Error encountered: ' + e.error.name );
+        screenLogger('Error encountered: ' + e.name );
       };
 
-      recorder.ondataAvailable = function(e){
-        var dataBlob = new Blob( [e.detail], { type: 'audio/wav' } );
+      recorder.ondataAvailable = function( typedArray ){
+        var dataBlob = new Blob( typedArray, { type: 'audio/wav' } );
         var fileName = new Date().toISOString() + ".wav";
         var url = URL.createObjectURL( dataBlob );
 
