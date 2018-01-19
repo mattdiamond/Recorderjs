@@ -191,11 +191,11 @@ Recorder.prototype.stop = function(){
 
 Recorder.prototype.storePage = function( page ) {
   if ( page === null ) {
-    var outputIndex = 0;
-    var outputData = this.recordedPages.reduce( function( accumulator, page ){
-      accumulator.set( page, outputIndex );
-      outputIndex += page.length;
-    }, new Uint8Array( this.totalLength ) );
+    var outputData = new Uint8Array( this.totalLength );
+    this.recordedPages.reduce( function( offset, page ){
+      outputData.set( page, offset );
+      return offset + page.length;
+    }, 0);
 
     this.ondataavailable( outputData );
     this.initWorker();
