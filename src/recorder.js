@@ -1,6 +1,5 @@
 "use strict";
 
-var getUserMedia = global.navigator && global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia;
 var AudioContext = global.AudioContext || global.webkitAudioContext;
 
 var Recorder = function( config ){
@@ -32,8 +31,9 @@ var Recorder = function( config ){
 
 // Static Methods
 Recorder.isRecordingSupported = function(){
-  return AudioContext && getUserMedia && global.WebAssembly;
+  return AudioContext && global.navigator && global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia && global.WebAssembly;
 };
+
 
 Recorder.prototype.clearStream = function(){
   if ( this.stream ) {
@@ -93,7 +93,7 @@ Recorder.prototype.initSourceNode = function( sourceNode ){
   }
 
   var self = this;
-  return getUserMedia({ audio : this.config.mediaTrackConstraints }).then( function( stream ){
+  return global.navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( function( stream ){
     self.stream = stream;
     return self.audioContext.createMediaStreamSource( stream );
   });
