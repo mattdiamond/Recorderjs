@@ -11,13 +11,12 @@ A javascript library to encode the output of Web Audio API nodes in Ogg Opus or 
 #### Required Files
 
 The required files are in the `dist` folder. Unminified sources are in `dist-unminified`.
-
+Examples for recording, encoding, and decoding are in `examples` folder.
 
 ---------
 ### Usage
 
 
----------
 #### Constructor
 
 The `Recorder` object is available in the global namespace and supports CommonJS and AMD imports.
@@ -25,12 +24,12 @@ The `Recorder` object is available in the global namespace and supports CommonJS
 ```js
 var rec = new Recorder([config]);
 ```
+
 Creates a recorder instance.
 
 - **config** - An optional configuration object (see **config** section below)
 
 
----------
 #### Config options for OGG OPUS encoder
 
 - **bufferLength**                - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to `4096`.
@@ -50,7 +49,6 @@ Creates a recorder instance.
 - **streamPages**                 - (*optional*) `dataAvailable` event will fire after each encoded page. Defaults to `false`.
 
 
----------
 #### Config Options for WAV recorder
 
 - **bufferLength**                - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to `4096`.

@@ -4,7 +4,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Wave Recorder Example</title>
-  <script src="../dist/recorder.min.js"></script>
+  <script src="../dist-unminified/recorder.js"></script>
   <style type='text/css'>
     ul { list-style: none; }
     li { margin: 1em; }
@@ -65,7 +65,7 @@
         monitorGain: parseInt(monitorGain.value, 10),
         numberOfChannels: parseInt(numberOfChannels.value, 10),
         wavBitDepth: parseInt(bitDepth.value,10),
-        encoderPath: "../dist/waveWorker.min.js"
+        encoderPath: "../dist-unminified/waveWorker.js"
       });
 
       recorder.onstart = function(){
