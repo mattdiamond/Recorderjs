@@ -21,7 +21,7 @@
  (import "env" "_llvm_exp2_f64" (func $_llvm_exp2_f64 (param f64) (result f64)))
  (import "env" "_llvm_stackrestore" (func $_llvm_stackrestore (param i32)))
  (import "env" "_llvm_stacksave" (func $_llvm_stacksave (result i32)))
- (import "env" "memory" (memory $0 256 256))
+ (import "env" "memory" (memory $0 256))
  (import "env" "table" (table 10 10 anyfunc))
  (import "env" "memoryBase" (global $memoryBase i32))
  (import "env" "tableBase" (global $tableBase i32))
@@ -71,6 +71,7 @@
  (export "stackAlloc" (func $stackAlloc))
  (export "stackRestore" (func $stackRestore))
  (export "stackSave" (func $stackSave))
+ (export "__growWasmMemory" (func $__growWasmMemory))
  (func $stackAlloc (; 11 ;) (param $0 i32) (result i32)
   (local $1 i32)
   (set_local $1
@@ -134431,6 +134432,11 @@
  (func $b1 (; 354 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32)
   (call $abort
    (i32.const 1)
+  )
+ )
+ (func $__growWasmMemory (; 355 ;) (param $newSize i32) (result i32)
+  (grow_memory
+   (get_local $newSize)
   )
  )
 )

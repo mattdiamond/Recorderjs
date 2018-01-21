@@ -27,9 +27,10 @@ var rec = new Recorder([config]);
 
 Creates a recorder instance.
 
-- **config** - An optional configuration object (see **config** section below)
+- **config** - An optional configuration object.
 
 
+---------
 #### Config options for OGG OPUS encoder
 
 - **bufferLength**                - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to `4096`.

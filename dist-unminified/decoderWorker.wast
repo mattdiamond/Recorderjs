@@ -16,7 +16,7 @@
  (import "env" "_emscripten_memcpy_big" (func $_emscripten_memcpy_big (param i32 i32 i32) (result i32)))
  (import "env" "_llvm_stackrestore" (func $_llvm_stackrestore (param i32)))
  (import "env" "_llvm_stacksave" (func $_llvm_stacksave (result i32)))
- (import "env" "memory" (memory $0 256 256))
+ (import "env" "memory" (memory $0 256))
  (import "env" "table" (table 8 8 anyfunc))
  (import "env" "memoryBase" (global $memoryBase i32))
  (import "env" "tableBase" (global $tableBase i32))
@@ -63,6 +63,7 @@
  (export "stackAlloc" (func $stackAlloc))
  (export "stackRestore" (func $stackRestore))
  (export "stackSave" (func $stackSave))
+ (export "__growWasmMemory" (func $__growWasmMemory))
  (func $stackAlloc (; 9 ;) (param $0 i32) (result i32)
   (local $1 i32)
   (set_local $1
@@ -74727,5 +74728,10 @@
    (i32.const 0)
   )
   (i32.const 0)
+ )
+ (func $__growWasmMemory (; 216 ;) (param $newSize i32) (result i32)
+  (grow_memory
+   (get_local $newSize)
+  )
  )
 )
