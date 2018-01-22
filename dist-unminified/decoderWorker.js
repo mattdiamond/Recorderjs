@@ -587,144 +587,6 @@ moduleOverrides = undefined;
 
 // {{PREAMBLE_ADDITIONS}}
 
-var STACK_ALIGN = 16;
-
-
-function staticAlloc(size) {
-  assert(!staticSealed);
-  var ret = STATICTOP;
-  STATICTOP = (STATICTOP + size + 15) & -16;
-  return ret;
-}
-
-function dynamicAlloc(size) {
-  assert(DYNAMICTOP_PTR);
-  var ret = HEAP32[DYNAMICTOP_PTR>>2];
-  var end = (ret + size + 15) & -16;
-  HEAP32[DYNAMICTOP_PTR>>2] = end;
-  if (end >= TOTAL_MEMORY) {
-    var success = enlargeMemory();
-    if (!success) {
-      HEAP32[DYNAMICTOP_PTR>>2] = ret;
-      return 0;
-    }
-  }
-  return ret;
-}
-
-function alignMemory(size, factor) {
-  if (!factor) factor = STACK_ALIGN; // stack alignment (16-byte) by default
-  var ret = size = Math.ceil(size / factor) * factor;
-  return ret;
-}
-
-function getNativeTypeSize(type) {
-  switch (type) {
-    case 'i1': case 'i8': return 1;
-    case 'i16': return 2;
-    case 'i32': return 4;
-    case 'i64': return 8;
-    case 'float': return 4;
-    case 'double': return 8;
-    default: {
-      if (type[type.length-1] === '*') {
-        return 4; // A pointer
-      } else if (type[0] === 'i') {
-        var bits = parseInt(type.substr(1));
-        assert(bits % 8 === 0);
-        return bits / 8;
-      } else {
-        return 0;
-      }
-    }
-  }
-}
-
-function warnOnce(text) {
-  if (!warnOnce.shown) warnOnce.shown = {};
-  if (!warnOnce.shown[text]) {
-    warnOnce.shown[text] = 1;
-    Module.printErr(text);
-  }
-}
-
-
-
-var functionPointers = new Array(0);
-
-function addFunction(func) {
-  for (var i = 0; i < functionPointers.length; i++) {
-    if (!functionPointers[i]) {
-      functionPointers[i] = func;
-      return 2*(1 + i);
-    }
-  }
-  throw 'Finished up all reserved function pointers. Use a higher value for RESERVED_FUNCTION_POINTERS.';
-}
-
-function removeFunction(index) {
-  functionPointers[(index-2)/2] = null;
-}
-
-var funcWrappers = {};
-
-function getFuncWrapper(func, sig) {
-  if (!func) return; // on null pointer, return undefined
-  assert(sig);
-  if (!funcWrappers[sig]) {
-    funcWrappers[sig] = {};
-  }
-  var sigCache = funcWrappers[sig];
-  if (!sigCache[func]) {
-    // optimize away arguments usage in common cases
-    if (sig.length === 1) {
-      sigCache[func] = function dynCall_wrapper() {
-        return dynCall(sig, func);
-      };
-    } else if (sig.length === 2) {
-      sigCache[func] = function dynCall_wrapper(arg) {
-        return dynCall(sig, func, [arg]);
-      };
-    } else {
-      // general case
-      sigCache[func] = function dynCall_wrapper() {
-        return dynCall(sig, func, Array.prototype.slice.call(arguments));
-      };
-    }
-  }
-  return sigCache[func];
-}
-
-
-function makeBigInt(low, high, unsigned) {
-  return unsigned ? ((+((low>>>0)))+((+((high>>>0)))*4294967296.0)) : ((+((low>>>0)))+((+((high|0)))*4294967296.0));
-}
-
-function dynCall(sig, ptr, args) {
-  if (args && args.length) {
-    return Module['dynCall_' + sig].apply(null, [ptr].concat(args));
-  } else {
-    return Module['dynCall_' + sig].call(null, ptr);
-  }
-}
-
-
-
-var Runtime = {
-  // FIXME backwards compatibility layer for ports. Support some Runtime.*
-  //       for now, fix it there, then remove it from here. That way we
-  //       can minimize any period of breakage.
-  dynCall: dynCall, // for SDL2 port
-};
-
-// The address globals begin at. Very low in memory, for code size and optimization opportunities.
-// Above 0 is static memory, starting with globals.
-// Then the stack.
-// Then 'dynamic' memory for sbrk.
-var GLOBAL_BASE = 1024;
-
-
-
 // === Preamble library stuff ===
 
 // Documentation for the public APIs defined in this file must be updated in:
@@ -734,6 +596,138 @@ var GLOBAL_BASE = 1024;
 // You can also build docs locally as HTML or other formats in site/
 // An online HTML version (which may be of a different version of Emscripten)
 //    is up at http://kripken.github.io/emscripten-site/docs/api_reference/preamble.js.html
+
+//========================================
+// Runtime code shared with compiler
+//========================================
+
+var Runtime = {
+  setTempRet0: function (value) {
+    tempRet0 = value;
+    return value;
+  },
+  getTempRet0: function () {
+    return tempRet0;
+  },
+  stackSave: function () {
+    return STACKTOP;
+  },
+  stackRestore: function (stackTop) {
+    STACKTOP = stackTop;
+  },
+  getNativeTypeSize: function (type) {
+    switch (type) {
+      case 'i1': case 'i8': return 1;
+      case 'i16': return 2;
+      case 'i32': return 4;
+      case 'i64': return 8;
+      case 'float': return 4;
+      case 'double': return 8;
+      default: {
+        if (type[type.length-1] === '*') {
+          return Runtime.QUANTUM_SIZE; // A pointer
+        } else if (type[0] === 'i') {
+          var bits = parseInt(type.substr(1));
+          assert(bits % 8 === 0);
+          return bits/8;
+        } else {
+          return 0;
+        }
+      }
+    }
+  },
+  getNativeFieldSize: function (type) {
+    return Math.max(Runtime.getNativeTypeSize(type), Runtime.QUANTUM_SIZE);
+  },
+  STACK_ALIGN: 16,
+  prepVararg: function (ptr, type) {
+    if (type === 'double' || type === 'i64') {
+      // move so the load is aligned
+      if (ptr & 7) {
+        assert((ptr & 7) === 4);
+        ptr += 4;
+      }
+    } else {
+      assert((ptr & 3) === 0);
+    }
+    return ptr;
+  },
+  getAlignSize: function (type, size, vararg) {
+    // we align i64s and doubles on 64-bit boundaries, unlike x86
+    if (!vararg && (type == 'i64' || type == 'double')) return 8;
+    if (!type) return Math.min(size, 8); // align structures internally to 64 bits
+    return Math.min(size || (type ? Runtime.getNativeFieldSize(type) : 0), Runtime.QUANTUM_SIZE);
+  },
+  dynCall: function (sig, ptr, args) {
+    if (args && args.length) {
+      return Module['dynCall_' + sig].apply(null, [ptr].concat(args));
+    } else {
+      return Module['dynCall_' + sig].call(null, ptr);
+    }
+  },
+  functionPointers: [],
+  addFunction: function (func) {
+    for (var i = 0; i < Runtime.functionPointers.length; i++) {
+      if (!Runtime.functionPointers[i]) {
+        Runtime.functionPointers[i] = func;
+        return 2*(1 + i);
+      }
+    }
+    throw 'Finished up all reserved function pointers. Use a higher value for RESERVED_FUNCTION_POINTERS.';
+  },
+  removeFunction: function (index) {
+    Runtime.functionPointers[(index-2)/2] = null;
+  },
+  warnOnce: function (text) {
+    if (!Runtime.warnOnce.shown) Runtime.warnOnce.shown = {};
+    if (!Runtime.warnOnce.shown[text]) {
+      Runtime.warnOnce.shown[text] = 1;
+      Module.printErr(text);
+    }
+  },
+  funcWrappers: {},
+  getFuncWrapper: function (func, sig) {
+    if (!func) return; // on null pointer, return undefined
+    assert(sig);
+    if (!Runtime.funcWrappers[sig]) {
+      Runtime.funcWrappers[sig] = {};
+    }
+    var sigCache = Runtime.funcWrappers[sig];
+    if (!sigCache[func]) {
+      // optimize away arguments usage in common cases
+      if (sig.length === 1) {
+        sigCache[func] = function dynCall_wrapper() {
+          return Runtime.dynCall(sig, func);
+        };
+      } else if (sig.length === 2) {
+        sigCache[func] = function dynCall_wrapper(arg) {
+          return Runtime.dynCall(sig, func, [arg]);
+        };
+      } else {
+        // general case
+        sigCache[func] = function dynCall_wrapper() {
+          return Runtime.dynCall(sig, func, Array.prototype.slice.call(arguments));
+        };
+      }
+    }
+    return sigCache[func];
+  },
+  getCompilerSetting: function (name) {
+    throw 'You must build with -s RETAIN_COMPILER_SETTINGS=1 for Runtime.getCompilerSetting or emscripten_get_compiler_setting to work';
+  },
+  stackAlloc: function (size) { var ret = STACKTOP;STACKTOP = (STACKTOP + size)|0;STACKTOP = (((STACKTOP)+15)&-16); return ret; },
+  staticAlloc: function (size) { var ret = STATICTOP;STATICTOP = (STATICTOP + size)|0;STATICTOP = (((STATICTOP)+15)&-16); return ret; },
+  dynamicAlloc: function (size) { var ret = HEAP32[DYNAMICTOP_PTR>>2];var end = (((ret + size + 15)|0) & -16);HEAP32[DYNAMICTOP_PTR>>2] = end;if (end >= TOTAL_MEMORY) {var success = enlargeMemory();if (!success) {HEAP32[DYNAMICTOP_PTR>>2] = ret;return 0;}}return ret;},
+  alignMemory: function (size,quantum) { var ret = size = Math.ceil((size)/(quantum ? quantum : 16))*(quantum ? quantum : 16); return ret; },
+  makeBigInt: function (low,high,unsigned) { var ret = (unsigned ? ((+((low>>>0)))+((+((high>>>0)))*4294967296.0)) : ((+((low>>>0)))+((+((high|0)))*4294967296.0))); return ret; },
+  GLOBAL_BASE: 1024,
+  QUANTUM_SIZE: 4,
+  __dummy__: 0
+}
+
+
+
+Module["Runtime"] = Runtime;
 
 
 
@@ -765,14 +759,14 @@ var JSfuncs = {
   // be renamed by closure, instead it calls JSfuncs['stackSave'].body to find
   // out what the minified function name is.
   'stackSave': function() {
-    stackSave()
+    Runtime.stackSave()
   },
   'stackRestore': function() {
-    stackRestore()
+    Runtime.stackRestore()
   },
   // type conversion from js to c
   'arrayToC' : function(arr) {
-    var ret = stackAlloc(arr.length);
+    var ret = Runtime.stackAlloc(arr.length);
     writeArrayToMemory(arr, ret);
     return ret;
   },
@@ -781,7 +775,7 @@ var JSfuncs = {
     if (str !== null && str !== undefined && str !== 0) { // null string
       // at most 4 bytes per UTF-8 code point, +1 for the trailing '\0'
       var len = (str.length << 2) + 1;
-      ret = stackAlloc(len);
+      ret = Runtime.stackAlloc(len);
       stringToUTF8(str, ret, len);
     }
     return ret;
@@ -799,7 +793,7 @@ function ccall (ident, returnType, argTypes, args, opts) {
     for (var i = 0; i < args.length; i++) {
       var converter = toC[argTypes[i]];
       if (converter) {
-        if (stack === 0) stack = stackSave();
+        if (stack === 0) stack = Runtime.stackSave();
         cArgs[i] = converter(args[i]);
       } else {
         cArgs[i] = args[i];
@@ -809,7 +803,7 @@ function ccall (ident, returnType, argTypes, args, opts) {
   var ret = func.apply(null, cArgs);
   if (returnType === 'string') ret = Pointer_stringify(ret);
   if (stack !== 0) {
-    stackRestore(stack);
+    Runtime.stackRestore(stack);
   }
   return ret;
 }
@@ -908,7 +902,7 @@ function allocate(slab, types, allocator, ptr) {
   if (allocator == ALLOC_NONE) {
     ret = ptr;
   } else {
-    ret = [typeof _malloc === 'function' ? _malloc : staticAlloc, stackAlloc, staticAlloc, dynamicAlloc][allocator === undefined ? ALLOC_STATIC : allocator](Math.max(size, singleType ? 1 : types.length));
+    ret = [typeof _malloc === 'function' ? _malloc : Runtime.staticAlloc, Runtime.stackAlloc, Runtime.staticAlloc, Runtime.dynamicAlloc][allocator === undefined ? ALLOC_STATIC : allocator](Math.max(size, singleType ? 1 : types.length));
   }
 
   if (zeroinit) {
@@ -939,6 +933,10 @@ function allocate(slab, types, allocator, ptr) {
   while (i < size) {
     var curr = slab[i];
 
+    if (typeof curr === 'function') {
+      curr = Runtime.getFunctionIndex(curr);
+    }
+
     type = singleType || types[i];
     if (type === 0) {
       i++;
@@ -951,7 +949,7 @@ function allocate(slab, types, allocator, ptr) {
 
     // no need to look up size unless type changes, so cache it
     if (previousType !== type) {
-      typeSize = getNativeTypeSize(type);
+      typeSize = Runtime.getNativeTypeSize(type);
       previousType = type;
     }
     i += typeSize;
@@ -963,8 +961,8 @@ function allocate(slab, types, allocator, ptr) {
 
 // Allocate memory during any stage of startup - static memory early on, dynamic memory later, malloc when ready
 function getMemory(size) {
-  if (!staticSealed) return staticAlloc(size);
-  if (!runtimeInitialized) return dynamicAlloc(size);
+  if (!staticSealed) return Runtime.staticAlloc(size);
+  if (!runtimeInitialized) return Runtime.dynamicAlloc(size);
   return _malloc(size);
 }
 Module["getMemory"] = getMemory;
@@ -1575,7 +1573,7 @@ function addOnPostRun(cb) {
 // to be secure from out of bounds writes.
 /** @deprecated */
 function writeStringToMemory(string, buffer, dontAddNull) {
-  warnOnce('writeStringToMemory is deprecated and should not be called! Use stringToUTF8() instead!');
+  Runtime.warnOnce('writeStringToMemory is deprecated and should not be called! Use stringToUTF8() instead!');
 
   var /** @type {number} */ lastChar, /** @type {number} */ end;
   if (dontAddNull) {
@@ -1701,20 +1699,6 @@ var memoryInitializer = null;
 
 
 
-
-// Prefix of data URIs emitted by SINGLE_FILE and related options.
-var dataURIPrefix = 'data:application/octet-stream;base64,';
-
-// Indicates whether filename is a base64 data URI.
-function isDataURI(filename) {
-  return String.prototype.startsWith ?
-      filename.startsWith(dataURIPrefix) :
-      filename.indexOf(dataURIPrefix) === 0;
-}
-
-
-
-
 function integrateWasmJS() {
   // wasm.js has several methods for creating the compiled code module here:
   //  * 'native-wasm' : use native WebAssembly support in the browser
@@ -1736,15 +1720,9 @@ function integrateWasmJS() {
   var asmjsCodeFile = 'decoderWorker.temp.asm.js';
 
   if (typeof Module['locateFile'] === 'function') {
-    if (!isDataURI(wasmTextFile)) {
-      wasmTextFile = Module['locateFile'](wasmTextFile);
-    }
-    if (!isDataURI(wasmBinaryFile)) {
-      wasmBinaryFile = Module['locateFile'](wasmBinaryFile);
-    }
-    if (!isDataURI(asmjsCodeFile)) {
-      asmjsCodeFile = Module['locateFile'](asmjsCodeFile);
-    }
+    wasmTextFile = Module['locateFile'](wasmTextFile);
+    wasmBinaryFile = Module['locateFile'](wasmBinaryFile);
+    asmjsCodeFile = Module['locateFile'](asmjsCodeFile);
   }
 
   // utilities
@@ -1885,7 +1863,7 @@ function integrateWasmJS() {
     // Prefer streaming instantiation if available.
     if (!Module['wasmBinary'] &&
         typeof WebAssembly.instantiateStreaming === 'function' &&
-        !isDataURI(wasmBinaryFile) &&
+        wasmBinaryFile.indexOf('data:') !== 0 &&
         typeof fetch === 'function') {
       WebAssembly.instantiateStreaming(fetch(wasmBinaryFile, { credentials: 'same-origin' }), info)
         .then(receiveInstantiatedSource)
@@ -1996,7 +1974,7 @@ var ASM_CONSTS = [];
 
 
 
-STATIC_BASE = GLOBAL_BASE;
+STATIC_BASE = Runtime.GLOBAL_BASE;
 
 STATICTOP = STATIC_BASE + 30448;
 /* global initializers */  __ATINIT__.push();
@@ -2059,7 +2037,7 @@ function copyTempDouble(ptr) {
       var self = _llvm_stacksave;
       var ret = self.LLVM_SAVEDSTACKS[p];
       self.LLVM_SAVEDSTACKS.splice(p, 1);
-      stackRestore(ret);
+      Runtime.stackRestore(ret);
     }
 
   function _llvm_stacksave() {
@@ -2067,7 +2045,7 @@ function copyTempDouble(ptr) {
       if (!self.LLVM_SAVEDSTACKS) {
         self.LLVM_SAVEDSTACKS = [];
       }
-      self.LLVM_SAVEDSTACKS.push(stackSave());
+      self.LLVM_SAVEDSTACKS.push(Runtime.stackSave());
       return self.LLVM_SAVEDSTACKS.length-1;
     }
 
@@ -2086,13 +2064,13 @@ function copyTempDouble(ptr) {
       if (Module['___errno_location']) HEAP32[((Module['___errno_location']())>>2)]=value;
       return value;
     } 
-DYNAMICTOP_PTR = staticAlloc(4);
+DYNAMICTOP_PTR = Runtime.staticAlloc(4);
 
-STACK_BASE = STACKTOP = alignMemory(STATICTOP);
+STACK_BASE = STACKTOP = Runtime.alignMemory(STATICTOP);
 
 STACK_MAX = STACK_BASE + TOTAL_STACK;
 
-DYNAMIC_BASE = alignMemory(STACK_MAX);
+DYNAMIC_BASE = Runtime.alignMemory(STACK_MAX);
 
 HEAP32[DYNAMICTOP_PTR>>2] = DYNAMIC_BASE;
 
@@ -2174,7 +2152,12 @@ var stackRestore = Module["stackRestore"] = function() {  return Module["asm"]["
 var stackSave = Module["stackSave"] = function() {  return Module["asm"]["stackSave"].apply(null, arguments) };
 var dynCall_iiiiiii = Module["dynCall_iiiiiii"] = function() {  return Module["asm"]["dynCall_iiiiiii"].apply(null, arguments) };
 ;
-
+Runtime.stackAlloc = Module['stackAlloc'];
+Runtime.stackSave = Module['stackSave'];
+Runtime.stackRestore = Module['stackRestore'];
+Runtime.establishStackSpace = Module['establishStackSpace'];
+Runtime.setTempRet0 = Module['setTempRet0'];
+Runtime.getTempRet0 = Module['getTempRet0'];
 
 
 // === Auto-generated postamble setup entry stuff ===
