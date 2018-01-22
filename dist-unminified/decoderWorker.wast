@@ -2,8 +2,8 @@
  (type $FUNCSIG$iiiiiii (func (param i32 i32 i32 i32 i32 i32) (result i32)))
  (type $FUNCSIG$vi (func (param i32)))
  (type $FUNCSIG$i (func (result i32)))
- (type $FUNCSIG$v (func))
  (type $FUNCSIG$iiii (func (param i32 i32 i32) (result i32)))
+ (type $FUNCSIG$v (func))
  (import "env" "DYNAMICTOP_PTR" (global $DYNAMICTOP_PTR$asm2wasm$import i32))
  (import "env" "STACKTOP" (global $STACKTOP$asm2wasm$import i32))
  (import "env" "STACK_MAX" (global $STACK_MAX$asm2wasm$import i32))
@@ -12,10 +12,10 @@
  (import "env" "getTotalMemory" (func $getTotalMemory (result i32)))
  (import "env" "abortOnCannotGrowMemory" (func $abortOnCannotGrowMemory (result i32)))
  (import "env" "___setErrNo" (func $___setErrNo (param i32)))
- (import "env" "_abort" (func $_abort))
- (import "env" "_emscripten_memcpy_big" (func $_emscripten_memcpy_big (param i32 i32 i32) (result i32)))
  (import "env" "_llvm_stackrestore" (func $_llvm_stackrestore (param i32)))
  (import "env" "_llvm_stacksave" (func $_llvm_stacksave (result i32)))
+ (import "env" "_emscripten_memcpy_big" (func $_emscripten_memcpy_big (param i32 i32 i32) (result i32)))
+ (import "env" "_abort" (func $_abort))
  (import "env" "memory" (memory $0 256 256))
  (import "env" "table" (table 8 8 anyfunc))
  (import "env" "memoryBase" (global $memoryBase i32))
@@ -44,29 +44,29 @@
  (data (i32.const 20888) ")\00)\00)\00)\00{\00{\00{\00\a4\00\a4\00\f0\00\n\01\1b\01\'\01)\00)\00)\00)\00)\00)\00)\00)\00{\00{\00{\00{\00\f0\00\f0\00\f0\00\n\01\n\011\01>\01H\01P\01{\00{\00{\00{\00{\00{\00{\00{\00\f0\00\f0\00\f0\00\f0\001\011\011\01>\01>\01W\01_\01f\01l\01\f0\00\f0\00\f0\00\f0\00\f0\00\f0\00\f0\00\f0\001\011\011\011\01W\01W\01W\01_\01_\01r\01x\01~\01\83\01\00\00\0c\00\18\00$\000\00\04\00\10\00\1c\00(\004\00\08\00\14\00 \00,\008\00\01\00\0d\00\19\00%\001\00\05\00\11\00\1d\00)\005\00\t\00\15\00!\00-\009\00\02\00\0e\00\1a\00&\002\00\06\00\12\00\1e\00*\006\00\n\00\16\00\"\00.\00:\00\03\00\0f\00\1b\00\'\003\00\07\00\13\00\1f\00+\007\00\0b\00\17\00#\00/\00;\00\00\00\18\000\00H\00`\00\08\00 \008\00P\00h\00\10\00(\00@\00X\00p\00\04\00\1c\004\00L\00d\00\0c\00$\00<\00T\00l\00\14\00,\00D\00\\\00t\00\01\00\19\001\00I\00a\00\t\00!\009\00Q\00i\00\11\00)\00A\00Y\00q\00\05\00\1d\005\00M\00e\00\0d\00%\00=\00U\00m\00\15\00-\00E\00]\00u\00\02\00\1a\002\00J\00b\00\n\00\"\00:\00R\00j\00\12\00*\00B\00Z\00r\00\06\00\1e\006\00N\00f\00\0e\00&\00>\00V\00n\00\16\00.\00F\00^\00v\00\03\00\1b\003\00K\00c\00\0b\00#\00;\00S\00k\00\13\00+\00C\00[\00s\00\07\00\1f\007\00O\00g\00\0f\00\'\00?\00W\00o\00\17\00/\00G\00_\00w\00\00\000\00`\00\90\00\c0\00\10\00@\00p\00\a0\00\d0\00 \00P\00\80\00\b0\00\e0\00\04\004\00d\00\94\00\c4\00\14\00D\00t\00\a4\00\d4\00$\00T\00\84\00\b4\00\e4\00\08\008\00h\00\98\00\c8\00\18\00H\00x\00\a8\00\d8\00(\00X\00\88\00\b8\00\e8\00\0c\00<\00l\00\9c\00\cc\00\1c\00L\00|\00\ac\00\dc\00,\00\\\00\8c\00\bc\00\ec\00\01\001\00a\00\91\00\c1\00\11\00A\00q\00\a1\00\d1\00!\00Q\00\81\00\b1\00\e1\00\05\005\00e\00\95\00\c5\00\15\00E\00u\00\a5\00\d5\00%\00U\00\85\00\b5\00\e5\00\t\009\00i\00\99\00\c9\00\19\00I\00y\00\a9\00\d9\00)\00Y\00\89\00\b9\00\e9\00\0d\00=\00m\00\9d\00\cd\00\1d\00M\00}\00\ad\00\dd\00-\00]\00\8d\00\bd\00\ed\00\02\002\00b\00\92\00\c2\00\12\00B\00r\00\a2\00\d2\00\"\00R\00\82\00\b2\00\e2\00\06\006\00f\00\96\00\c6\00\16\00F\00v\00\a6\00\d6\00&\00V\00\86\00\b6\00\e6\00\n\00:\00j\00\9a\00\ca\00\1a\00J\00z\00\aa\00\da\00*\00Z\00\8a\00\ba\00\ea\00\0e\00>\00n\00\9e\00\ce\00\1e\00N\00~\00\ae\00\de\00.\00^\00\8e\00\be\00\ee\00\03\003\00c\00\93\00\c3\00\13\00C\00s\00\a3\00\d3\00#\00S\00\83\00\b3\00\e3\00\07\007\00g\00\97\00\c7\00\17\00G\00w\00\a7\00\d7\00\'\00W\00\87\00\b7\00\e7\00\0b\00;\00k\00\9b\00\cb\00\1b\00K\00{\00\ab\00\db\00+\00[\00\8b\00\bb\00\eb\00\0f\00?\00o\00\9f\00\cf\00\1f\00O\00\7f\00\af\00\df\00/\00_\00\8f\00\bf\00\ef\00\00\00`\00\c0\00 \01\80\01 \00\80\00\e0\00@\01\a0\01@\00\a0\00\00\01`\01\c0\01\08\00h\00\c8\00(\01\88\01(\00\88\00\e8\00H\01\a8\01H\00\a8\00\08\01h\01\c8\01\10\00p\00\d0\000\01\90\010\00\90\00\f0\00P\01\b0\01P\00\b0\00\10\01p\01\d0\01\18\00x\00\d8\008\01\98\018\00\98\00\f8\00X\01\b8\01X\00\b8\00\18\01x\01\d8\01\04\00d\00\c4\00$\01\84\01$\00\84\00\e4\00D\01\a4\01D\00\a4\00\04\01d\01\c4\01\0c\00l\00\cc\00,\01\8c\01,\00\8c\00\ec\00L\01\ac\01L\00\ac\00\0c\01l\01\cc\01\14\00t\00\d4\004\01\94\014\00\94\00\f4\00T\01\b4\01T\00\b4\00\14\01t\01\d4\01\1c\00|\00\dc\00<\01\9c\01<\00\9c\00\fc\00\\\01\bc\01\\\00\bc\00\1c\01|\01\dc\01\01\00a\00\c1\00!\01\81\01!\00\81\00\e1\00A\01\a1\01A\00\a1\00\01\01a\01\c1\01\t\00i\00\c9\00)\01\89\01)\00\89\00\e9\00I\01\a9\01I\00\a9\00\t\01i\01\c9\01\11\00q\00\d1\001\01\91\011\00\91\00\f1\00Q\01\b1\01Q\00\b1\00\11\01q\01\d1\01\19\00y\00\d9\009\01\99\019\00\99\00\f9\00Y\01\b9\01Y\00\b9\00\19\01y\01\d9\01\05\00e\00\c5\00%\01\85\01%\00\85\00\e5\00E\01\a5\01E\00\a5\00\05\01e\01\c5\01\0d\00m\00\cd\00-\01\8d\01-\00\8d\00\ed\00M\01\ad\01M\00\ad\00\0d\01m\01\cd\01\15\00u\00\d5\005\01\95\015\00\95\00\f5\00U\01\b5\01U\00\b5\00\15\01u\01\d5\01\1d\00}\00\dd\00=\01\9d\01=\00\9d\00\fd\00]\01\bd\01]\00\bd\00\1d\01}\01\dd\01\02\00b\00\c2\00\"\01\82\01\"\00\82\00\e2\00B\01\a2\01B\00\a2\00\02\01b\01\c2\01\n\00j\00\ca\00*\01\8a\01*\00\8a\00\ea\00J\01\aa\01J\00\aa\00\n\01j\01\ca\01\12\00r\00\d2\002\01\92\012\00\92\00\f2\00R\01\b2\01R\00\b2\00\12\01r\01\d2\01\1a\00z\00\da\00:\01\9a\01:\00\9a\00\fa\00Z\01\ba\01Z\00\ba\00\1a\01z\01\da\01\06\00f\00\c6\00&\01\86\01&\00\86\00\e6\00F\01\a6\01F\00\a6\00\06\01f\01\c6\01\0e\00n\00\ce\00.\01\8e\01.\00\8e\00\ee\00N\01\ae\01N\00\ae\00\0e\01n\01\ce\01\16\00v\00\d6\006\01\96\016\00\96\00\f6\00V\01\b6\01V\00\b6\00\16\01v\01\d6\01\1e\00~\00\de\00>\01\9e\01>\00\9e\00\fe\00^\01\be\01^\00\be\00\1e\01~\01\de\01\03\00c\00\c3\00#\01\83\01#\00\83\00\e3\00C\01\a3\01C\00\a3\00\03\01c\01\c3\01\0b\00k\00\cb\00+\01\8b\01+\00\8b\00\eb\00K\01\ab\01K\00\ab\00\0b\01k\01\cb\01\13\00s\00\d3\003\01\93\013\00\93\00\f3\00S\01\b3\01S\00\b3\00\13\01s\01\d3\01\1b\00{\00\db\00;\01\9b\01;\00\9b\00\fb\00[\01\bb\01[\00\bb\00\1b\01{\01\db\01\07\00g\00\c7\00\'\01\87\01\'\00\87\00\e7\00G\01\a7\01G\00\a7\00\07\01g\01\c7\01\0f\00o\00\cf\00/\01\8f\01/\00\8f\00\ef\00O\01\af\01O\00\af\00\0f\01o\01\cf\01\17\00w\00\d7\007\01\97\017\00\97\00\f7\00W\01\b7\01W\00\b7\00\17\01w\01\d7\01\1f\00\7f\00\df\00?\01\9f\01?\00\9f\00\ff\00_\01\bf\01_\00\bf\00\1f\01\7f\01\df\01\b8~\9ay\9ayff\b8~3sQ\0b\n\t\n\t\n\t\ef\08\ef\08\n\t\fc\08\17\t\ef\08H\0b\14\nZ\t?\t\n\t\e2\08\e2\08\e2\08\e2\08\92\08\b7\t$\t$\t\n\t\n\t\n\t$\t$\t?\t2\t\90\0c\ce\n$\t$\t\n\t\e2\08\ad\08\9f\08\d5\08\92\08\9c\t\aa\t?\tZ\tZ\tZ\tZ\t?\tg\t\n\t\97\0d\f0\0bO\08\9f\08\e2\08\e2\08\e2\08\ef\08\n\t\d5\08\d2\0cE\0c\14\nZ\t\c7\08\ad\08\9f\08\92\08\92\08B\08\00\10\05\0f\ad\08<\n<\ng\t\n\tZ\t?\t\1a\08j\0c\ac\0c?\t\ad\08\f9\t\82\t$\t\n\tw\08\ad\08\n\0d\a0\0d\a6\n\92\08\d5\08\9c\t2\t?\t\9f\085\082\tt\t\17\t?\tZ\tt\tt\tt\t\9c\t?\t\c3\0e-\0e\82\t\df\t?\t\e2\08\e2\08\fc\08\9f\08\00\08\b6\0c\99\0c\99\n\1e\0b\8f\t\17\t\fc\08\fc\08\e2\08O\08\bf\0c\e4\0c\c1\n\f6\n\8f\t\d5\08\d5\08\c7\08O\085\089\0b\a5\0bI\n?\tg\t2\t\92\08\c7\08\c7\08B\08\99\0c}\0cI\n\14\n\e2\08\85\08\c7\08\ad\08\ad\08]\08j\0c\ee\0c\b4\ng\t\e2\08\e2\08\e2\08\ef\08\92\08B\08E\0c\c8\0c\9c\t\0d\08\ef\08\c4\t?\t\b7\t\82\t\85\08\b3\0d\d2\0c\n\t\8c\nW\n\aa\t?\tZ\t$\tO\08_\0d\cf\0d\de\0b\f0\0b\fc\08\9e\07\ad\08\e2\08\e2\08\e2\08L\0d&\0d\'\08\7f\n9\0b2\tt\t\e2\08\aa\t\ec\t\b0\0e\a0\0d\9e\07d\nQ\0b\df\tZ\t?\t\9c\t\d5\08\d4\0b\c8\0c\b4\nH\0b\b4\nj\08O\08\ef\08\ba\08\c7\08o\0eI\0e\e9\07\b1\07d\n\8c\n\14\n\c4\t\17\t?\t\87\0cU\0d2\t\1a\08H\0bH\0b$\t\b7\t\c7\08w\08\n\0d&\0d\1e\0b\dc\n\17\tj\08\e2\08\ef\08B\08\0d\08\17\t\fc\08\85\08w\08\85\08?\tI\n\8c\n\8c\n\f9\tg\t\82\t\ad\08\d5\08\ad\08\ad\08$\tt\t/\n\8c\n\de\0b\ac\0c\f6\nH\0b\aa\t\1a\08\fc\08\n\t2\tL\t\ad\08j\08O\08\ef\08\c4\t\e9\n\e9\n<\n\14\n?\t\\\0e\81\0e\ba\08.\07\85\08\c1\n\a6\nq\n\d1\t\9f\08\e9\nX\0c\a6\n\f9\t\1e\0b\d1\t\85\08Z\t\ad\08\85\08\fa\00\03\00\06\00\03\00\03\00\03\00\04\00\03\00\03\00\03\00\cd\01I\0em\0bm\0bm\0bm\0bm\0bm\0bm\0bm\0bm\0bm\0bm\0b\93\0b\93\0bm\0b\1e\0b\90\0c\0d\0c\9c\0b\f0\0b\f0\0b\c2\0b\c2\0b\c2\0b\93\0b\93\0b\c2\0b\9c\0bH\0b\1e\0b\1e\0b\a6\nP\0f\ae\0f\a5\0b\87\0c\87\0cv\0b\f0\0b\1e\0b2\0c\ac\0cm\0b\1e\0b<\n\f9\t\dc\nm\0b\bc\0d}\0c\c2\0b\1f\0c\cb\0bH\0bm\0bm\0bm\0bm\0bH\0bH\0bH\0bH\0bH\0b\c1\n\be\13\be\13v\0b\f5\0d9\0d\f0\0b\0d\0c\e9\nX\0cX\0c\9c\0b\1e\0b\d1\t\ec\t\c1\nH\0bL\115\10\8c\n\c1\n\9c\0b\c2\0bm\0b\1e\0b\a5\0b\cb\0bm\0bm\0bm\0bm\0bH\0b\a6\n$\0e\cb\0b\9c\0b\f0\0b\f0\0b9\0b\f6\n\f0\0b\90\0c\e7\0b\a5\0b\db\0c\db\0c\a5\0b\ee\0c\af\0bk\14\96\13\ec\t\n\0d\c6\0d9\0d}\0c\16\0c0\0d\a5\0b\8c\nW\n\7f\n\e9\n\1e\0bq\n\d9\136\14\07\12L\11\9c\tQ\0b\e7\0b\87\0ca\0c\7f\n\b4\nH\0b\1e\0b\e9\n\1e\0b\8c\n2\0cH\0b\93\0bm\0bm\0bm\0bm\0b\93\0b\93\0b\93\0b\93\0bm\0bm\0b\93\0b\93\0b\93\0bj\10\87\0c\a5\0b\1f\0c\c2\0bH\0bH\0bm\0b\9c\0b9\0bd\0b\cb\0b\9c\0b\c2\0b}\0c9\0b\b0\0e\b0\0e\ac\0c\1f\0c\a5\0bH\0bm\0bH\0b\9c\0bv\0b\e9\n\e9\n\1e\0bH\0bH\0bd\n\0e\0f\ae\0f\87\0c2\0c\ac\0cv\0b\e7\0b\93\0b\93\0b\0d\0c\1e\0b\e9\n\e9\n\e9\n\e9\n\14\n\05\0f\f0\0f\1d\0d\bc\0d\16\0c\b4\n\c2\0bv\0b2\0c\0d\0c\1e\0b\1e\0bW\nW\n\1e\0b\f6\n\1b\14\1e\13\99\0c\05\0fq\0da\0cQ\0bU\0d{\0d\8c\n\14\nq\n\b4\n\1e\0b\f6\n\c1\n\0d\10\cd\0e\db\0cX\0cm\0bH\0bH\0bm\0b\e9\n\b4\n\e9\n\b4\n\e9\n\1e\0bH\0b\f6\n\d9\13\be\13\e7\0b\d9\0d\ac\0c\f0\0b\0d\0c\80\0b\1f\0cQ\0b\b4\n\b4\n\b4\n\1e\0b\e9\n<\n\d5\10\d5\10,\0b\df\t\87\0c0\0d0\0d\03\0c\03\0c0\0d\f0\0b\1e\0bW\n\14\n\a6\n\c1\n\f0\0bd\0b\f6\nH\0b\b4\n\7f\nQ\0b\1f\0cN\0cN\0c\90\0ca\0c\f0\0b\c2\0b\93\0b\1e\0b\17\11*\0fm\0bH\0b\1e\0bH\0b\1e\0b\1e\0bH\0bH\0bH\0b\1e\0bH\0bm\0bH\0b\1e\0b\a5\0bd\0bd\0b\a5\0b\a5\0b\f0\0b2\0c\90\0cN\0c\f0\0b\c2\0b\9c\0b\9c\0b\9c\0bm\0b\b4\n\85\105\10\ee\0c\13\0dm\0b\93\0bH\0b\a5\0b\a5\0b\1e\0b\e9\n\b4\n\1e\0b\1e\0b\1e\0b\e9\n\f0\0f\ae\0f\1f\0c\c2\0bm\0bm\0bm\0bH\0bm\0bm\0b\1e\0b\1e\0b\1e\0b\e9\nH\0b\dc\n\07\12\df\11a\0cq\0d\87\0c\a5\0bQ\0b\de\0b2\0c\b4\n\7f\n\7f\n\7f\n\b4\n\e9\n\8c\n5\10\ad\10\cd\0eI\0e\a6\n\dc\nH\0bH\0b\c2\0b\9c\0bm\0b\1e\0b\7f\n\7f\n\e9\nH\0bw\10\e2\0d\c1\n\1e\0b\1e\0bH\0bH\0bH\0bm\0bm\0bH\0bm\0bm\0bm\0b\93\0bH\0b6\149\13\d5\08h\0d\cd\0e\97\0d\13\0d\1e\0b\ee\0c\97\0dN\0cQ\0b\9c\t\b7\t\c1\nm\0b{\0de\0e2\0c}\0c\1d\0d\e7\0b\87\0c\87\0c\a5\0b\90\0c\0d\0cm\0bm\0b\7f\n\ec\t\82\t\a5\0b\c2\0b\e9\n\e9\n\b4\n\e9\n\1e\0b\9c\0b\f0\0b\1f\0cN\0cN\0cN\0c\1f\0c\c2\0b\c2\0b\80\0b9\0b\7f\n\a6\n\dc\n\c2\0bh\0d\d9\0d\1d\0d\ac\0c\f0\0b\c2\0b\93\0bm\0bH\0b\1e\0b\cb\0b\80\0bQ\0b\c2\0b\c2\0b\9c\0b\cb\0b\1f\0c\f0\0b\f0\0b\c2\0bH\0b\1e\0bm\0bm\0bH\0bP\0f\7f\0f\c2\0b}\0c\1d\0d\90\0c\db\0c\db\0c\97\0dx\0eq\0d\a6\n\85\08\9c\t\14\n/\nd\00\03\00(\00\03\00\03\00\03\00\05\00\0e\00\0e\00\n\00\0b\00\03\00\08\00\t\00\07\00\03\00[\01\\\ca\be\d8\b6\df\9a\e2\9c\e6x\ecz\f4\cc\fc4\03\86\0b\88\13d\19f\1dJ B\'\a45d\00\f0\00 \00d\00\cd<\000\00 \00 \fe\1f\f6\1f\ea\1f\d8\1f\c2\1f\a8\1f\88\1fb\1f:\1f\n\1f\d8\1e\a0\1eb\1e\"\1e\dc\1d\90\1dB\1d\ee\1c\96\1c:\1c\d8\1br\1b\n\1b\9c\1a*\1a\b4\19:\19\bc\18<\18\b6\17.\17\a0\16\10\16~\15\e8\14N\14\b0\13\10\13n\12\c8\11\1e\11t\10\c6\0f\16\0fd\0e\ae\0d\f8\0c@\0c\84\0b\c8\n\n\nJ\t\8a\08\c6\07\02\07>\06x\05\b2\04\ea\03\"\03Z\02\92\01\ca\00\00\006\ffn\fe\a6\fd\de\fc\16\fcN\fb\88\fa\c2\f9\fe\f8:\f8v\f7\b6\f6\f6\f58\f5|\f4\c0\f3\08\f3R\f2\9c\f1\ea\f0:\f0\8c\ef\e2\ee8\ee\92\ed\f0\ecP\ec\b2\eb\18\eb\82\ea\f0\e9`\e9\d2\e8J\e8\c4\e7D\e7\c6\e6L\e6\d6\e5d\e5\f6\e4\8e\e4(\e4\c6\e3j\e3\12\e3\be\e2p\e2$\e2\de\e1\9e\e1`\e1(\e1\f6\e0\c6\e0\9e\e0x\e0X\e0>\e0(\e0\16\e0\n\e0\02\e0\00\e0*\af\d5\c9\cf\ff@\00\11\00c\ffa\01\10\fe\a3\00\'+\bdV\d9\ff\06\00[\00V\ff\ba\00\17\00\80\fc\c0\18\d8M\ed\ff\dc\fff\00\a7\ff\e8\ffH\01I\fc\08\n%>\87\c7=\c9@\00\80\00\86\ff$\006\01\00\fdH\023$EE\0c\00\80\00\12\00r\ff \01\8b\ff\9f\fc\1b\10{8h\02\0d\c8\f6\ff\'\00:\00\d2\ff\ac\ffx\00\b8\00\c5\fe\e3\fd\04\05\04\15@#\e6>\c6\c4\f3\ff\00\00\14\00\1a\00\05\00\e1\ff\d5\ff\fc\ffA\00Z\00\07\00c\ff\08\ff\d4\ffQ\02/\064\n\c7\0c\e4W\05\c5\03\00\f2\ff\ec\ff\f1\ff\02\00\19\00%\00\19\00\f0\ff\b9\ff\95\ff\b1\ff2\00$\01o\02\d6\03\08\05\b8\05\94kg\c4\11\00\0c\00\08\00\01\00\f6\ff\ea\ff\e2\ff\e0\ff\ea\ff\03\00,\00d\00\a8\00\f3\00=\01}\01\ad\01\c7\01\bd\00\a8\fdi\02gwu\00a\ff\d2\fb\08t4\00\dd\00\a8\f6tn\fc\ff\11\02\ea\f2\e5f\d0\ff\f6\02\8c\f0\a5]\b0\ff\89\03u\ef\06S\9d\ff\cc\03\82\effG\95\ff\c7\03\8b\f0\';\99\ff\80\03a\f2\ae.\a5\ff\05\03\cf\f4^\"\b9\ffc\02\a1\f7\98\16\d2\ff\a9\01\a1\fa\b4\0b\00\01\01\01\02\03\03\03\02\03\03\03\02\03\03\03\00\03\0c\0f03<?\c0\c3\cc\cf\f0\f3\fc\ff\00\ff\00\ff\00\ff\00\ff\00\ff\00\fe\01\00\01\ff\00\fe\00\fd\02\00\01\ff\00\fe\00\fd\03\00\01\ff\02\01\00\19\17\02\00~|wmW)\13\t\04\02")
  (data (i32.const 25321) "ZPKE?81(\"\1d\14\12\n")
  (data (i32.const 25342) "ndZTNGA:3-\' \1a\14\0c\00\00\00\00\00\00vng]VPKFA;5/(\1f\17\0f\04\00\00\00\00~wph_YSNHB<6/\' \19\11\0c\01\00\00\86\7fxrga[UNHB<6/)#\1d\17\10\n\01\90\89\82|qke_XRLF@93-\'!\1a\0f\01\98\91\8a\84{uoib\\VPJC=71+$\14\01\a2\9b\94\8e\85\7fyslf`ZTMGA;5.\1e\01\ac\a5\9e\98\8f\89\83}vpjd^WQKE?8-\14\c8\c8\c8\c8\c8\c8\c8\c8\c6\c1\bc\b7\b2\ad\a8\a3\9e\99\94\81h(\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07\07(\0f\17\1c\1f\"$&\')*+,-.//123456779:;<=>??ABCDEFGG(\14!)059=@BEGIKLNPRUWY[\\^`begiklnpruwy{|~\80(\17\'3<CIOSW[^adfikosvy|~\81\83\87\8b\8e\91\94\96\99\9b\9f\a3\a6\a9\ac\ae\b1\b3#\1c1ANYckrx~\84\88\8d\91\95\99\9f\a5\ab\b0\b4\b9\bd\c0\c7\cd\d3\d8\dc\e1\e5\e8\ef\f5\fb\15!:Oap}\89\94\9d\a6\ae\b6\bd\c3\c9\cf\d9\e3\eb\f3\fb\11#?Vj{\8b\98\a5\b1\bb\c5\ce\d6\de\e6\ed\fa\19\1f7K[iu\80\8a\92\9a\a1\a8\ae\b4\b9\be\c8\d0\d7\de\e5\eb\f0\f5\ff\10$AYn\80\90\9f\ad\b9\c4\cf\d9\e2\ea\f2\fa\0b)Jg\80\97\ac\bf\d1\e1\f1\ff\t+On\8a\a3\ba\cf\e3\f6\0c\'Gc{\90\a4\b6\c6\d6\e4\f1\fd\t,Qq\8e\a8\c0\d6\eb\ff\071Z\7f\a0\bf\dc\f7\063_\86\aa\cb\ea\07/W{\9b\b8\d4\ed\064a\89\ae\d0\f0\059j\97\c0\e7\05;o\9e\ca\f3\057g\93\bb\e0\05<q\a1\ce\f8\04Az\af\e0\04C\7f\b6\ea\e0\e0\e0\e0\e0\e0\e0\e0\a0\a0\a0\a0\b9\b9\b9\b2\b2\a8\86=%\e0\e0\e0\e0\e0\e0\e0\e0\f0\f0\f0\f0\cf\cf\cf\c6\c6\b7\90B(\a0\a0\a0\a0\a0\a0\a0\a0\b9\b9\b9\b9\c1\c1\c1\b7\b7\ac\8a@&\f0\f0\f0\f0\f0\f0\f0\f0\cf\cf\cf\cf\cc\cc\cc\c1\c1\b4\8fB(\b9\b9\b9\b9\b9\b9\b9\b9\c1\c1\c1\c1\c1\c1\c1\b7\b7\ac\8aA\'\cf\cf\cf\cf\cf\cf\cf\cf\cc\cc\cc\cc\c9\c9\c9\bc\bc\b0\8dB(\c1\c1\c1\c1\c1\c1\c1\c1\c1\c1\c1\c1\c2\c2\c2\b8\b8\ad\8bA\'\cc\cc\cc\cc\cc\cc\cc\cc\c9\c9\c9\c9\c6\c6\c6\bb\bb\af\8cB(H\7fA\81B\80A\80@\80>\80@\80@\80\\N\\O\\NZOt)s(r(\84\1a\84\1a\91\11\a1\0c\b0\n\b1\0b\18\b30\8a6\876\845\868\857\847\84=rF`JXKXWJYB[Cd;l2x(z%a+N2SNTQXKVJWGZI]J]Jm(r$u\"u\"\8f\11\91\12\92\13\a2\0c\a5\n\b2\07\bd\06\be\08\b1\t\17\b26s?fBbEcJYG[I[NYVP\\B]@f;g<h<u4{,\8a#\85\1fa&M-=Z]<i*k)n-t&q&p&|\1a\84\1b\88\13\8c\14\9b\0e\9f\10\9e\12\aa\0d\b1\n\bb\08\c0\06\af\t\9f\n\15\b2;nGVKUTS[BXIWH\\KbHi:k6s4r7p8\813\84(\96!\8c\1db#M**y`Bl+o(u,{ x$w!\7f!\86\"\8b\15\93\17\98\14\9e\19\9a\1a\a6\15\ad\10\b8\0d\b8\n\96\0d\8b\0f\16\b2?rJRTS\\Rg>`H`CeIkHq7v4}4v4u7\871\89\'\9d \91\1da!M(\02\01\00\00\08\0d\10\13\15\17\18\1a\1b\1c\1d\1e\1f  !\"\"#$$%%\e0p,\0f\03\02\01\00\fe\ed\c0\84F\17\04\00\ff\fc\e2\9b=\0b\02\00\fa\f5\ea\cbG2*&#!\1f\1d\1c\1b\1a\19\18\17\16\15\14\13\12\11\10\0f\0e\0d\0c\0b\n\t\08\07\06\05\04\03\02\01\00\b3c\00G8+\1e\15\0c\06\00\c7\a5\90|m`TG=3* \17\0f\08\00\f1\e1\d3\c7\bb\af\a4\99\8e\84{ri`XPH@92,&!\1d\18\14\10\0c\t\05\02\00\04\06\18\07\05\00\00\02\00\00\0c\1c)\0d\fc\f7\0f*\19\0e\01\fe>)\f7\f6%A\fc\03\fa\04B\07\f8\10\0e&\fd!\0d\16\'\17\0c\ff$@\1b\fa\f9\n7+\11\01\01\08\01\01\06\f5J5\f7\f47L\f4\08\fd\03]\1b\fc\1a\';\03\f8\02\00M\0b\t\f8\16,\fa\07(\t\1a\03\t\f9\14e\f9\04\03\f8*\1a\00\f1!D\02\17\fe7.\fe\0f\03\ff\15\10)\fa\1b=\'\05\f5*X\04\01\fe<A\06\fc\ff\fbI8\01\f7\13^\1d\f7\00\0cc\06\04\08\edf.\f3\03\02\0d\03\02\t\ebTH\ee\f5.h\ea\08\12&0\17\00\f0FS\eb\0b\05\f5u\16\f8\fa\17u\f4\03\03\f8_\1c\04\f6\0fM<\f1\ff\04|\02\fc\03&T\18\e7\02\0d*\0d\1f\15\fc8.\ff\ff#O\f3\13\f9AX\f7\f2\14\04Q1\e3\14\00K\03\ef\05\f7,\\\f8\01\fd\16E\1f\fa_)\f4\05\'C\10\fc\01\00\fax7\dc\f3,z\04\e8Q\05\0b\03\07\02\00\t\nX\0c#<Sl\84\9d\b4\ce\e4\0f 7Me}\97\af\c9\e1\13*BYr\89\a2\b8\d1\e6\0c\192Hax\93\ac\c8\df\1a,EZr\87\9f\b4\cd\e1\0d\165Pj\82\9c\b4\cd\e4\0f\19,@Zs\8e\a8\c4\de\13\18>Rdx\91\a8\be\d6\16\1f2Ogx\97\aa\cb\e3\15\1d-Aj|\96\ab\c4\e0\1e1Kay\8e\a5\ba\d1\e5\13\194F]t\8f\a6\c0\db\1a\">Kav\91\a7\c2\d9\19!8F[q\8f\a5\c4\df\15\"3Hau\91\ab\c4\de\14\1d2CZu\90\a8\c5\dd\16\1f0B_u\92\a8\c4\de\18!3Mt\86\9e\b4\c8\e0\15\1cFWj|\95\aa\c2\d9\1a!5@Su\98\ad\cc\e1\1b\"A_l\81\9b\ae\d2\e1\14\1aHcq\83\9a\b0\c8\db\"+=N]r\9b\b1\cd\e5\17\1d6a|\8a\a3\b3\d1\e5\1e&8Yv\81\9e\b2\c8\e7\15\1d1?Uo\8e\a3\c1\de\1b0Mg\85\9e\b3\c4\d7\e8\1d/Jc|\97\b0\c6\dc\ed!*=L]y\9b\ae\cf\e1\1d5Wp\88\9a\aa\bc\d0\e3\18\1e4T\83\96\a6\ba\cb\e5%0@Thv\9c\b1\c9\e6\d4\b2\94\81l`UROM=;98310-*)(&$\"\1f\1e\15\0c\n\03\01\00\ff\f5\f4\ec\e9\e1\d9\cb\be\b0\af\a1\95\88}rf[QG<4+#\1c\14\13\12\0c\0b\05\00\b3\8a\8c\94\97\95\99\97\a3tCR;\\HdY\\\10\00\00\00\00cB$$\"$\"\"\"\"SE$4\"tfFDD\b0fDD\"AUDT$t\8d\98\8b\aa\84\bb\b8\d8\89\84\f9\a8\b9\8bhfdDD\b2\da\b9\b9\aa\f4\d8\bb\bb\aa\f4\bb\bb\db\8ag\9b\b8\b9\89t\b7\9b\98\88\84\d9\b8\b8\aa\a4\d9\ab\9b\8b\f4\a9\b8\b9\aa\a4\d8\df\da\8a\d6\8f\bc\da\a8\f4\8d\88\9b\aa\a8\8a\dc\db\8b\a4\db\ca\d8\89\a8\ba\f6\b9\8bt\b9\db\b9\8add\86df\"DDdD\a8\cb\dd\da\a8\a7\9a\88hF\a4\f6\ab\89\8b\89\9b\da\db\8b\ff\fe\fd\ee\0e\03\02\01\00\ff\fe\fc\da#\03\02\01\00\ff\fe\fa\d0;\04\02\01\00\ff\fe\f6\c2G\n\02\01\00\ff\fc\ec\b7R\08\02\01\00\ff\fc\eb\b4Z\11\02\01\00\ff\f8\e0\aba\1e\04\01\00\ff\fe\ec\ad_%\07\01\00\ff\ff\ff\83\06\91\ff\ff\ff\ff\ff\ec]\0f`\ff\ff\ff\ff\ff\c2S\19G\dd\ff\ff\ff\ff\a2I\"B\a2\ff\ff\ff\d2~I+9\ad\ff\ff\ff\c9}G0:\82\ff\ff\ff\a6nI9>h\d2\ff\ff\fb{A7Dd\ab\ff\07\17&6EUdt\83\93\a2\b2\c1\d0\df\ef\0d\19)7ESbp\7f\8e\9d\ab\bb\cb\dc\ec\0f\15\"3=N\\j~\88\98\a7\b9\cd\e1\f0\n\15$2?O_n~\8d\9d\ad\bd\cd\dd\ed\11\14%3;NYk{\86\96\a4\b8\cd\e0\f0\n\0f 3CQ`p\81\8e\9e\ad\bd\cc\dc\ec\08\15%3AObq~\8a\9b\a8\b3\c0\d1\da\0c\0f\"7?NWlv\83\94\a7\b9\cb\db\ec\10\13 $8O[lv\88\9a\ab\ba\cc\dc\ed\0b\1c+:JYix\87\96\a5\b4\c4\d3\e2\f1\06\10!.<K\\k{\89\9c\a9\b9\c7\d6\e1\0b\13\1e,9JYiy\87\98\a9\ba\ca\da\ea\0c\13\1d.9GXdx\84\94\a5\b6\c7\d8\e9\11\17#.8M\\j{\86\98\a7\b9\cc\de\ed\0e\11-5?KYks\84\97\ab\bc\ce\dd\f0\t\10\1d(8GXgw\89\9a\ab\bd\cd\de\ed\10\13$09LWiv\84\96\a7\b9\ca\da\ec\0c\11\1d6GQ^h~\88\95\a4\b6\c9\dd\ed\0f\1c/>Oas\81\8e\9b\a8\b4\c2\d0\df\ee\08\0e\1e->N^o\7f\8f\9f\af\c0\cf\df\ef\11\1e1>O\\kw\84\91\a0\ae\be\cc\dc\eb\0e\13$-=L[ly\8a\9a\ac\bd\cd\de\ee\0c\12\1f-<L[k{\8a\9a\ab\bb\cc\dd\ec\0d\11\1f+5FSgr\83\95\a7\b9\cb\dc\ed\11\16#*:N]n}\8b\9b\aa\bc\ce\e0\f0\08\0f\"2CScs\83\92\a2\b2\c1\d1\e0\ef\0d\10)BIV_o\80\89\96\a3\b7\ce\e1\f1\11\19%4?K\\fw\84\90\a0\af\bf\d4\e7\13\1f1ASdu\85\93\a1\ae\bb\c8\d5\e3\f2\12\1f4DXgu~\8a\95\a3\b1\c0\cf\df\ef\10\1d/=LZjw\85\93\a1\b0\c1\d1\e0\f0\0f\15#2=IVanw\81\8d\af\c6\da\ed\e1\cc\c9\b8\b7\af\9e\9a\99\87wsqnmcb_OD420-+ \1f\1b\12\n\03\00\ff\fb\eb\e6\d4\c9\c4\b6\a7\a6\a3\97\8a|nhZNLFE9-\"\18\15\0b\06\05\04\03\00\af\94\a0\b0\b2\ad\ae\a4\b1\ae\c4\b6\c6\c0\b6D>B<HuUZv\88\97\8e\a0\8e\9b\00\00\00\00\00\00\00\01dffDD$\"`\a4k\9e\b9\b4\b9\8bf@B$\"\"\00\01 \d0\8b\8d\bf\98\b9\9bh`\abh\a6fff\84\01\00\00\00\00\10\10\00PmNk\b9\8bge\d0\d4\8d\8b\ad\99{g$\00\00\00\00\00\00\010\00\00\00\00\00\00 D\87{wwgEbDgxvvfGb\86\88\9d\b8\b6\99\8b\86\d0\a8\f8K\bd\8fyk 1\"\"\"\00\11\02\d2\eb\8b{\b9\89i\86b\87h\b6d\b7\ab\86dFDFBB\"\83@\a6fD$\02\01\00\86\a6fD\"\"B\84\d4\f6\9e\8bkkWfd\db}z\89vg\84r\87\89i\abj2\"\a4\d6\8d\8f\b9\97yg\c0\"\00\00\00\00\00\01\d0mJ\bb\86\f9\9f\89fn\9avWewe\00\02\00$$BD#`\a4fd$\00\02!\a7\8a\aefdT\02\02dkxw$\c5\18\00\ff\fe\fd\f4\0c\03\02\01\00\ff\fe\fc\e0&\03\02\01\00\ff\fe\fb\d19\04\02\01\00\ff\fe\f4\c3E\04\02\01\00\ff\fb\e8\b8T\07\02\01\00\ff\fe\f0\baV\0e\02\01\00\ff\fe\ef\b2[\1e\05\01\00\ff\f8\e3\b1d\13\02\01\00\ff\ff\ff\9c\04\9a\ff\ff\ff\ff\ff\e3f\0f\\\ff\ff\ff\ff\ff\d5S\18H\ec\ff\ff\ff\ff\96L!?\d6\ff\ff\ff\beyM+7\b9\ff\ff\ff\f5\89G+;\8b\ff\ff\ff\ff\83B2Bk\c2\ff\ff\a6tL75}\ff\ff\f9\f7\f6\f5\f4\ea\d2\ca\c9\c8\c5\aeR;876.\16\0c\0b\n\t\07\00@\00\cb\96\00\d7\c3\a6}nR\00x\00\80@\00\e8\9e\n\00\e6\00\f3\dd\c0\b5\00\abU\00\c0\80@\00\cd\9af3\00\d5\ab\80U+\00\e0\c0\a0\80`@ \00d(\10\07\03\01\00\fd\fa\f4\e9\d4\b6\96\83xnbUH<1( \19\13\0f\0d\0b\t\08\07\06\05\04\03\02\01\00\d2\d0\ce\cb\c7\c1\b7\a8\8ehJ4%\1b\14\0e\n\06\04\02\00\df\c9\b7\a7\98\8a|obXOF>82,\'#\1f\1b\18\15\12\10\0e\0c\n\08\06\04\03\02\01\00\bc\b0\9b\8awaC+\1a\n\00\a5wP=/#\1b\14\0e\t\04\00q?\00}3\1a\12\0f\0c\0b\n\t\08\07\06\05\04\03\02\01\00\c6i-\16\0f\0c\0b\n\t\08\07\06\05\04\03\02\01\00\d5\a2tS;+ \18\12\0f\0c\t\07\06\05\03\02\00\ef\bbt;\1c\10\0b\n\t\08\07\06\05\04\03\02\01\00\fa\e5\bc\87V3\1e\13\0d\n\08\06\05\04\03\02\01\00\f9\eb\d5\b9\9c\80gSB5*!\1a\15\11\0d\n\00\fe\f9\eb\ce\a4vM.\1b\10\n\07\05\04\03\02\01\00\ff\fd\f9\ef\dc\bf\9cwU9%\17\0f\n\06\04\02\00\ff\fd\fb\f6\ed\df\cb\b3\98|bK7(\1d\15\0f\00\ff\fe\fd\f7\dc\a2jC*\1c\12\0c\t\06\04\03\02\00\f1\be\b2\84WJ)\0e\00\df\c1\9d\8cj9\'\12\00\80\00\d6*\00\eb\80\15\00\f4\b8H\0b\00\f8\d6\80*\07\00\f8\e1\aaP\19\05\00\fb\ec\c6~6\12\03\00\fa\ee\d3\9fR#\0f\05\00\fa\e7\cb\a8\80X5\19\06\00\fc\ee\d8\b9\94lG(\12\04\00\fd\f3\e1\c7\a6\80Z9\1f\0d\03\00\fe\f6\e9\d4\b7\93mI,\17\n\02\00\ff\fa\f0\df\c6\a6\80Z:!\10\06\01\00\ff\fb\f4\e7\d2\b5\92nK.\19\0c\05\01\00\ff\fd\f8\ee\dd\c4\a4\80\\<#\12\08\03\01\00\ff\fd\f9\f2\e5\d0\b4\92nL0\1b\0e\07\03\01\00\81\00\cf2\00\ec\81\14\00\f5\b9H\n\00\f9\d5\81*\06\00\fa\e2\a9W\1b\04\00\fb\e9\c2\82>\14\04\00\fa\ec\cf\a0c/\11\03\00\ff\f0\d9\b6\83Q)\0b\01\00\ff\fe\e9\c9\9fk=\14\02\01\00\ff\f9\e9\ce\aa\80V2\17\07\01\00\ff\fa\ee\d9\ba\94lF\'\12\06\01\00\ff\fc\f3\e2\c8\a6\80Z8\1e\0d\04\01\00\ff\fc\f5\e7\d1\b4\92nL/\19\0b\04\01\00\ff\fd\f8\ed\db\c2\a3\80]>%\13\08\03\01\00\ff\fe\fa\f1\e2\cd\b1\91oO3\1e\0f\06\02\01\00\81\00\cb6\00\ea\81\17\00\f5\b8I\n\00\fa\d7\81)\05\00\fc\e8\adV\18\03\00\fd\f0\c8\818\0f\02\00\fd\f4\d9\a4^&\n\01\00\fd\f5\e2\bd\84G\1b\07\01\00\fd\f6\e7\cb\9fi8\17\06\01\00\ff\f8\eb\d5\b3\85U/\13\05\01\00\ff\fe\f3\dd\c2\9fuF%\0c\02\01\00\ff\fe\f8\ea\d0\ab\80U0\16\08\02\01\00\ff\fe\fa\f0\dc\bd\95kC$\10\06\02\01\00\ff\fe\fb\f3\e3\c9\a6\80Z7\1d\0d\05\02\01\00\ff\fe\fc\f6\ea\d5\b7\93mI+\16\n\04\02\01\00\82\00\c8:\00\e7\82\1a\00\f4\b8L\0c\00\f9\d6\82+\06\00\fc\e8\adW\18\03\00\fd\f1\cb\838\0e\02\00\fe\f6\dd\a7^#\08\01\00\fe\f9\e8\c1\82A\17\05\01\00\ff\fb\ef\d3\a2c-\0f\04\01\00\ff\fb\f3\df\ba\83J!\0b\03\01\00\ff\fc\f5\e6\ca\9ei9\18\08\02\01\00\ff\fd\f7\eb\d6\b3\84T,\13\07\02\01\00\ff\fe\fa\f0\df\c4\9fpE$\0f\06\02\01\00\ff\fe\fd\f5\e7\d1\b0\88]7\1b\0b\03\02\01\00\ff\fe\fd\fc\ef\dd\c2\9euL*\12\04\03\02\01\00\00\00\02\05\t\0e\14\1b#,6AMZhw\87\fe1CMR]c\c6\0b\12\18\1f$-\ff.BNW^h\d0\0e\15 *3B\ff^hmpsv\f85EPX_f\00\0f\08\07\04\0b\0c\03\02\0d\n\05\06\t\0e\01\00\t\06\03\04\05\08\01\02\07\00\01\00\00\00\01\00\00\01\ff\01\ff\02\fe\02\fe\03\fd\00\01\00\01\ff\02\ff\02\fe\03\fe\03\00\02\ff\ff\ff\00\00\01\01\00\01\00\01\00\00\00\00\00\01\00\00\00\00\00\01\00\00\00\01\00\00\00\00\00\ff\02\01\00\01\01\00\00\ff\ff\00\00\01\ff\00\01\ff\00\ff\01\fe\02\fe\fe\02\fd\02\03\fd\fc\03\fc\04\04\fb\05\fa\fb\06\f9\06\05\08\f7\00\00\01\00\00\00\00\00\00\00\ff\01\00\00\01\ff\00\01\ff\ff\01\ff\02\01\ff\02\fe\fe\02\fe\02\02\03\fd\00\01\00\00\00\00\00\00\01\00\01\00\00\01\ff\01\00\00\02\01\ff\02\ff\ff\02\ff\02\02\ff\03\fe\fe\fe\03\00\01\00\00\01\00\01\ff\02\ff\02\ff\02\03\fe\03\fe\fe\04\04\fd\05\fd\fc\06\fc\06\05\fb\08\fa\fb\f9\t\04\00\02\00\00\00\t\04\07\04\00\03\0c\07\07")
- (export "_emscripten_get_global_libc" (func $_emscripten_get_global_libc))
- (export "_free" (func $_free))
- (export "_malloc" (func $_malloc))
- (export "_memcpy" (func $_memcpy))
- (export "_memmove" (func $_memmove))
- (export "_memset" (func $_memset))
- (export "_opus_decode_float" (func $_opus_decode_float))
- (export "_opus_decoder_create" (func $_opus_decoder_create))
- (export "_opus_decoder_destroy" (func $_opus_decoder_destroy))
- (export "_sbrk" (func $_sbrk))
  (export "_speex_resampler_destroy" (func $_speex_resampler_destroy))
- (export "_speex_resampler_init" (func $_speex_resampler_init))
- (export "_speex_resampler_process_interleaved_float" (func $_speex_resampler_process_interleaved_float))
+ (export "_opus_decode_float" (func $_opus_decode_float))
  (export "dynCall_iiiiiii" (func $dynCall_iiiiiii))
- (export "establishStackSpace" (func $establishStackSpace))
- (export "getTempRet0" (func $getTempRet0))
- (export "runPostSets" (func $runPostSets))
- (export "setTempRet0" (func $setTempRet0))
+ (export "_opus_decoder_destroy" (func $_opus_decoder_destroy))
  (export "setThrew" (func $setThrew))
+ (export "_opus_decoder_create" (func $_opus_decoder_create))
+ (export "_memset" (func $_memset))
+ (export "_sbrk" (func $_sbrk))
+ (export "_memcpy" (func $_memcpy))
  (export "stackAlloc" (func $stackAlloc))
- (export "stackRestore" (func $stackRestore))
+ (export "getTempRet0" (func $getTempRet0))
+ (export "setTempRet0" (func $setTempRet0))
+ (export "_speex_resampler_init" (func $_speex_resampler_init))
+ (export "_emscripten_get_global_libc" (func $_emscripten_get_global_libc))
  (export "stackSave" (func $stackSave))
- (func $stackAlloc (; 9 ;) (param $0 i32) (result i32)
+ (export "_free" (func $_free))
+ (export "runPostSets" (func $runPostSets))
+ (export "establishStackSpace" (func $establishStackSpace))
+ (export "_memmove" (func $_memmove))
+ (export "stackRestore" (func $stackRestore))
+ (export "_speex_resampler_process_interleaved_float" (func $_speex_resampler_process_interleaved_float))
+ (export "_malloc" (func $_malloc))
+ (func $stackAlloc (param $0 i32) (result i32)
   (local $1 i32)
   (set_local $1
    (get_global $STACKTOP)
@@ -88,15 +88,15 @@
   )
   (get_local $1)
  )
- (func $stackSave (; 10 ;) (result i32)
+ (func $stackSave (result i32)
   (get_global $STACKTOP)
  )
- (func $stackRestore (; 11 ;) (param $0 i32)
+ (func $stackRestore (param $0 i32)
   (set_global $STACKTOP
    (get_local $0)
   )
  )
- (func $establishStackSpace (; 12 ;) (param $0 i32) (param $1 i32)
+ (func $establishStackSpace (param $0 i32) (param $1 i32)
   (set_global $STACKTOP
    (get_local $0)
   )
@@ -104,7 +104,7 @@
    (get_local $1)
   )
  )
- (func $setThrew (; 13 ;) (param $0 i32) (param $1 i32)
+ (func $setThrew (param $0 i32) (param $1 i32)
   (if
    (i32.eqz
     (get_global $__THREW__)
@@ -119,15 +119,15 @@
    )
   )
  )
- (func $setTempRet0 (; 14 ;) (param $0 i32)
+ (func $setTempRet0 (param $0 i32)
   (set_global $tempRet0
    (get_local $0)
   )
  )
- (func $getTempRet0 (; 15 ;) (result i32)
+ (func $getTempRet0 (result i32)
   (get_global $tempRet0)
  )
- (func $_bitexact_cos (; 16 ;) (param $0 i32) (result i32)
+ (func $_bitexact_cos (param $0 i32) (result i32)
   (local $1 i32)
   (set_local $0
    (i32.shr_s
@@ -216,7 +216,7 @@
    (i32.const 65535)
   )
  )
- (func $_bitexact_log2tan (; 17 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_bitexact_log2tan (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (set_local $0
@@ -331,7 +331,7 @@
    )
   )
  )
- (func $_denormalise_bands (; 18 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32)
+ (func $_denormalise_bands (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32)
   (local $10 i32)
   (local $11 f32)
   (local $12 i32)
@@ -635,7 +635,7 @@
    )
   )
  )
- (func $_anti_collapse (; 19 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32)
+ (func $_anti_collapse (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32)
   (local $13 f32)
   (local $14 i32)
   (local $15 f32)
@@ -1110,7 +1110,7 @@
    )
   )
  )
- (func $_haar1 (; 20 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_haar1 (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 f32)
@@ -1233,7 +1233,7 @@
    )
   )
  )
- (func $_quant_all_bands (; 21 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32)
+ (func $_quant_all_bands (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32)
   (local $20 i32)
   (local $21 i32)
   (local $22 i32)
@@ -2499,7 +2499,7 @@
    (get_local $39)
   )
  )
- (func $_quant_band (; 22 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 f32) (param $9 i32) (param $10 i32) (result i32)
+ (func $_quant_band (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 f32) (param $9 i32) (param $10 i32) (result i32)
   (local $11 i32)
   (local $12 i32)
   (local $13 i32)
@@ -3053,7 +3053,7 @@
    )
   )
  )
- (func $_quant_band_stereo (; 23 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (result i32)
+ (func $_quant_band_stereo (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (result i32)
   (local $11 i32)
   (local $12 i32)
   (local $13 i32)
@@ -3756,7 +3756,7 @@
   )
   (get_local $4)
  )
- (func $_quant_band_n1 (; 24 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_quant_band_n1 (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 i32)
   (local $6 i32)
   (local $7 i32)
@@ -3888,7 +3888,7 @@
    )
   )
  )
- (func $_deinterleave_hadamard (; 25 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_deinterleave_hadamard (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -4122,7 +4122,7 @@
    (get_local $7)
   )
  )
- (func $_quant_partition (; 26 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 f32) (param $8 i32) (result i32)
+ (func $_quant_partition (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 f32) (param $8 i32) (result i32)
   (local $9 i32)
   (local $10 i32)
   (local $11 i32)
@@ -5026,7 +5026,7 @@
   )
   (get_local $0)
  )
- (func $_interleave_hadamard (; 27 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_interleave_hadamard (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -5260,7 +5260,7 @@
    (get_local $7)
   )
  )
- (func $_compute_theta (; 28 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32)
+ (func $_compute_theta (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32)
   (local $11 i32)
   (local $12 i32)
   (local $13 i32)
@@ -6549,7 +6549,7 @@
    (get_local $0)
   )
  )
- (func $_bits2pulses (; 29 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
+ (func $_bits2pulses (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
   (local $6 i32)
   (set_local $5
    (i32.add
@@ -6673,7 +6673,7 @@
    (get_local $1)
   )
  )
- (func $_pulses2bits (; 30 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result i32)
+ (func $_pulses2bits (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result i32)
   (if
    (i32.eqz
     (get_local $3)
@@ -6718,7 +6718,7 @@
    (i32.const 1)
   )
  )
- (func $_compute_qn (; 31 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (result i32)
+ (func $_compute_qn (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (result i32)
   (if
    (i32.gt_s
     (if (result i32)
@@ -6816,7 +6816,7 @@
    (i32.const -2)
   )
  )
- (func $_intensity_stereo (; 32 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
+ (func $_intensity_stereo (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
   (local $6 f32)
   (local $7 f32)
   (local $8 f32)
@@ -6927,7 +6927,7 @@
    )
   )
  )
- (func $_stereo_split (; 33 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_stereo_split (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 f32)
@@ -6998,7 +6998,7 @@
    )
   )
  )
- (func $_stereo_merge (; 34 ;) (param $0 i32) (param $1 i32) (param $2 f32) (param $3 i32)
+ (func $_stereo_merge (param $0 i32) (param $1 i32) (param $2 f32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 f32)
@@ -7191,7 +7191,7 @@
    (get_local $8)
   )
  )
- (func $_dual_inner_prod_c (; 35 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
+ (func $_dual_inner_prod_c (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
   (local $6 i32)
   (local $7 f32)
   (local $8 f32)
@@ -7275,7 +7275,7 @@
    (get_local $8)
   )
  )
- (func $_resampling_factor (; 36 ;) (param $0 i32) (result i32)
+ (func $_resampling_factor (param $0 i32) (result i32)
   (block $__rjto$0 (result i32)
    (block $__rjti$0
     (br $__rjto$0
@@ -7394,7 +7394,7 @@
    (i32.const 0)
   )
  )
- (func $_comb_filter (; 37 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 f32) (param $6 f32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32)
+ (func $_comb_filter (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 f32) (param $6 f32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32)
   (local $11 f32)
   (local $12 f32)
   (local $13 f32)
@@ -7898,7 +7898,7 @@
    )
   )
  )
- (func $_comb_filter_const_c (; 38 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 f32) (param $5 f32) (param $6 f32)
+ (func $_comb_filter_const_c (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 f32) (param $5 f32) (param $6 f32)
   (local $7 i32)
   (local $8 f32)
   (local $9 f32)
@@ -8056,7 +8056,7 @@
    )
   )
  )
- (func $_init_caps (; 39 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_init_caps (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -8181,7 +8181,7 @@
    )
   )
  )
- (func $_opus_custom_decoder_get_size (; 40 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $_opus_custom_decoder_get_size (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (i32.add
    (i32.add
     (i32.add
@@ -8208,7 +8208,7 @@
    )
   )
  )
- (func $_celt_decoder_init (; 41 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $_celt_decoder_init (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (if (result i32)
    (tee_local $2
     (call $_opus_custom_decoder_init
@@ -8239,7 +8239,7 @@
    )
   )
  )
- (func $_opus_custom_decoder_init (; 42 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $_opus_custom_decoder_init (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -8375,7 +8375,7 @@
   )
   (i32.const 0)
  )
- (func $_opus_custom_decoder_ctl (; 43 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_opus_custom_decoder_ctl (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -8994,7 +8994,7 @@
    (get_local $5)
   )
  )
- (func $_celt_decode_with_ec (; 44 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
+ (func $_celt_decode_with_ec (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
   (local $7 i32)
   (local $8 i32)
   (local $9 i32)
@@ -11321,7 +11321,7 @@
   )
   (get_local $0)
  )
- (func $_celt_decode_lost (; 45 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_celt_decode_lost (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 f32)
   (local $5 i32)
@@ -12988,7 +12988,7 @@
    (get_local $18)
   )
  )
- (func $_deemphasis (; 46 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32)
+ (func $_deemphasis (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32)
   (local $8 i32)
   (local $9 f32)
   (local $10 i32)
@@ -13327,7 +13327,7 @@
    (get_local $10)
   )
  )
- (func $_tf_decode (; 47 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
+ (func $_tf_decode (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
@@ -13610,7 +13610,7 @@
    )
   )
  )
- (func $_celt_synthesis (; 48 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32)
+ (func $_celt_synthesis (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32)
   (local $12 i32)
   (local $13 i32)
   (local $14 i32)
@@ -14204,7 +14204,7 @@
    (get_local $19)
   )
  )
- (func $_deemphasis_stereo_simple (; 49 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 f32) (param $5 i32)
+ (func $_deemphasis_stereo_simple (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 f32) (param $5 i32)
   (local $6 i32)
   (local $7 f32)
   (local $8 f32)
@@ -14333,7 +14333,7 @@
    (get_local $7)
   )
  )
- (func $_celt_plc_pitch_search (; 50 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_celt_plc_pitch_search (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (set_local $2
    (get_global $STACKTOP)
@@ -14377,7 +14377,7 @@
   )
   (get_local $0)
  )
- (func $_encode_pulses (; 51 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_encode_pulses (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (set_local $4
    (i32.add
@@ -14456,7 +14456,7 @@
    )
   )
  )
- (func $_icwrs (; 52 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_icwrs (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -14641,7 +14641,7 @@
   )
   (get_local $4)
  )
- (func $_decode_pulses (; 53 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result f32)
+ (func $_decode_pulses (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result f32)
   (local $4 i32)
   (set_local $4
    (i32.add
@@ -14721,7 +14721,7 @@
    (get_local $0)
   )
  )
- (func $_cwrsi (; 54 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result f32)
+ (func $_cwrsi (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result f32)
   (local $4 i32)
   (local $5 f32)
   (local $6 i32)
@@ -15251,7 +15251,7 @@
    )
   )
  )
- (func $_ec_tell_frac (; 55 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_ec_tell_frac (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (set_local $1
@@ -15306,7 +15306,7 @@
    )
   )
  )
- (func $_ec_dec_init (; 56 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_ec_dec_init (param $0 i32) (param $1 i32) (param $2 i32)
   (i32.store
    (get_local $0)
    (get_local $1)
@@ -15375,7 +15375,7 @@
    (get_local $0)
   )
  )
- (func $_ec_read_byte (; 57 ;) (param $0 i32) (result i32)
+ (func $_ec_read_byte (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (if
@@ -15417,7 +15417,7 @@
    )
   )
  )
- (func $_ec_dec_normalize (; 58 ;) (param $0 i32)
+ (func $_ec_dec_normalize (param $0 i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -15523,7 +15523,7 @@
    )
   )
  )
- (func $_ec_decode (; 59 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_ec_decode (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (i32.store offset=36
    (get_local $0)
@@ -15560,7 +15560,7 @@
    )
   )
  )
- (func $_ec_decode_bin (; 60 ;) (param $0 i32) (result i32)
+ (func $_ec_decode_bin (param $0 i32) (result i32)
   (local $1 i32)
   (i32.store offset=36
    (get_local $0)
@@ -15607,7 +15607,7 @@
    )
   )
  )
- (func $_ec_dec_update (; 61 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_ec_dec_update (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (i32.store
    (tee_local $4
@@ -15676,7 +15676,7 @@
    )
   )
  )
- (func $_ec_dec_bit_logp (; 62 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_ec_dec_bit_logp (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -15739,7 +15739,7 @@
   )
   (get_local $6)
  )
- (func $_ec_dec_icdf (; 63 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $_ec_dec_icdf (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -15825,7 +15825,7 @@
   )
   (get_local $4)
  )
- (func $_ec_dec_uint (; 64 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_ec_dec_uint (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -15919,7 +15919,7 @@
   )
   (get_local $3)
  )
- (func $_ec_dec_bits (; 65 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_ec_dec_bits (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -16048,7 +16048,7 @@
    )
   )
  )
- (func $_ec_read_byte_from_end (; 66 ;) (param $0 i32) (result i32)
+ (func $_ec_read_byte_from_end (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -16098,7 +16098,7 @@
    )
   )
  )
- (func $_ec_encode (; 67 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_ec_encode (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -16182,7 +16182,7 @@
    )
   )
  )
- (func $_ec_enc_normalize (; 68 ;) (param $0 i32)
+ (func $_ec_enc_normalize (param $0 i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -16262,7 +16262,7 @@
    )
   )
  )
- (func $_ec_enc_carry_out (; 69 ;) (param $0 i32) (param $1 i32)
+ (func $_ec_enc_carry_out (param $0 i32) (param $1 i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -16403,7 +16403,7 @@
    )
   )
  )
- (func $_ec_write_byte (; 70 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_ec_write_byte (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (if
@@ -16452,7 +16452,7 @@
   )
   (i32.const 0)
  )
- (func $_ec_enc_bit_logp (; 71 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_ec_enc_bit_logp (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (set_local $2
@@ -16506,7 +16506,7 @@
    (get_local $0)
   )
  )
- (func $_ec_enc_uint (; 72 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_ec_enc_uint (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (if
@@ -16578,7 +16578,7 @@
    )
   )
  )
- (func $_ec_enc_bits (; 73 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_ec_enc_bits (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -16725,7 +16725,7 @@
    )
   )
  )
- (func $_ec_write_byte_at_end (; 74 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_ec_write_byte_at_end (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -16782,7 +16782,7 @@
   )
   (i32.const 0)
  )
- (func $_opus_fft_impl (; 75 ;) (param $0 i32) (param $1 i32)
+ (func $_opus_fft_impl (param $0 i32) (param $1 i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -17065,7 +17065,7 @@
    (get_local $9)
   )
  )
- (func $_kf_bfly2 (; 76 ;) (param $0 i32) (param $1 i32)
+ (func $_kf_bfly2 (param $0 i32) (param $1 i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 f32)
@@ -17389,7 +17389,7 @@
    )
   )
  )
- (func $_kf_bfly4 (; 77 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
+ (func $_kf_bfly4 (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
   (local $6 i32)
   (local $7 f32)
   (local $8 f32)
@@ -18048,7 +18048,7 @@
    )
   )
  )
- (func $_kf_bfly3 (; 78 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
+ (func $_kf_bfly3 (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
   (local $6 i32)
   (local $7 f32)
   (local $8 i32)
@@ -18413,7 +18413,7 @@
    )
   )
  )
- (func $_kf_bfly5 (; 79 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
+ (func $_kf_bfly5 (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
@@ -19133,7 +19133,7 @@
    )
   )
  )
- (func $_ec_laplace_decode (; 80 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $_ec_laplace_decode (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -19327,7 +19327,7 @@
   )
   (get_local $2)
  )
- (func $_isqrt32 (; 81 ;) (param $0 i32) (result i32)
+ (func $_isqrt32 (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -19422,7 +19422,7 @@
   )
   (get_local $2)
  )
- (func $_clt_mdct_backward_c (; 82 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32)
+ (func $_clt_mdct_backward_c (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32)
   (local $7 i32)
   (local $8 i32)
   (local $9 i32)
@@ -19976,7 +19976,7 @@
    )
   )
  )
- (func $_pitch_downsample (; 83 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_pitch_downsample (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 f32)
@@ -20439,7 +20439,7 @@
    (get_local $6)
   )
  )
- (func $_celt_fir5 (; 84 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_celt_fir5 (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 f32)
   (local $6 f32)
   (local $7 f32)
@@ -20635,7 +20635,7 @@
    (get_local $9)
   )
  )
- (func $_celt_pitch_xcorr_c (; 85 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_celt_pitch_xcorr_c (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 i32)
   (local $6 i32)
   (local $7 i32)
@@ -20835,7 +20835,7 @@
    (get_local $7)
   )
  )
- (func $_xcorr_kernel_c (; 86 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_xcorr_kernel_c (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 f32)
   (local $5 f32)
   (local $6 i32)
@@ -21430,7 +21430,7 @@
    )
   )
  )
- (func $_celt_inner_prod_c_51 (; 87 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result f32)
+ (func $_celt_inner_prod_c_51 (param $0 i32) (param $1 i32) (param $2 i32) (result f32)
   (local $3 i32)
   (local $4 f32)
   (set_local $3
@@ -21483,7 +21483,7 @@
   )
   (get_local $4)
  )
- (func $_pitch_search (; 88 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_pitch_search (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -21885,7 +21885,7 @@
    (get_local $4)
   )
  )
- (func $_find_best_pitch (; 89 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_find_best_pitch (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 f32)
   (local $6 f32)
   (local $7 i32)
@@ -22144,7 +22144,7 @@
    )
   )
  )
- (func $__celt_lpc (; 90 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $__celt_lpc (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 f32)
@@ -22391,7 +22391,7 @@
    )
   )
  )
- (func $_celt_fir_c (; 91 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_celt_fir_c (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -22741,7 +22741,7 @@
    (get_local $6)
   )
  )
- (func $_celt_iir (; 92 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_celt_iir (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 i32)
   (local $6 f32)
   (local $7 i32)
@@ -23400,7 +23400,7 @@
    (get_local $11)
   )
  )
- (func $__celt_autocorr (; 93 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
+ (func $__celt_autocorr (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
   (local $6 i32)
   (local $7 f32)
   (local $8 i32)
@@ -23668,7 +23668,7 @@
    (get_local $10)
   )
  )
- (func $_unquant_coarse_energy (; 94 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32)
+ (func $_unquant_coarse_energy (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32)
   (local $8 i32)
   (local $9 f32)
   (local $10 f32)
@@ -24022,7 +24022,7 @@
    (get_local $11)
   )
  )
- (func $_unquant_fine_energy (; 95 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32)
+ (func $_unquant_fine_energy (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32)
   (local $7 i32)
   (local $8 i32)
   (local $9 i32)
@@ -24150,7 +24150,7 @@
    )
   )
  )
- (func $_unquant_energy_finalise (; 96 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32)
+ (func $_unquant_energy_finalise (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32)
   (local $9 i32)
   (local $10 i32)
   (local $11 i32)
@@ -24322,7 +24322,7 @@
    )
   )
  )
- (func $_compute_allocation (; 97 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (result i32)
+ (func $_compute_allocation (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (result i32)
   (local $16 i32)
   (local $17 i32)
   (local $18 i32)
@@ -25236,7 +25236,7 @@
   )
   (get_local $0)
  )
- (func $_interp_bits2pulses (; 98 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (result i32)
+ (func $_interp_bits2pulses (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (result i32)
   (local $24 i32)
   (local $25 i32)
   (local $26 i32)
@@ -26823,7 +26823,7 @@
   )
   (get_local $4)
  )
- (func $_exp_rotation (; 99 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
+ (func $_exp_rotation (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
   (local $6 f32)
   (local $7 f32)
   (local $8 i32)
@@ -27062,7 +27062,7 @@
    )
   )
  )
- (func $_exp_rotation1 (; 100 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 f32) (param $4 f32)
+ (func $_exp_rotation1 (param $0 i32) (param $1 i32) (param $2 i32) (param $3 f32) (param $4 f32)
   (local $5 i32)
   (local $6 f32)
   (local $7 i32)
@@ -27240,7 +27240,7 @@
    )
   )
  )
- (func $_op_pvq_search_c (; 101 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result f32)
+ (func $_op_pvq_search_c (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result f32)
   (local $4 f32)
   (local $5 i32)
   (local $6 f32)
@@ -27862,7 +27862,7 @@
   )
   (get_local $4)
  )
- (func $_alg_quant (; 102 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 f32) (param $7 i32) (result i32)
+ (func $_alg_quant (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 f32) (param $7 i32) (result i32)
   (local $8 i32)
   (local $9 i32)
   (local $10 f32)
@@ -27959,7 +27959,7 @@
   )
   (get_local $0)
  )
- (func $_normalise_residual (; 103 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 f32) (param $4 f32)
+ (func $_normalise_residual (param $0 i32) (param $1 i32) (param $2 i32) (param $3 f32) (param $4 f32)
   (local $5 i32)
   (set_local $3
    (f32.mul
@@ -28012,7 +28012,7 @@
    )
   )
  )
- (func $_extract_collapse_mask (; 104 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $_extract_collapse_mask (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -28116,7 +28116,7 @@
   )
   (get_local $1)
  )
- (func $_alg_unquant (; 105 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 f32) (result i32)
+ (func $_alg_unquant (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 f32) (result i32)
   (local $7 i32)
   (local $8 i32)
   (set_local $8
@@ -28175,7 +28175,7 @@
   )
   (get_local $0)
  )
- (func $_renormalise_vector (; 106 ;) (param $0 i32) (param $1 i32) (param $2 f32)
+ (func $_renormalise_vector (param $0 i32) (param $1 i32) (param $2 f32)
   (local $3 i32)
   (set_local $2
    (f32.mul
@@ -28231,7 +28231,7 @@
    )
   )
  )
- (func $_stereo_itheta (; 107 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result i32)
+ (func $_stereo_itheta (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result i32)
   (local $4 f32)
   (local $5 f32)
   (local $6 f32)
@@ -28356,7 +28356,7 @@
    )
   )
  )
- (func $_fast_atan2f (; 108 ;) (param $0 f32) (param $1 f32) (result f32)
+ (func $_fast_atan2f (param $0 f32) (param $1 f32) (result f32)
   (local $2 f32)
   (local $3 f32)
   (if
@@ -28484,7 +28484,7 @@
    )
   )
  )
- (func $_silk_CNG_Reset (; 109 ;) (param $0 i32)
+ (func $_silk_CNG_Reset (param $0 i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -28569,7 +28569,7 @@
    (i32.const 3176576)
   )
  )
- (func $_silk_CNG (; 110 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_silk_CNG (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -30331,7 +30331,7 @@
    (get_local $14)
   )
  )
- (func $_silk_SQRT_APPROX (; 111 ;) (param $0 i32) (result i32)
+ (func $_silk_SQRT_APPROX (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -30455,7 +30455,7 @@
   )
   (get_local $0)
  )
- (func $_silk_CNG_exc (; 112 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_silk_CNG_exc (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -30541,7 +30541,7 @@
    (get_local $6)
   )
  )
- (func $_silk_ROR32 (; 113 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_silk_ROR32 (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (if
    (i32.eqz
@@ -30590,7 +30590,7 @@
    )
   )
  )
- (func $_silk_decode_signs (; 114 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
+ (func $_silk_decode_signs (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
@@ -30774,7 +30774,7 @@
    (get_local $6)
   )
  )
- (func $_silk_init_decoder (; 115 ;) (param $0 i32)
+ (func $_silk_init_decoder (param $0 i32)
   (drop
    (call $_memset
     (i32.add
@@ -30810,7 +30810,7 @@
    (get_local $0)
   )
  )
- (func $_silk_decode_core (; 116 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_silk_decode_core (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -33307,7 +33307,7 @@
    (get_local $26)
   )
  )
- (func $_silk_INVERSE32_varQ (; 117 ;) (param $0 i32) (result i32)
+ (func $_silk_INVERSE32_varQ (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -33531,7 +33531,7 @@
    )
   )
  )
- (func $_silk_DIV32_varQ (; 118 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_silk_DIV32_varQ (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -33782,7 +33782,7 @@
    )
   )
  )
- (func $_silk_decode_frame (; 119 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
+ (func $_silk_decode_frame (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
@@ -34095,7 +34095,7 @@
   )
   (i32.const 0)
  )
- (func $_silk_decode_parameters (; 120 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_silk_decode_parameters (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -34560,7 +34560,7 @@
    (get_local $6)
   )
  )
- (func $_silk_decode_indices (; 121 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_silk_decode_indices (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 i32)
   (local $6 i32)
   (local $7 i32)
@@ -35198,7 +35198,7 @@
    (get_local $5)
   )
  )
- (func $_silk_decode_pulses (; 122 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_silk_decode_pulses (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 i32)
   (local $6 i32)
   (local $7 i32)
@@ -35589,7 +35589,7 @@
    (get_local $11)
   )
  )
- (func $_silk_decoder_set_fs (; 123 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $_silk_decoder_set_fs (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -35972,7 +35972,7 @@
   )
   (get_local $2)
  )
- (func $_silk_InitDecoder (; 124 ;) (param $0 i32) (result i32)
+ (func $_silk_InitDecoder (param $0 i32) (result i32)
   (local $1 i32)
   (set_local $1
    (i32.const 0)
@@ -36025,7 +36025,7 @@
   )
   (i32.const 0)
  )
- (func $_silk_Decode (; 125 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
+ (func $_silk_Decode (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
   (local $7 i32)
   (local $8 i32)
   (local $9 i32)
@@ -38131,7 +38131,7 @@
   )
   (get_local $3)
  )
- (func $_silk_gains_dequant (; 126 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_silk_gains_dequant (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 i32)
   (local $6 i32)
   (local $7 i32)
@@ -38308,7 +38308,7 @@
    )
   )
  )
- (func $_silk_NLSF_decode (; 127 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_silk_NLSF_decode (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -38504,7 +38504,7 @@
    (get_local $4)
   )
  )
- (func $_silk_NLSF_residual_dequant (; 128 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_silk_NLSF_residual_dequant (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 i32)
   (local $6 i32)
   (local $7 i32)
@@ -38642,7 +38642,7 @@
    )
   )
  )
- (func $_silk_PLC_Reset (; 129 ;) (param $0 i32)
+ (func $_silk_PLC_Reset (param $0 i32)
   (i32.store
    (i32.add
     (get_local $0)
@@ -38687,7 +38687,7 @@
    (i32.const 2)
   )
  )
- (func $_silk_PLC (; 130 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_silk_PLC (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (if
@@ -38750,7 +38750,7 @@
    )
   )
  )
- (func $_silk_PLC_conceal (; 131 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_silk_PLC_conceal (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -40830,7 +40830,7 @@
    (get_local $17)
   )
  )
- (func $_silk_PLC_update (; 132 ;) (param $0 i32) (param $1 i32)
+ (func $_silk_PLC_update (param $0 i32) (param $1 i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -41324,7 +41324,7 @@
    (get_local $1)
   )
  )
- (func $_silk_PLC_energy (; 133 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32)
+ (func $_silk_PLC_energy (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32)
   (local $8 i32)
   (local $9 i32)
   (local $10 i32)
@@ -41550,7 +41550,7 @@
    (get_local $14)
   )
  )
- (func $_silk_INVERSE32_varQ_129 (; 134 ;) (param $0 i32) (result i32)
+ (func $_silk_INVERSE32_varQ_129 (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -41774,7 +41774,7 @@
    )
   )
  )
- (func $_silk_PLC_glue_frames (; 135 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_silk_PLC_glue_frames (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -42063,7 +42063,7 @@
    (get_local $7)
   )
  )
- (func $_silk_shell_decoder (; 136 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_silk_shell_decoder (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -42331,7 +42331,7 @@
    (get_local $5)
   )
  )
- (func $_decode_split (; 137 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_decode_split (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 i32)
   (if
    (i32.gt_s
@@ -42377,7 +42377,7 @@
    )
   )
  )
- (func $_silk_NLSF_unpack (; 138 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_silk_NLSF_unpack (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -42576,7 +42576,7 @@
    )
   )
  )
- (func $_silk_stereo_MS_to_LR (; 139 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
+ (func $_silk_stereo_MS_to_LR (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
@@ -43216,7 +43216,7 @@
    )
   )
  )
- (func $_silk_bwexpander_32 (; 140 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_silk_bwexpander_32 (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -43390,7 +43390,7 @@
    )
   )
  )
- (func $_silk_bwexpander (; 141 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_silk_bwexpander (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -43497,7 +43497,7 @@
    )
   )
  )
- (func $_silk_decode_pitch (; 142 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_silk_decode_pitch (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 i32)
   (local $6 i32)
   (local $7 i32)
@@ -43697,7 +43697,7 @@
    )
   )
  )
- (func $_silk_log2lin (; 143 ;) (param $0 i32) (result i32)
+ (func $_silk_log2lin (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -43791,7 +43791,7 @@
    )
   )
  )
- (func $_silk_LPC_analysis_filter (; 144 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_silk_LPC_analysis_filter (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 i32)
   (local $6 i32)
   (local $7 i32)
@@ -44076,7 +44076,7 @@
    )
   )
  )
- (func $_silk_LPC_inverse_pred_gain_c (; 145 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_silk_LPC_inverse_pred_gain_c (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -44171,7 +44171,7 @@
   )
   (get_local $0)
  )
- (func $_LPC_inverse_pred_gain_QA_c (; 146 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_LPC_inverse_pred_gain_QA_c (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i64)
@@ -44784,7 +44784,7 @@
   )
   (i32.const 0)
  )
- (func $_silk_INVERSE32_varQ_275 (; 147 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_silk_INVERSE32_varQ_275 (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -45006,7 +45006,7 @@
    )
   )
  )
- (func $_silk_NLSF2A (; 148 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_silk_NLSF2A (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -45365,7 +45365,7 @@
    (get_local $4)
   )
  )
- (func $_silk_NLSF2A_find_poly (; 149 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_silk_NLSF2A_find_poly (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -45565,7 +45565,7 @@
    )
   )
  )
- (func $_silk_NLSF_stabilize (; 150 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_silk_NLSF_stabilize (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -46217,7 +46217,7 @@
    )
   )
  )
- (func $_silk_resampler_init (; 151 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $_silk_resampler_init (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -46802,7 +46802,7 @@
   )
   (i32.const 0)
  )
- (func $_silk_resampler (; 152 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_silk_resampler (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -47061,7 +47061,7 @@
    )
   )
  )
- (func $_silk_resampler_private_AR2 (; 153 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_silk_resampler_private_AR2 (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 i32)
   (local $6 i32)
   (local $7 i32)
@@ -47189,7 +47189,7 @@
    )
   )
  )
- (func $_silk_resampler_private_down_FIR (; 154 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_silk_resampler_private_down_FIR (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -47403,7 +47403,7 @@
    (get_local $9)
   )
  )
- (func $_silk_resampler_private_down_FIR_INTERPOL (; 155 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
+ (func $_silk_resampler_private_down_FIR_INTERPOL (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
   (local $7 i32)
   (local $8 i32)
   (local $9 i32)
@@ -49427,7 +49427,7 @@
    (get_local $0)
   )
  )
- (func $_silk_resampler_private_IIR_FIR (; 156 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_silk_resampler_private_IIR_FIR (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -49597,7 +49597,7 @@
    (get_local $8)
   )
  )
- (func $_silk_resampler_private_IIR_FIR_INTERPOL (; 157 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result i32)
+ (func $_silk_resampler_private_IIR_FIR_INTERPOL (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -49821,7 +49821,7 @@
   )
   (get_local $0)
  )
- (func $_silk_resampler_private_up2_HQ (; 158 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_silk_resampler_private_up2_HQ (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -50241,7 +50241,7 @@
    )
   )
  )
- (func $_silk_resampler_private_up2_HQ_wrapper (; 159 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_silk_resampler_private_up2_HQ_wrapper (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (call $_silk_resampler_private_up2_HQ
    (get_local $0)
    (get_local $1)
@@ -50249,7 +50249,7 @@
    (get_local $3)
   )
  )
- (func $_silk_insertion_sort_increasing_all_values_int16 (; 160 ;) (param $0 i32) (param $1 i32)
+ (func $_silk_insertion_sort_increasing_all_values_int16 (param $0 i32) (param $1 i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -50345,7 +50345,7 @@
    )
   )
  )
- (func $_silk_sum_sqr_shift (; 161 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_silk_sum_sqr_shift (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -50628,7 +50628,7 @@
    (get_local $4)
   )
  )
- (func $_silk_stereo_decode_pred (; 162 ;) (param $0 i32) (param $1 i32)
+ (func $_silk_stereo_decode_pred (param $0 i32) (param $1 i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -50863,7 +50863,7 @@
    (get_local $5)
   )
  )
- (func $_silk_stereo_decode_mid_only (; 163 ;) (param $0 i32) (param $1 i32)
+ (func $_silk_stereo_decode_mid_only (param $0 i32) (param $1 i32)
   (i32.store
    (get_local $1)
    (call $_ec_dec_icdf
@@ -50873,7 +50873,7 @@
    )
   )
  )
- (func $_silk_LPC_fit (; 164 ;) (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_silk_LPC_fit (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -51160,7 +51160,7 @@
    )
   )
  )
- (func $_opus_pcm_soft_clip (; 165 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+ (func $_opus_pcm_soft_clip (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
   (local $4 f32)
   (local $5 i32)
   (local $6 i32)
@@ -51796,7 +51796,7 @@
    )
   )
  )
- (func $_opus_packet_get_samples_per_frame (; 166 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_opus_packet_get_samples_per_frame (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (if
    (i32.lt_s
@@ -51883,7 +51883,7 @@
    )
   )
  )
- (func $_opus_packet_parse_impl (; 167 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
+ (func $_opus_packet_parse_impl (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
   (local $7 i32)
   (local $8 i32)
   (local $9 i32)
@@ -52775,7 +52775,7 @@
   )
   (get_local $10)
  )
- (func $_parse_size (; 168 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $_parse_size (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (i32.store16
    (get_local $2)
@@ -52847,7 +52847,7 @@
   )
   (get_local $1)
  )
- (func $_opus_decoder_get_size (; 169 ;) (param $0 i32) (result i32)
+ (func $_opus_decoder_get_size (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (set_local $1
@@ -52931,7 +52931,7 @@
   )
   (get_local $0)
  )
- (func $_opus_decoder_init (; 170 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $_opus_decoder_init (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -53201,7 +53201,7 @@
   )
   (get_local $0)
  )
- (func $_opus_decoder_create (; 171 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $_opus_decoder_create (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (block $__rjto$0
    (block $__rjti$0
@@ -53375,12 +53375,12 @@
   )
   (i32.const 0)
  )
- (func $_opus_free (; 172 ;) (param $0 i32)
+ (func $_opus_free (param $0 i32)
   (call $_free
    (get_local $0)
   )
  )
- (func $_opus_decode_native (; 173 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
+ (func $_opus_decode_native (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
   (local $7 i32)
   (local $8 i32)
   (local $9 i32)
@@ -54004,7 +54004,7 @@
    )
   )
  )
- (func $_opus_decode_frame (; 174 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
+ (func $_opus_decode_frame (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
@@ -56233,7 +56233,7 @@
   )
   (get_local $1)
  )
- (func $_opus_packet_get_bandwidth (; 175 ;) (param $0 i32) (result i32)
+ (func $_opus_packet_get_bandwidth (param $0 i32) (result i32)
   (local $1 i32)
   (if
    (i32.lt_s
@@ -56306,7 +56306,7 @@
    )
   )
  )
- (func $_smooth_fade (; 176 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32)
+ (func $_smooth_fade (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32)
   (local $7 i32)
   (local $8 f32)
   (local $9 i32)
@@ -56422,7 +56422,7 @@
    )
   )
  )
- (func $_opus_decode_float (; 177 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
+ (func $_opus_decode_float (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
   (if
    (i32.lt_s
     (get_local $4)
@@ -56442,12 +56442,12 @@
    (i32.const 0)
   )
  )
- (func $_opus_decoder_destroy (; 178 ;) (param $0 i32)
+ (func $_opus_decoder_destroy (param $0 i32)
   (call $_opus_free
    (get_local $0)
   )
  )
- (func $_speex_resampler_init (; 179 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (result i32)
+ (func $_speex_resampler_init (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (result i32)
   (call $_speex_resampler_init_frac
    (get_local $0)
    (get_local $1)
@@ -56458,7 +56458,7 @@
    (get_local $4)
   )
  )
- (func $_speex_resampler_init_frac (; 180 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
+ (func $_speex_resampler_init_frac (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
   (local $7 i32)
   (local $8 i32)
   (local $9 i32)
@@ -56695,7 +56695,7 @@
   )
   (get_local $7)
  )
- (func $_speex_alloc_515 (; 181 ;) (param $0 i32) (result i32)
+ (func $_speex_alloc_515 (param $0 i32) (result i32)
   (local $1 i32)
   (if
    (i32.eqz
@@ -56734,7 +56734,7 @@
   )
   (get_local $1)
  )
- (func $_speex_resampler_set_quality (; 182 ;) (param $0 i32) (param $1 i32)
+ (func $_speex_resampler_set_quality (param $0 i32) (param $1 i32)
   (local $2 i32)
   (if
    (i32.gt_u
@@ -56775,7 +56775,7 @@
    )
   )
  )
- (func $_speex_resampler_set_rate_frac (; 183 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_speex_resampler_set_rate_frac (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 i32)
   (local $6 i32)
   (local $7 i32)
@@ -57032,7 +57032,7 @@
    )
   )
  )
- (func $_update_filter (; 184 ;) (param $0 i32) (result i32)
+ (func $_update_filter (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -58161,7 +58161,7 @@
       (i32.const 0)
      )
      (if
-      (i32.lt_u
+      (i32.ge_u
        (tee_local $6
         (i32.add
          (get_local $11)
@@ -58173,162 +58173,6 @@
          (get_local $7)
         )
        )
-      )
-      (block
-       (set_local $1
-        (i32.add
-         (get_local $6)
-         (i32.const -1)
-        )
-       )
-       (set_local $4
-        (i32.add
-         (get_local $6)
-         (i32.const -2)
-        )
-       )
-       (set_local $8
-        (i32.const 0)
-       )
-       (loop $while-in19
-        (if
-         (i32.ne
-          (get_local $8)
-          (get_local $1)
-         )
-         (block
-          (i32.store
-           (i32.add
-            (tee_local $5
-             (i32.load
-              (get_local $14)
-             )
-            )
-            (i32.shl
-             (i32.add
-              (tee_local $2
-               (i32.mul
-                (get_local $0)
-                (i32.load
-                 (get_local $9)
-                )
-               )
-              )
-              (i32.sub
-               (i32.add
-                (i32.load
-                 (get_local $7)
-                )
-                (i32.const -2)
-               )
-               (get_local $8)
-              )
-             )
-             (i32.const 2)
-            )
-           )
-           (i32.load
-            (i32.add
-             (get_local $5)
-             (i32.shl
-              (i32.add
-               (get_local $2)
-               (i32.sub
-                (get_local $4)
-                (get_local $8)
-               )
-              )
-              (i32.const 2)
-             )
-            )
-           )
-          )
-          (set_local $8
-           (i32.add
-            (get_local $8)
-            (i32.const 1)
-           )
-          )
-          (br $while-in19)
-         )
-        )
-       )
-       (loop $while-in21
-        (if
-         (i32.lt_u
-          (get_local $1)
-          (i32.add
-           (tee_local $2
-            (i32.load
-             (get_local $7)
-            )
-           )
-           (i32.const -1)
-          )
-         )
-         (block
-          (f32.store
-           (i32.add
-            (i32.load
-             (get_local $14)
-            )
-            (i32.shl
-             (i32.add
-              (i32.mul
-               (get_local $0)
-               (i32.load
-                (get_local $9)
-               )
-              )
-              (i32.sub
-               (i32.add
-                (get_local $2)
-                (i32.const -2)
-               )
-               (get_local $1)
-              )
-             )
-             (i32.const 2)
-            )
-           )
-           (f32.const 0)
-          )
-          (set_local $1
-           (i32.add
-            (get_local $1)
-            (i32.const 1)
-           )
-          )
-          (br $while-in21)
-         )
-        )
-       )
-       (i32.store
-        (tee_local $1
-         (i32.add
-          (i32.load
-           (get_local $3)
-          )
-          (i32.shl
-           (get_local $0)
-           (i32.const 2)
-          )
-         )
-        )
-        (i32.add
-         (i32.load
-          (get_local $1)
-         )
-         (i32.shr_u
-          (i32.sub
-           (get_local $2)
-           (get_local $6)
-          )
-          (i32.const 1)
-         )
-        )
-       )
-       (br $label$continue$L74)
       )
       (block
        (i32.store
@@ -58427,6 +58271,160 @@
        )
       )
      )
+     (set_local $1
+      (i32.add
+       (get_local $6)
+       (i32.const -1)
+      )
+     )
+     (set_local $4
+      (i32.add
+       (get_local $6)
+       (i32.const -2)
+      )
+     )
+     (set_local $8
+      (i32.const 0)
+     )
+     (loop $while-in19
+      (if
+       (i32.ne
+        (get_local $8)
+        (get_local $1)
+       )
+       (block
+        (i32.store
+         (i32.add
+          (tee_local $5
+           (i32.load
+            (get_local $14)
+           )
+          )
+          (i32.shl
+           (i32.add
+            (tee_local $2
+             (i32.mul
+              (get_local $0)
+              (i32.load
+               (get_local $9)
+              )
+             )
+            )
+            (i32.sub
+             (i32.add
+              (i32.load
+               (get_local $7)
+              )
+              (i32.const -2)
+             )
+             (get_local $8)
+            )
+           )
+           (i32.const 2)
+          )
+         )
+         (i32.load
+          (i32.add
+           (get_local $5)
+           (i32.shl
+            (i32.add
+             (get_local $2)
+             (i32.sub
+              (get_local $4)
+              (get_local $8)
+             )
+            )
+            (i32.const 2)
+           )
+          )
+         )
+        )
+        (set_local $8
+         (i32.add
+          (get_local $8)
+          (i32.const 1)
+         )
+        )
+        (br $while-in19)
+       )
+      )
+     )
+     (loop $while-in21
+      (if
+       (i32.lt_u
+        (get_local $1)
+        (i32.add
+         (tee_local $2
+          (i32.load
+           (get_local $7)
+          )
+         )
+         (i32.const -1)
+        )
+       )
+       (block
+        (f32.store
+         (i32.add
+          (i32.load
+           (get_local $14)
+          )
+          (i32.shl
+           (i32.add
+            (i32.mul
+             (get_local $0)
+             (i32.load
+              (get_local $9)
+             )
+            )
+            (i32.sub
+             (i32.add
+              (get_local $2)
+              (i32.const -2)
+             )
+             (get_local $1)
+            )
+           )
+           (i32.const 2)
+          )
+         )
+         (f32.const 0)
+        )
+        (set_local $1
+         (i32.add
+          (get_local $1)
+          (i32.const 1)
+         )
+        )
+        (br $while-in21)
+       )
+      )
+     )
+     (i32.store
+      (tee_local $1
+       (i32.add
+        (i32.load
+         (get_local $3)
+        )
+        (i32.shl
+         (get_local $0)
+         (i32.const 2)
+        )
+       )
+      )
+      (i32.add
+       (i32.load
+        (get_local $1)
+       )
+       (i32.shr_u
+        (i32.sub
+         (get_local $2)
+         (get_local $6)
+        )
+        (i32.const 1)
+       )
+      )
+     )
+     (br $label$continue$L74)
     )
    )
    (return
@@ -58443,7 +58441,7 @@
   )
   (i32.const 1)
  )
- (func $_speex_resampler_destroy (; 185 ;) (param $0 i32)
+ (func $_speex_resampler_destroy (param $0 i32)
   (call $_opus_free
    (i32.load offset=72
     (get_local $0)
@@ -58473,7 +58471,7 @@
    (get_local $0)
   )
  )
- (func $_speex_realloc (; 186 ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $_speex_realloc (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -59538,7 +59536,7 @@
   )
   (get_local $2)
  )
- (func $_sinc (; 187 ;) (param $0 f32) (param $1 f32) (param $2 i32) (param $3 i32) (result f32)
+ (func $_sinc (param $0 f32) (param $1 f32) (param $2 i32) (param $3 i32) (result f32)
   (local $4 f64)
   (local $5 i32)
   (local $6 i32)
@@ -59753,7 +59751,7 @@
   )
   (get_local $0)
  )
- (func $_resampler_basic_direct_double (; 188 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
+ (func $_resampler_basic_direct_double (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
@@ -60132,7 +60130,7 @@
    (get_local $8)
   )
  )
- (func $_resampler_basic_direct_single (; 189 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
+ (func $_resampler_basic_direct_single (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
@@ -60389,7 +60387,7 @@
    (get_local $8)
   )
  )
- (func $_resampler_basic_interpolate_double (; 190 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
+ (func $_resampler_basic_interpolate_double (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
@@ -60865,7 +60863,7 @@
    (get_local $8)
   )
  )
- (func $_resampler_basic_interpolate_single (; 191 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
+ (func $_resampler_basic_interpolate_single (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
@@ -61323,7 +61321,7 @@
    (get_local $8)
   )
  )
- (func $_resampler_basic_zero (; 192 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
+ (func $_resampler_basic_zero (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
@@ -61495,7 +61493,7 @@
    (get_local $2)
   )
  )
- (func $_cubic_coef (; 193 ;) (param $0 f32) (param $1 i32)
+ (func $_cubic_coef (param $0 f32) (param $1 i32)
   (local $2 f32)
   (local $3 f32)
   (local $4 f32)
@@ -61583,7 +61581,7 @@
    )
   )
  )
- (func $_compute_func (; 194 ;) (param $0 f32) (param $1 i32) (param $2 i32) (result f64)
+ (func $_compute_func (param $0 f32) (param $1 i32) (param $2 i32) (result f64)
   (local $3 f64)
   (local $4 f64)
   (local $5 f64)
@@ -61744,7 +61742,7 @@
    )
   )
  )
- (func $_speex_resampler_process_float (; 195 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
+ (func $_speex_resampler_process_float (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32)
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
@@ -62137,7 +62135,7 @@
    (get_local $9)
   )
  )
- (func $_speex_resampler_magic (; 196 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result i32)
+ (func $_speex_resampler_magic (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result i32)
   (local $4 i32)
   (local $5 i32)
   (local $6 i32)
@@ -62380,7 +62378,7 @@
   )
   (get_local $1)
  )
- (func $_speex_resampler_process_native (; 197 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
+ (func $_speex_resampler_process_native (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32)
   (local $5 i32)
   (local $6 i32)
   (local $7 i32)
@@ -62532,7 +62530,7 @@
    )
   )
  )
- (func $_speex_resampler_process_interleaved_float (; 198 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (result i32)
+ (func $_speex_resampler_process_interleaved_float (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (result i32)
   (local $5 i32)
   (local $6 i32)
   (local $7 i32)
@@ -62680,7 +62678,7 @@
    (i32.const 5)
   )
  )
- (func $_malloc (; 199 ;) (param $0 i32) (result i32)
+ (func $_malloc (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -68279,7 +68277,7 @@
   )
   (i32.const 0)
  )
- (func $_free (; 200 ;) (param $0 i32)
+ (func $_free (param $0 i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -70097,7 +70095,7 @@
    (i32.const -1)
   )
  )
- (func $_dispose_chunk (; 201 ;) (param $0 i32) (param $1 i32)
+ (func $_dispose_chunk (param $0 i32) (param $1 i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -71797,10 +71795,10 @@
    )
   )
  )
- (func $_emscripten_get_global_libc (; 202 ;) (result i32)
+ (func $_emscripten_get_global_libc (result i32)
   (i32.const 30384)
  )
- (func $_scalbn (; 203 ;) (param $0 f64) (param $1 i32) (result f64)
+ (func $_scalbn (param $0 f64) (param $1 i32) (result f64)
   (local $2 i32)
   (local $3 i32)
   (local $4 f64)
@@ -71939,7 +71937,7 @@
    )
   )
  )
- (func $___sin (; 204 ;) (param $0 f64) (param $1 f64) (param $2 i32) (result f64)
+ (func $___sin (param $0 f64) (param $1 f64) (param $2 i32) (result f64)
   (local $3 f64)
   (local $4 f64)
   (local $5 f64)
@@ -72031,7 +72029,7 @@
    )
   )
  )
- (func $___cos (; 205 ;) (param $0 f64) (param $1 f64) (result f64)
+ (func $___cos (param $0 f64) (param $1 f64) (result f64)
   (local $2 f64)
   (local $3 f64)
   (local $4 f64)
@@ -72116,7 +72114,7 @@
    )
   )
  )
- (func $___rem_pio2 (; 206 ;) (param $0 f64) (param $1 i32) (result i32)
+ (func $___rem_pio2 (param $0 f64) (param $1 i32) (result i32)
   (local $2 f64)
   (local $3 i32)
   (local $4 i32)
@@ -72836,7 +72834,7 @@
   )
   (get_local $1)
  )
- (func $___rem_pio2_large (; 207 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result i32)
+ (func $___rem_pio2_large (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (result i32)
   (local $4 f64)
   (local $5 i32)
   (local $6 i32)
@@ -74173,7 +74171,7 @@
    (i32.const 7)
   )
  )
- (func $_cos (; 208 ;) (param $0 f64) (result f64)
+ (func $_cos (param $0 f64) (result f64)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -74302,7 +74300,7 @@
   )
   (get_local $0)
  )
- (func $_exp (; 209 ;) (param $0 f64) (result f64)
+ (func $_exp (param $0 f64) (result f64)
   (local $1 i32)
   (local $2 f64)
   (local $3 i32)
@@ -74551,10 +74549,298 @@
    (get_local $1)
   )
  )
- (func $runPostSets (; 210 ;)
+ (func $runPostSets
   (nop)
  )
- (func $_memcpy (; 211 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $_sbrk (param $0 i32) (result i32)
+  (local $1 i32)
+  (local $2 i32)
+  (set_local $1
+   (i32.add
+    (tee_local $2
+     (i32.load
+      (get_global $DYNAMICTOP_PTR)
+     )
+    )
+    (tee_local $0
+     (i32.and
+      (i32.add
+       (get_local $0)
+       (i32.const 15)
+      )
+      (i32.const -16)
+     )
+    )
+   )
+  )
+  (if
+   (i32.or
+    (i32.and
+     (i32.gt_s
+      (get_local $0)
+      (i32.const 0)
+     )
+     (i32.lt_s
+      (get_local $1)
+      (get_local $2)
+     )
+    )
+    (i32.lt_s
+     (get_local $1)
+     (i32.const 0)
+    )
+   )
+   (block
+    (drop
+     (call $abortOnCannotGrowMemory)
+    )
+    (call $___setErrNo
+     (i32.const 12)
+    )
+    (return
+     (i32.const -1)
+    )
+   )
+  )
+  (i32.store
+   (get_global $DYNAMICTOP_PTR)
+   (get_local $1)
+  )
+  (set_local $0
+   (call $getTotalMemory)
+  )
+  (if
+   (i32.gt_s
+    (get_local $1)
+    (get_local $0)
+   )
+   (if
+    (i32.eqz
+     (call $enlargeMemory)
+    )
+    (block
+     (i32.store
+      (get_global $DYNAMICTOP_PTR)
+      (get_local $2)
+     )
+     (call $___setErrNo
+      (i32.const 12)
+     )
+     (return
+      (i32.const -1)
+     )
+    )
+   )
+  )
+  (get_local $2)
+ )
+ (func $_memset (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+  (local $3 i32)
+  (local $4 i32)
+  (local $5 i32)
+  (local $6 i32)
+  (set_local $4
+   (i32.add
+    (get_local $0)
+    (get_local $2)
+   )
+  )
+  (set_local $1
+   (i32.and
+    (get_local $1)
+    (i32.const 255)
+   )
+  )
+  (if
+   (i32.ge_s
+    (get_local $2)
+    (i32.const 67)
+   )
+   (block
+    (loop $while-in
+     (if
+      (i32.and
+       (get_local $0)
+       (i32.const 3)
+      )
+      (block
+       (i32.store8
+        (get_local $0)
+        (get_local $1)
+       )
+       (set_local $0
+        (i32.add
+         (get_local $0)
+         (i32.const 1)
+        )
+       )
+       (br $while-in)
+      )
+     )
+    )
+    (set_local $6
+     (i32.sub
+      (tee_local $5
+       (i32.and
+        (get_local $4)
+        (i32.const -4)
+       )
+      )
+      (i32.const 64)
+     )
+    )
+    (set_local $3
+     (i32.or
+      (i32.or
+       (i32.or
+        (get_local $1)
+        (i32.shl
+         (get_local $1)
+         (i32.const 8)
+        )
+       )
+       (i32.shl
+        (get_local $1)
+        (i32.const 16)
+       )
+      )
+      (i32.shl
+       (get_local $1)
+       (i32.const 24)
+      )
+     )
+    )
+    (loop $while-in1
+     (if
+      (i32.le_s
+       (get_local $0)
+       (get_local $6)
+      )
+      (block
+       (i32.store
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=4
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=8
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=12
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=16
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=20
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=24
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=28
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=32
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=36
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=40
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=44
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=48
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=52
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=56
+        (get_local $0)
+        (get_local $3)
+       )
+       (i32.store offset=60
+        (get_local $0)
+        (get_local $3)
+       )
+       (set_local $0
+        (i32.add
+         (get_local $0)
+         (i32.const 64)
+        )
+       )
+       (br $while-in1)
+      )
+     )
+    )
+    (loop $while-in3
+     (if
+      (i32.lt_s
+       (get_local $0)
+       (get_local $5)
+      )
+      (block
+       (i32.store
+        (get_local $0)
+        (get_local $3)
+       )
+       (set_local $0
+        (i32.add
+         (get_local $0)
+         (i32.const 4)
+        )
+       )
+       (br $while-in3)
+      )
+     )
+    )
+   )
+  )
+  (loop $while-in5
+   (if
+    (i32.lt_s
+     (get_local $0)
+     (get_local $4)
+    )
+    (block
+     (i32.store8
+      (get_local $0)
+      (get_local $1)
+     )
+     (set_local $0
+      (i32.add
+       (get_local $0)
+       (i32.const 1)
+      )
+     )
+     (br $while-in5)
+    )
+   )
+  )
+  (i32.sub
+   (get_local $4)
+   (get_local $2)
+  )
+ )
+ (func $_memcpy (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -74882,7 +75168,7 @@
   )
   (get_local $4)
  )
- (func $_memmove (; 212 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $_memmove (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (if
    (i32.and
@@ -74961,295 +75247,7 @@
   )
   (get_local $0)
  )
- (func $_memset (; 213 ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
-  (local $3 i32)
-  (local $4 i32)
-  (local $5 i32)
-  (local $6 i32)
-  (set_local $4
-   (i32.add
-    (get_local $0)
-    (get_local $2)
-   )
-  )
-  (set_local $1
-   (i32.and
-    (get_local $1)
-    (i32.const 255)
-   )
-  )
-  (if
-   (i32.ge_s
-    (get_local $2)
-    (i32.const 67)
-   )
-   (block
-    (loop $while-in
-     (if
-      (i32.and
-       (get_local $0)
-       (i32.const 3)
-      )
-      (block
-       (i32.store8
-        (get_local $0)
-        (get_local $1)
-       )
-       (set_local $0
-        (i32.add
-         (get_local $0)
-         (i32.const 1)
-        )
-       )
-       (br $while-in)
-      )
-     )
-    )
-    (set_local $6
-     (i32.sub
-      (tee_local $5
-       (i32.and
-        (get_local $4)
-        (i32.const -4)
-       )
-      )
-      (i32.const 64)
-     )
-    )
-    (set_local $3
-     (i32.or
-      (i32.or
-       (i32.or
-        (get_local $1)
-        (i32.shl
-         (get_local $1)
-         (i32.const 8)
-        )
-       )
-       (i32.shl
-        (get_local $1)
-        (i32.const 16)
-       )
-      )
-      (i32.shl
-       (get_local $1)
-       (i32.const 24)
-      )
-     )
-    )
-    (loop $while-in1
-     (if
-      (i32.le_s
-       (get_local $0)
-       (get_local $6)
-      )
-      (block
-       (i32.store
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=4
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=8
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=12
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=16
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=20
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=24
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=28
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=32
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=36
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=40
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=44
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=48
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=52
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=56
-        (get_local $0)
-        (get_local $3)
-       )
-       (i32.store offset=60
-        (get_local $0)
-        (get_local $3)
-       )
-       (set_local $0
-        (i32.add
-         (get_local $0)
-         (i32.const 64)
-        )
-       )
-       (br $while-in1)
-      )
-     )
-    )
-    (loop $while-in3
-     (if
-      (i32.lt_s
-       (get_local $0)
-       (get_local $5)
-      )
-      (block
-       (i32.store
-        (get_local $0)
-        (get_local $3)
-       )
-       (set_local $0
-        (i32.add
-         (get_local $0)
-         (i32.const 4)
-        )
-       )
-       (br $while-in3)
-      )
-     )
-    )
-   )
-  )
-  (loop $while-in5
-   (if
-    (i32.lt_s
-     (get_local $0)
-     (get_local $4)
-    )
-    (block
-     (i32.store8
-      (get_local $0)
-      (get_local $1)
-     )
-     (set_local $0
-      (i32.add
-       (get_local $0)
-       (i32.const 1)
-      )
-     )
-     (br $while-in5)
-    )
-   )
-  )
-  (i32.sub
-   (get_local $4)
-   (get_local $2)
-  )
- )
- (func $_sbrk (; 214 ;) (param $0 i32) (result i32)
-  (local $1 i32)
-  (local $2 i32)
-  (set_local $1
-   (i32.add
-    (tee_local $2
-     (i32.load
-      (get_global $DYNAMICTOP_PTR)
-     )
-    )
-    (tee_local $0
-     (i32.and
-      (i32.add
-       (get_local $0)
-       (i32.const 15)
-      )
-      (i32.const -16)
-     )
-    )
-   )
-  )
-  (if
-   (i32.or
-    (i32.and
-     (i32.gt_s
-      (get_local $0)
-      (i32.const 0)
-     )
-     (i32.lt_s
-      (get_local $1)
-      (get_local $2)
-     )
-    )
-    (i32.lt_s
-     (get_local $1)
-     (i32.const 0)
-    )
-   )
-   (block
-    (drop
-     (call $abortOnCannotGrowMemory)
-    )
-    (call $___setErrNo
-     (i32.const 12)
-    )
-    (return
-     (i32.const -1)
-    )
-   )
-  )
-  (i32.store
-   (get_global $DYNAMICTOP_PTR)
-   (get_local $1)
-  )
-  (set_local $0
-   (call $getTotalMemory)
-  )
-  (if
-   (i32.gt_s
-    (get_local $1)
-    (get_local $0)
-   )
-   (if
-    (i32.eqz
-     (call $enlargeMemory)
-    )
-    (block
-     (i32.store
-      (get_global $DYNAMICTOP_PTR)
-      (get_local $2)
-     )
-     (call $___setErrNo
-      (i32.const 12)
-     )
-     (return
-      (i32.const -1)
-     )
-    )
-   )
-  )
-  (get_local $2)
- )
- (func $dynCall_iiiiiii (; 215 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
+ (func $dynCall_iiiiiii (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
   (call_indirect $FUNCSIG$iiiiiii
    (get_local $1)
    (get_local $2)
@@ -75263,7 +75261,7 @@
    )
   )
  )
- (func $b0 (; 216 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
+ (func $b0 (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (result i32)
   (call $abort
    (i32.const 0)
   )
