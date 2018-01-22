@@ -7,7 +7,7 @@
  (type $FUNCSIG$v (func))
  (type $FUNCSIG$iiii (func (param i32 i32 i32) (result i32)))
  (type $FUNCSIG$dd (func (param f64) (result f64)))
- (import "env" "memory" (memory $0 256 256))
+ (import "env" "memory" (memory $0 384 384))
  (import "env" "table" (table 10 10 anyfunc))
  (import "env" "tableBase" (global $tableBase i32))
  (import "env" "DYNAMICTOP_PTR" (global $DYNAMICTOP_PTR$asm2wasm$import i32))
