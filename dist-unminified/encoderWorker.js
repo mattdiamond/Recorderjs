@@ -442,14 +442,6 @@ for (key in Module) {
   }
 }
 
-Module['arguments'] = [];
-Module['thisProgram'] = './this.program';
-Module['quit'] = function(status, toThrow) {
-  throw toThrow;
-};
-Module['preRun'] = [];
-Module['postRun'] = [];
-
 // The environment setup code below is customized to use Module.
 // *** Environment setup code ***
 var ENVIRONMENT_IS_WEB = false;
@@ -472,7 +464,7 @@ if (Module['ENVIRONMENT']) {
   } else if (Module['ENVIRONMENT'] === 'SHELL') {
     ENVIRONMENT_IS_SHELL = true;
   } else {
-    throw new Error('Module[\'ENVIRONMENT\'] value is not valid. must be one of: WEB|WORKER|NODE|SHELL.');
+    throw new Error('The provided Module[\'ENVIRONMENT\'] value is not valid. It must be one of: WEB|WORKER|NODE|SHELL.');
   }
 } else {
   ENVIRONMENT_IS_WEB = typeof window === 'object';
@@ -485,6 +477,9 @@ if (Module['ENVIRONMENT']) {
 if (ENVIRONMENT_IS_NODE) {
   // Expose functionality in the same simple way that the shells work
   // Note that we pollute the global namespace here, otherwise we break in node
+  if (!Module['print']) Module['print'] = console.log;
+  if (!Module['printErr']) Module['printErr'] = console.warn;
+
   var nodeFS;
   var nodePath;
 
@@ -506,8 +501,12 @@ if (ENVIRONMENT_IS_NODE) {
     return ret;
   };
 
-  if (process['argv'].length > 1) {
-    Module['thisProgram'] = process['argv'][1].replace(/\\/g, '/');
+  if (!Module['thisProgram']) {
+    if (process['argv'].length > 1) {
+      Module['thisProgram'] = process['argv'][1].replace(/\\/g, '/');
+    } else {
+      Module['thisProgram'] = 'unknown-program';
+    }
   }
 
   Module['arguments'] = process['argv'].slice(2);
@@ -531,10 +530,15 @@ if (ENVIRONMENT_IS_NODE) {
   Module['inspect'] = function () { return '[Emscripten Module object]'; };
 }
 else if (ENVIRONMENT_IS_SHELL) {
+  if (!Module['print']) Module['print'] = print;
+  if (typeof printErr != 'undefined') Module['printErr'] = printErr; // not present in v8 or older sm
+
   if (typeof read != 'undefined') {
     Module['read'] = function shell_read(f) {
       return read(f);
     };
+  } else {
+    Module['read'] = function shell_read() { throw 'no read() available' };
   }
 
   Module['readBinary'] = function readBinary(f) {
@@ -596,19 +600,59 @@ else if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
     Module['arguments'] = arguments;
   }
 
-  Module['setWindowTitle'] = function(title) { document.title = title };
+  if (typeof console !== 'undefined') {
+    if (!Module['print']) Module['print'] = function shell_print(x) {
+      console.log(x);
+    };
+    if (!Module['printErr']) Module['printErr'] = function shell_printErr(x) {
+      console.warn(x);
+    };
+  } else {
+    // Probably a worker, and without console.log. We can do very little here...
+    var TRY_USE_DUMP = false;
+    if (!Module['print']) Module['print'] = (TRY_USE_DUMP && (typeof(dump) !== "undefined") ? (function(x) {
+      dump(x);
+    }) : (function(x) {
+      // self.postMessage(x); // enable this if you want stdout to be sent as messages
+    }));
+  }
+
+  if (typeof Module['setWindowTitle'] === 'undefined') {
+    Module['setWindowTitle'] = function(title) { document.title = title };
+  }
+}
+else {
+  // Unreachable because SHELL is dependent on the others
+  throw new Error('Unknown runtime environment. Where are we?');
 }
 
-// console.log is checked first, as 'print' on the web will open a print dialogue
-// printErr is preferable to console.warn (works better in shells)
-Module['print'] = typeof console !== 'undefined' ? console.log : (typeof print !== 'undefined' ? print : null);
-Module['printErr'] = typeof printErr !== 'undefined' ? printErr : ((typeof console !== 'undefined' && console.warn) || Module['print']);
+if (!Module['print']) {
+  Module['print'] = function(){};
+}
+if (!Module['printErr']) {
+  Module['printErr'] = Module['print'];
+}
+if (!Module['arguments']) {
+  Module['arguments'] = [];
+}
+if (!Module['thisProgram']) {
+  Module['thisProgram'] = './this.program';
+}
+if (!Module['quit']) {
+  Module['quit'] = function(status, toThrow) {
+    throw toThrow;
+  }
+}
 
 // *** Environment setup code ***
 
 // Closure helpers
 Module.print = Module['print'];
 Module.printErr = Module['printErr'];
+
+// Callbacks
+Module['preRun'] = [];
+Module['postRun'] = [];
 
 // Merge back in the overrides
 for (key in moduleOverrides) {
@@ -693,14 +737,14 @@ function addFunction(func) {
   for (var i = 0; i < functionPointers.length; i++) {
     if (!functionPointers[i]) {
       functionPointers[i] = func;
-      return 1 + i;
+      return 2*(1 + i);
     }
   }
   throw 'Finished up all reserved function pointers. Use a higher value for RESERVED_FUNCTION_POINTERS.';
 }
 
 function removeFunction(index) {
-  functionPointers[index-1] = null;
+  functionPointers[(index-2)/2] = null;
 }
 
 var funcWrappers = {};
@@ -866,6 +910,9 @@ function cwrap (ident, returnType, argTypes) {
   }
 }
 
+
+
+
 /** @type {function(number, number, string, boolean=)} */
 function setValue(ptr, value, type, noSafe) {
   type = type || 'i8';
@@ -881,6 +928,7 @@ function setValue(ptr, value, type, noSafe) {
       default: abort('invalid type for setValue: ' + type);
     }
 }
+
 
 /** @type {function(number, string, boolean=)} */
 function getValue(ptr, type, noSafe) {
@@ -899,11 +947,17 @@ function getValue(ptr, type, noSafe) {
   return null;
 }
 
+
 var ALLOC_NORMAL = 0; // Tries to use _malloc()
 var ALLOC_STACK = 1; // Lives for the duration of the current function call
 var ALLOC_STATIC = 2; // Cannot be freed
 var ALLOC_DYNAMIC = 3; // Cannot be freed except through sbrk
 var ALLOC_NONE = 4; // Do not allocate
+Module["ALLOC_NORMAL"] = ALLOC_NORMAL;
+Module["ALLOC_STACK"] = ALLOC_STACK;
+Module["ALLOC_STATIC"] = ALLOC_STATIC;
+Module["ALLOC_DYNAMIC"] = ALLOC_DYNAMIC;
+Module["ALLOC_NONE"] = ALLOC_NONE;
 
 // allocate(): This is for internal use. You can use it yourself as well, but the interface
 //             is a little tricky (see docs right below). The reason is that it is optimized
@@ -987,12 +1041,14 @@ function allocate(slab, types, allocator, ptr) {
   return ret;
 }
 
+
 // Allocate memory during any stage of startup - static memory early on, dynamic memory later, malloc when ready
 function getMemory(size) {
   if (!staticSealed) return staticAlloc(size);
   if (!runtimeInitialized) return dynamicAlloc(size);
   return _malloc(size);
 }
+Module["getMemory"] = getMemory;
 
 /** @type {function(number, number=)} */
 function Pointer_stringify(ptr, length) {
@@ -1027,6 +1083,7 @@ function Pointer_stringify(ptr, length) {
   return UTF8ToString(ptr);
 }
 
+
 // Given a pointer 'ptr' to a null-terminated ASCII-encoded string in the emscripten HEAP, returns
 // a copy of that string as a Javascript String object.
 
@@ -1039,12 +1096,14 @@ function AsciiToString(ptr) {
   }
 }
 
+
 // Copies the given Javascript String object 'str' to the emscripten HEAP at address 'outPtr',
 // null-terminated and encoded in ASCII form. The copy will require at most str.length+1 bytes of space in the HEAP.
 
 function stringToAscii(str, outPtr) {
   return writeAsciiToMemory(str, outPtr, false);
 }
+
 
 // Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the given array that contains uint8 values, returns
 // a copy of that string as a Javascript String object.
@@ -1096,12 +1155,14 @@ function UTF8ArrayToString(u8Array, idx) {
   }
 }
 
+
 // Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the emscripten HEAP, returns
 // a copy of that string as a Javascript String object.
 
 function UTF8ToString(ptr) {
   return UTF8ArrayToString(HEAPU8,ptr);
 }
+
 
 // Copies the given Javascript String object 'str' to the given byte array at address 'outIdx',
 // encoded in UTF8 form and null-terminated. The copy will require at most str.length*4+1 bytes of space in the HEAP.
@@ -1167,6 +1228,7 @@ function stringToUTF8Array(str, outU8Array, outIdx, maxBytesToWrite) {
   return outIdx - startIdx;
 }
 
+
 // Copies the given Javascript String object 'str' to the emscripten HEAP at address 'outPtr',
 // null-terminated and encoded in UTF8 form. The copy will require at most str.length*4+1 bytes of space in the HEAP.
 // Use the function lengthBytesUTF8 to compute the exact number of bytes (excluding null terminator) that this function will write.
@@ -1175,6 +1237,7 @@ function stringToUTF8Array(str, outU8Array, outIdx, maxBytesToWrite) {
 function stringToUTF8(str, outPtr, maxBytesToWrite) {
   return stringToUTF8Array(str, HEAPU8,outPtr, maxBytesToWrite);
 }
+
 
 // Returns the number of bytes the given Javascript string takes if encoded as a UTF8 byte array, EXCLUDING the null terminator byte.
 
@@ -1201,6 +1264,7 @@ function lengthBytesUTF8(str) {
   }
   return len;
 }
+
 
 // Given a pointer 'ptr' to a null-terminated UTF16LE-encoded string in the emscripten HEAP, returns
 // a copy of that string as a Javascript String object.
@@ -1229,6 +1293,7 @@ function UTF16ToString(ptr) {
     }
   }
 }
+
 
 // Copies the given Javascript String object 'str' to the emscripten HEAP at address 'outPtr',
 // null-terminated and encoded in UTF16 form. The copy will require at most str.length*4+2 bytes of space in the HEAP.
@@ -1261,11 +1326,13 @@ function stringToUTF16(str, outPtr, maxBytesToWrite) {
   return outPtr - startPtr;
 }
 
+
 // Returns the number of bytes the given Javascript string takes if encoded as a UTF16 byte array, EXCLUDING the null terminator byte.
 
 function lengthBytesUTF16(str) {
   return str.length*2;
 }
+
 
 function UTF32ToString(ptr) {
   var i = 0;
@@ -1286,6 +1353,7 @@ function UTF32ToString(ptr) {
     }
   }
 }
+
 
 // Copies the given Javascript String object 'str' to the emscripten HEAP at address 'outPtr',
 // null-terminated and encoded in UTF32 form. The copy will require at most str.length*4+4 bytes of space in the HEAP.
@@ -1323,6 +1391,7 @@ function stringToUTF32(str, outPtr, maxBytesToWrite) {
   return outPtr - startPtr;
 }
 
+
 // Returns the number of bytes the given Javascript string takes if encoded as a UTF16 byte array, EXCLUDING the null terminator byte.
 
 function lengthBytesUTF32(str) {
@@ -1338,22 +1407,6 @@ function lengthBytesUTF32(str) {
   return len;
 }
 
-// Allocate heap space for a JS string, and write it there.
-// It is the responsibility of the caller to free() that memory.
-function allocateUTF8(str) {
-  var size = lengthBytesUTF8(str) + 1;
-  var ret = _malloc(size);
-  if (ret) stringToUTF8Array(str, HEAP8, ret, size);
-  return ret;
-}
-
-// Allocate stack space for a JS string, and write it there.
-function allocateUTF8OnStack(str) {
-  var size = lengthBytesUTF8(str) + 1;
-  var ret = stackAlloc(size);
-  stringToUTF8Array(str, HEAP8, ret, size);
-  return ret;
-}
 
 function demangle(func) {
   return func;
@@ -1391,6 +1444,7 @@ function stackTrace() {
   if (Module['extraStackTrace']) js += '\n' + Module['extraStackTrace']();
   return demangleAll(js);
 }
+
 
 // Memory management
 
@@ -1461,7 +1515,7 @@ function enlargeMemory() {
 
 
 var TOTAL_STACK = Module['TOTAL_STACK'] || 5242880;
-var TOTAL_MEMORY = Module['TOTAL_MEMORY'] || 25165824;
+var TOTAL_MEMORY = Module['TOTAL_MEMORY'] || 16777216;
 if (TOTAL_MEMORY < TOTAL_STACK) Module.printErr('TOTAL_MEMORY should be larger than TOTAL_STACK, was ' + TOTAL_MEMORY + '! (TOTAL_STACK=' + TOTAL_STACK + ')');
 
 // Initialize the runtime's memory
@@ -1480,7 +1534,6 @@ if (Module['buffer']) {
   {
     buffer = new ArrayBuffer(TOTAL_MEMORY);
   }
-  Module['buffer'] = buffer;
 }
 updateGlobalBufferViews();
 
@@ -1493,6 +1546,17 @@ function getTotalMemory() {
   HEAP32[0] = 0x63736d65; /* 'emsc' */
 HEAP16[1] = 0x6373;
 if (HEAPU8[2] !== 0x73 || HEAPU8[3] !== 0x63) throw 'Runtime error: expected the system to be little-endian!';
+
+Module['HEAP'] = HEAP;
+Module['buffer'] = buffer;
+Module['HEAP8'] = HEAP8;
+Module['HEAP16'] = HEAP16;
+Module['HEAP32'] = HEAP32;
+Module['HEAPU8'] = HEAPU8;
+Module['HEAPU16'] = HEAPU16;
+Module['HEAPU32'] = HEAPU32;
+Module['HEAPF32'] = HEAPF32;
+Module['HEAPF64'] = HEAPF64;
 
 function callRuntimeCallbacks(callbacks) {
   while(callbacks.length > 0) {
@@ -1565,21 +1629,26 @@ function addOnPreRun(cb) {
   __ATPRERUN__.unshift(cb);
 }
 
+
 function addOnInit(cb) {
   __ATINIT__.unshift(cb);
 }
+
 
 function addOnPreMain(cb) {
   __ATMAIN__.unshift(cb);
 }
 
+
 function addOnExit(cb) {
   __ATEXIT__.unshift(cb);
 }
 
+
 function addOnPostRun(cb) {
   __ATPOSTRUN__.unshift(cb);
 }
+
 
 // Deprecated: This function should not be called because it is unsafe and does not provide
 // a maximum length limit of how many bytes it is allowed to write. Prefer calling the
@@ -1601,9 +1670,11 @@ function writeStringToMemory(string, buffer, dontAddNull) {
   if (dontAddNull) HEAP8[end] = lastChar; // Restore the value under the null character.
 }
 
+
 function writeArrayToMemory(array, buffer) {
   HEAP8.set(array, buffer);
 }
+
 
 function writeAsciiToMemory(str, buffer, dontAddNull) {
   for (var i = 0; i < str.length; ++i) {
@@ -1612,6 +1683,7 @@ function writeAsciiToMemory(str, buffer, dontAddNull) {
   // Null-terminate the pointer to the HEAP.
   if (!dontAddNull) HEAP8[((buffer)>>0)]=0;
 }
+
 
 function unSign(value, bits, ignore) {
   if (value >= 0) {
@@ -1634,6 +1706,7 @@ function reSign(value, bits, ignore) {
   return value;
 }
 
+assert(Math['imul'] && Math['fround'] && Math['clz32'] && Math['trunc'], 'this is a legacy browser, build with LEGACY_VM_SUPPORT');
 
 var Math_abs = Math.abs;
 var Math_cos = Math.cos;
@@ -1653,7 +1726,6 @@ var Math_imul = Math.imul;
 var Math_fround = Math.fround;
 var Math_round = Math.round;
 var Math_min = Math.min;
-var Math_max = Math.max;
 var Math_clz32 = Math.clz32;
 var Math_trunc = Math.trunc;
 
@@ -1678,6 +1750,7 @@ function addRunDependency(id) {
     Module['monitorRunDependencies'](runDependencies);
   }
 }
+Module["addRunDependency"] = addRunDependency;
 
 function removeRunDependency(id) {
   runDependencies--;
@@ -1696,6 +1769,7 @@ function removeRunDependency(id) {
     }
   }
 }
+Module["removeRunDependency"] = removeRunDependency;
 
 Module["preloadedImages"] = {}; // maps url to image data
 Module["preloadedAudios"] = {}; // maps url to audio data
@@ -2005,7 +2079,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 35488;
+STATICTOP = STATIC_BASE + 35792;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -2014,7 +2088,7 @@ STATICTOP = STATIC_BASE + 35488;
 
 
 
-var STATIC_BUMP = 35488;
+var STATIC_BUMP = 35792;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -2116,6 +2190,8 @@ staticSealed = true; // seal the static portion of memory
 
 var ASSERTIONS = false;
 
+// All functions here should be maybeExported from jsifier.js
+
 /** @type {function(string, boolean=, number=)} */
 function intArrayFromString(stringy, dontAddNull, length) {
   var len = length > 0 ? length : lengthBytesUTF8(stringy)+1;
@@ -2139,6 +2215,8 @@ function intArrayToString(array) {
   }
   return ret.join('');
 }
+
+
 
 
 
@@ -2172,6 +2250,7 @@ var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
 
 Module["asm"] = asm;
+var _emscripten_get_global_libc = Module["_emscripten_get_global_libc"] = function() {  return Module["asm"]["_emscripten_get_global_libc"].apply(null, arguments) };
 var _free = Module["_free"] = function() {  return Module["asm"]["_free"].apply(null, arguments) };
 var _malloc = Module["_malloc"] = function() {  return Module["asm"]["_malloc"].apply(null, arguments) };
 var _memcpy = Module["_memcpy"] = function() {  return Module["asm"]["_memcpy"].apply(null, arguments) };
@@ -2201,67 +2280,6 @@ var dynCall_viiiiiii = Module["dynCall_viiiiiii"] = function() {  return Module[
 // === Auto-generated postamble setup entry stuff ===
 
 Module['asm'] = asm;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2343,7 +2361,6 @@ function run(args) {
 }
 Module['run'] = run;
 
-
 function exit(status, implicit) {
 
   // if this is just main exit-ing implicitly, and the status is 0, then we
@@ -2391,7 +2408,15 @@ function abort(what) {
   ABORT = true;
   EXITSTATUS = 1;
 
-  throw 'abort(' + what + '). Build with -s ASSERTIONS=1 for more info.';
+  var extra = '\nIf this abort() is unexpected, build with -s ASSERTIONS=1 which can give more information.';
+
+  var output = 'abort(' + what + ') at ' + stackTrace() + extra;
+  if (abortDecorators) {
+    abortDecorators.forEach(function(decorator) {
+      output = decorator(output, what);
+    });
+  }
+  throw output;
 }
 Module['abort'] = abort;
 
