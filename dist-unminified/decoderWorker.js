@@ -440,11 +440,6 @@ if (ENVIRONMENT_IS_NODE) {
       throw ex;
     }
   });
-  // Currently node will swallow unhandled rejections, but this behavior is
-  // deprecated, and in the future it will exit with error status.
-  process['on']('unhandledRejection', function(reason, p) {
-    process['exit'](1);
-  });
 
   Module['inspect'] = function () { return '[Emscripten Module object]'; };
 }
@@ -2245,12 +2240,7 @@ function run(args) {
 Module['run'] = run;
 
 function exit(status, implicit) {
-
-  // if this is just main exit-ing implicitly, and the status is 0, then we
-  // don't need to do anything here and can just leave. if the status is
-  // non-zero, though, then we need to report it.
-  // (we may have warned about this earlier, if a situation justifies doing so)
-  if (implicit && Module['noExitRuntime'] && status === 0) {
+  if (implicit && Module['noExitRuntime']) {
     return;
   }
 
@@ -2313,7 +2303,6 @@ if (Module['preInit']) {
 }
 
 
-Module["noExitRuntime"] = true;
 
 run();
 

@@ -125417,7 +125417,7 @@
     )
    )
   )
-  (call_indirect (type $FUNCSIG$viiiiiii)
+  (call_indirect $FUNCSIG$viiiiiii
    (get_local $1)
    (get_local $9)
    (get_local $4)
@@ -133421,7 +133421,7 @@
    (i32.const 1)
   )
   (set_local $3
-   (call_indirect (type $FUNCSIG$iiiiiii)
+   (call_indirect $FUNCSIG$iiiiiii
     (get_local $0)
     (get_local $1)
     (get_local $5)
@@ -135273,11 +135273,14 @@
           (br_if $__rjti$3
            (tee_local $0
             (if (result i32)
-             (i32.or
-              (get_local $5)
-              (get_local $1)
+             (i32.and
+              (i32.eqz
+               (get_local $5)
+              )
+              (i32.eqz
+               (get_local $1)
+              )
              )
-             (get_local $5)
              (block (result i32)
               (if
                (i32.eqz
@@ -135409,6 +135412,7 @@
                )
               )
              )
+             (get_local $5)
             )
            )
           )
@@ -146927,7 +146931,7 @@
   (get_local $2)
  )
  (func $dynCall_iiiiiii (; 351 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (result i32)
-  (call_indirect (type $FUNCSIG$iiiiiii)
+  (call_indirect $FUNCSIG$iiiiiii
    (get_local $1)
    (get_local $2)
    (get_local $3)
@@ -146941,7 +146945,7 @@
   )
  )
  (func $dynCall_viiiiiii (; 352 ;) (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32)
-  (call_indirect (type $FUNCSIG$viiiiiii)
+  (call_indirect $FUNCSIG$viiiiiii
    (get_local $1)
    (get_local $2)
    (get_local $3)
