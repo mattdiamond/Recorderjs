@@ -1,20 +1,3 @@
-// The Module object: Our interface to the outside world. We import
-// and export values on it. There are various ways Module can be used:
-// 1. Not defined. We create it here
-// 2. A function parameter, function(Module) { ..generated code.. }
-// 3. pre-run appended it, var Module = {}; ..generated code..
-// 4. External script tag defines var Module.
-// We need to check if Module already exists (e.g. case 3 above).
-// Substitution will be replaced with actual code on later stage of the build,
-// this way Closure Compiler will not mangle it (e.g. case 4. above).
-// Note that if you want to run closure, and also to use Module
-// after the generated code, you will need to define   var Module = {};
-// before the code. Then that object will be used in the code, and you
-// can continue to use Module afterwards as well.
-var Module = typeof Module !== 'undefined' ? Module : {};
-
-// --pre-jses are emitted after the Module integration code, so that they can
-// refer to Module (if they choose; they can also define Module)
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -427,7 +410,23 @@ module.exports = g;
 /***/ })
 /******/ ]);
 });
-
+// The Module object: Our interface to the outside world. We import
+// and export values on it, and do the work to get that through
+// closure compiler if necessary. There are various ways Module can be used:
+// 1. Not defined. We create it here
+// 2. A function parameter, function(Module) { ..generated code.. }
+// 3. pre-run appended it, var Module = {}; ..generated code..
+// 4. External script tag defines var Module.
+// We need to do an eval in order to handle the closure compiler
+// case, where this code here is minified but Module was defined
+// elsewhere (e.g. case 4 above). We also need to check if Module
+// already exists (e.g. case 3 above).
+// Note that if you want to run closure, and also to use Module
+// after the generated code, you will need to define   var Module = {};
+// before the code. Then that object will be used in the code, and you
+// can continue to use Module afterwards as well.
+var Module;
+if (!Module) Module = (typeof Module !== 'undefined' ? Module : null) || {};
 
 // Sometimes an existing Module object exists with properties
 // meant to overwrite the default module functionality. Here
@@ -899,8 +898,8 @@ function cwrap (ident, returnType, argTypes) {
   }
 }
 
-
-
+Module["ccall"] = ccall;
+Module["cwrap"] = cwrap;
 
 /** @type {function(number, number, string, boolean=)} */
 function setValue(ptr, value, type, noSafe) {
@@ -1033,7 +1032,7 @@ function allocate(slab, types, allocator, ptr) {
 
   return ret;
 }
-
+Module["allocate"] = allocate;
 
 // Allocate memory during any stage of startup - static memory early on, dynamic memory later, malloc when ready
 function getMemory(size) {
@@ -1073,9 +1072,9 @@ function Pointer_stringify(ptr, length) {
     }
     return ret;
   }
-  return UTF8ToString(ptr);
+  return Module['UTF8ToString'](ptr);
 }
-
+Module["Pointer_stringify"] = Pointer_stringify;
 
 // Given a pointer 'ptr' to a null-terminated ASCII-encoded string in the emscripten HEAP, returns
 // a copy of that string as a Javascript String object.
@@ -1088,7 +1087,7 @@ function AsciiToString(ptr) {
     str += String.fromCharCode(ch);
   }
 }
-
+Module["AsciiToString"] = AsciiToString;
 
 // Copies the given Javascript String object 'str' to the emscripten HEAP at address 'outPtr',
 // null-terminated and encoded in ASCII form. The copy will require at most str.length+1 bytes of space in the HEAP.
@@ -1096,7 +1095,7 @@ function AsciiToString(ptr) {
 function stringToAscii(str, outPtr) {
   return writeAsciiToMemory(str, outPtr, false);
 }
-
+Module["stringToAscii"] = stringToAscii;
 
 // Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the given array that contains uint8 values, returns
 // a copy of that string as a Javascript String object.
@@ -1147,7 +1146,7 @@ function UTF8ArrayToString(u8Array, idx) {
     }
   }
 }
-
+Module["UTF8ArrayToString"] = UTF8ArrayToString;
 
 // Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the emscripten HEAP, returns
 // a copy of that string as a Javascript String object.
@@ -1155,7 +1154,7 @@ function UTF8ArrayToString(u8Array, idx) {
 function UTF8ToString(ptr) {
   return UTF8ArrayToString(HEAPU8,ptr);
 }
-
+Module["UTF8ToString"] = UTF8ToString;
 
 // Copies the given Javascript String object 'str' to the given byte array at address 'outIdx',
 // encoded in UTF8 form and null-terminated. The copy will require at most str.length*4+1 bytes of space in the HEAP.
@@ -1220,7 +1219,7 @@ function stringToUTF8Array(str, outU8Array, outIdx, maxBytesToWrite) {
   outU8Array[outIdx] = 0;
   return outIdx - startIdx;
 }
-
+Module["stringToUTF8Array"] = stringToUTF8Array;
 
 // Copies the given Javascript String object 'str' to the emscripten HEAP at address 'outPtr',
 // null-terminated and encoded in UTF8 form. The copy will require at most str.length*4+1 bytes of space in the HEAP.
@@ -1230,7 +1229,7 @@ function stringToUTF8Array(str, outU8Array, outIdx, maxBytesToWrite) {
 function stringToUTF8(str, outPtr, maxBytesToWrite) {
   return stringToUTF8Array(str, HEAPU8,outPtr, maxBytesToWrite);
 }
-
+Module["stringToUTF8"] = stringToUTF8;
 
 // Returns the number of bytes the given Javascript string takes if encoded as a UTF8 byte array, EXCLUDING the null terminator byte.
 
@@ -1257,7 +1256,7 @@ function lengthBytesUTF8(str) {
   }
   return len;
 }
-
+Module["lengthBytesUTF8"] = lengthBytesUTF8;
 
 // Given a pointer 'ptr' to a null-terminated UTF16LE-encoded string in the emscripten HEAP, returns
 // a copy of that string as a Javascript String object.
@@ -1437,7 +1436,7 @@ function stackTrace() {
   if (Module['extraStackTrace']) js += '\n' + Module['extraStackTrace']();
   return demangleAll(js);
 }
-
+Module["stackTrace"] = stackTrace;
 
 // Memory management
 
@@ -1621,27 +1620,27 @@ function postRun() {
 function addOnPreRun(cb) {
   __ATPRERUN__.unshift(cb);
 }
-
+Module["addOnPreRun"] = addOnPreRun;
 
 function addOnInit(cb) {
   __ATINIT__.unshift(cb);
 }
-
+Module["addOnInit"] = addOnInit;
 
 function addOnPreMain(cb) {
   __ATMAIN__.unshift(cb);
 }
-
+Module["addOnPreMain"] = addOnPreMain;
 
 function addOnExit(cb) {
   __ATEXIT__.unshift(cb);
 }
-
+Module["addOnExit"] = addOnExit;
 
 function addOnPostRun(cb) {
   __ATPOSTRUN__.unshift(cb);
 }
-
+Module["addOnPostRun"] = addOnPostRun;
 
 // Deprecated: This function should not be called because it is unsafe and does not provide
 // a maximum length limit of how many bytes it is allowed to write. Prefer calling the
@@ -1662,12 +1661,12 @@ function writeStringToMemory(string, buffer, dontAddNull) {
   stringToUTF8(string, buffer, Infinity);
   if (dontAddNull) HEAP8[end] = lastChar; // Restore the value under the null character.
 }
-
+Module["writeStringToMemory"] = writeStringToMemory;
 
 function writeArrayToMemory(array, buffer) {
   HEAP8.set(array, buffer);
 }
-
+Module["writeArrayToMemory"] = writeArrayToMemory;
 
 function writeAsciiToMemory(str, buffer, dontAddNull) {
   for (var i = 0; i < str.length; ++i) {
@@ -1676,7 +1675,7 @@ function writeAsciiToMemory(str, buffer, dontAddNull) {
   // Null-terminate the pointer to the HEAP.
   if (!dontAddNull) HEAP8[((buffer)>>0)]=0;
 }
-
+Module["writeAsciiToMemory"] = writeAsciiToMemory;
 
 function unSign(value, bits, ignore) {
   if (value >= 0) {
@@ -1834,6 +1833,10 @@ function integrateWasmJS() {
     var oldView = new Int8Array(oldBuffer);
     var newView = new Int8Array(newBuffer);
 
+    // If we have a mem init file, do not trample it
+    if (!memoryInitializer) {
+      oldView.set(newView.subarray(Module['STATIC_BASE'], Module['STATIC_BASE'] + Module['STATIC_BUMP']), Module['STATIC_BASE']);
+    }
 
     newView.set(oldView);
     updateGlobalBuffer(newBuffer);
@@ -1898,7 +1901,7 @@ function integrateWasmJS() {
       'NaN': NaN,
       'Infinity': Infinity
     };
-    info['global.Math'] = Math;
+    info['global.Math'] = global.Math;
     info['env'] = env;
     // handle a generated wasm instance, receiving its exports and
     // performing other necessary setup
@@ -2001,6 +2004,7 @@ function integrateWasmJS() {
   // doesn't need to care that it is wasm or olyfilled wasm or asm.js.
 
   Module['asm'] = function(global, env, providedBuffer) {
+    global = fixImports(global);
     env = fixImports(env);
 
     // import table
@@ -2056,7 +2060,7 @@ STATICTOP = STATIC_BASE + 35792;
 /* global initializers */  __ATINIT__.push();
 
 
-
+memoryInitializer = null;
 
 
 
@@ -2190,8 +2194,8 @@ function intArrayToString(array) {
 }
 
 
-
-
+Module["intArrayFromString"] = intArrayFromString;
+Module["intArrayToString"] = intArrayToString;
 
 Module['wasmTableSize'] = 10;
 
@@ -2215,7 +2219,7 @@ function invoke_viiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
   }
 }
 
-Module.asmGlobalArg = {};
+Module.asmGlobalArg = { "Math": Math, "Int8Array": Int8Array, "Int16Array": Int16Array, "Int32Array": Int32Array, "Uint8Array": Uint8Array, "Uint16Array": Uint16Array, "Uint32Array": Uint32Array, "Float32Array": Float32Array, "Float64Array": Float64Array, "NaN": NaN, "Infinity": Infinity };
 
 Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "invoke_iiiiiii": invoke_iiiiiii, "invoke_viiiiiii": invoke_viiiiiii, "___setErrNo": ___setErrNo, "_abort": _abort, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_llvm_exp2_f32": _llvm_exp2_f32, "_llvm_exp2_f64": _llvm_exp2_f64, "_llvm_pow_f64": _llvm_pow_f64, "_llvm_stackrestore": _llvm_stackrestore, "_llvm_stacksave": _llvm_stacksave, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
@@ -2262,6 +2266,57 @@ Module['asm'] = asm;
 
 
 
+if (memoryInitializer) {
+  if (typeof Module['locateFile'] === 'function') {
+    memoryInitializer = Module['locateFile'](memoryInitializer);
+  } else if (Module['memoryInitializerPrefixURL']) {
+    memoryInitializer = Module['memoryInitializerPrefixURL'] + memoryInitializer;
+  }
+  if (ENVIRONMENT_IS_NODE || ENVIRONMENT_IS_SHELL) {
+    var data = Module['readBinary'](memoryInitializer);
+    HEAPU8.set(data, Runtime.GLOBAL_BASE);
+  } else {
+    addRunDependency('memory initializer');
+    var applyMemoryInitializer = function(data) {
+      if (data.byteLength) data = new Uint8Array(data);
+      HEAPU8.set(data, Runtime.GLOBAL_BASE);
+      // Delete the typed array that contains the large blob of the memory initializer request response so that
+      // we won't keep unnecessary memory lying around. However, keep the XHR object itself alive so that e.g.
+      // its .status field can still be accessed later.
+      if (Module['memoryInitializerRequest']) delete Module['memoryInitializerRequest'].response;
+      removeRunDependency('memory initializer');
+    }
+    function doBrowserLoad() {
+      Module['readAsync'](memoryInitializer, applyMemoryInitializer, function() {
+        throw 'could not load memory initializer ' + memoryInitializer;
+      });
+    }
+    if (Module['memoryInitializerRequest']) {
+      // a network request has already been created, just use that
+      function useRequest() {
+        var request = Module['memoryInitializerRequest'];
+        var response = request.response;
+        if (request.status !== 200 && request.status !== 0) {
+            // If you see this warning, the issue may be that you are using locateFile or memoryInitializerPrefixURL, and defining them in JS. That
+            // means that the HTML file doesn't know about them, and when it tries to create the mem init request early, does it to the wrong place.
+            // Look in your browser's devtools network console to see what's going on.
+            console.warn('a problem seems to have happened with Module.memoryInitializerRequest, status: ' + request.status + ', retrying ' + memoryInitializer);
+            doBrowserLoad();
+            return;
+        }
+        applyMemoryInitializer(response);
+      }
+      if (Module['memoryInitializerRequest'].response) {
+        setTimeout(useRequest, 0); // it's already here; but, apply it asynchronously
+      } else {
+        Module['memoryInitializerRequest'].addEventListener('load', useRequest); // wait for it
+      }
+    } else {
+      // fetch it from the network ourselves
+      doBrowserLoad();
+    }
+  }
+}
 
 
 
