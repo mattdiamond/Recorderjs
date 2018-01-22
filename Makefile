@@ -1,7 +1,7 @@
 INPUT_DIR=./src
 OUTPUT_DIR=./dist
 OUTPUT_DIR_UNMINIFIED=./dist-unminified
-EMCC_OPTS=-O3 --llvm-lto 1 --memory-init-file 0 -s NO_DYNAMIC_EXECUTION=1 -s NO_FILESYSTEM=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1
+EMCC_OPTS=-O3 --llvm-lto 3 -s NO_DYNAMIC_EXECUTION=1 -s NO_FILESYSTEM=1 -s WASM=1 -s
 DEFAULT_EXPORTS:='_malloc','_free'
 
 LIBOPUS_ENCODER_SRC=$(INPUT_DIR)/encoderWorker.js

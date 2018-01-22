@@ -442,6 +442,14 @@ for (key in Module) {
   }
 }
 
+Module['arguments'] = [];
+Module['thisProgram'] = './this.program';
+Module['quit'] = function(status, toThrow) {
+  throw toThrow;
+};
+Module['preRun'] = [];
+Module['postRun'] = [];
+
 // The environment setup code below is customized to use Module.
 // *** Environment setup code ***
 var ENVIRONMENT_IS_WEB = false;
@@ -464,7 +472,7 @@ if (Module['ENVIRONMENT']) {
   } else if (Module['ENVIRONMENT'] === 'SHELL') {
     ENVIRONMENT_IS_SHELL = true;
   } else {
-    throw new Error('The provided Module[\'ENVIRONMENT\'] value is not valid. It must be one of: WEB|WORKER|NODE|SHELL.');
+    throw new Error('Module[\'ENVIRONMENT\'] value is not valid. must be one of: WEB|WORKER|NODE|SHELL.');
   }
 } else {
   ENVIRONMENT_IS_WEB = typeof window === 'object';
@@ -477,9 +485,6 @@ if (Module['ENVIRONMENT']) {
 if (ENVIRONMENT_IS_NODE) {
   // Expose functionality in the same simple way that the shells work
   // Note that we pollute the global namespace here, otherwise we break in node
-  if (!Module['print']) Module['print'] = console.log;
-  if (!Module['printErr']) Module['printErr'] = console.warn;
-
   var nodeFS;
   var nodePath;
 
@@ -501,12 +506,8 @@ if (ENVIRONMENT_IS_NODE) {
     return ret;
   };
 
-  if (!Module['thisProgram']) {
-    if (process['argv'].length > 1) {
-      Module['thisProgram'] = process['argv'][1].replace(/\\/g, '/');
-    } else {
-      Module['thisProgram'] = 'unknown-program';
-    }
+  if (process['argv'].length > 1) {
+    Module['thisProgram'] = process['argv'][1].replace(/\\/g, '/');
   }
 
   Module['arguments'] = process['argv'].slice(2);
@@ -530,15 +531,10 @@ if (ENVIRONMENT_IS_NODE) {
   Module['inspect'] = function () { return '[Emscripten Module object]'; };
 }
 else if (ENVIRONMENT_IS_SHELL) {
-  if (!Module['print']) Module['print'] = print;
-  if (typeof printErr != 'undefined') Module['printErr'] = printErr; // not present in v8 or older sm
-
   if (typeof read != 'undefined') {
     Module['read'] = function shell_read(f) {
       return read(f);
     };
-  } else {
-    Module['read'] = function shell_read() { throw 'no read() available' };
   }
 
   Module['readBinary'] = function readBinary(f) {
@@ -600,59 +596,19 @@ else if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
     Module['arguments'] = arguments;
   }
 
-  if (typeof console !== 'undefined') {
-    if (!Module['print']) Module['print'] = function shell_print(x) {
-      console.log(x);
-    };
-    if (!Module['printErr']) Module['printErr'] = function shell_printErr(x) {
-      console.warn(x);
-    };
-  } else {
-    // Probably a worker, and without console.log. We can do very little here...
-    var TRY_USE_DUMP = false;
-    if (!Module['print']) Module['print'] = (TRY_USE_DUMP && (typeof(dump) !== "undefined") ? (function(x) {
-      dump(x);
-    }) : (function(x) {
-      // self.postMessage(x); // enable this if you want stdout to be sent as messages
-    }));
-  }
-
-  if (typeof Module['setWindowTitle'] === 'undefined') {
-    Module['setWindowTitle'] = function(title) { document.title = title };
-  }
-}
-else {
-  // Unreachable because SHELL is dependent on the others
-  throw new Error('Unknown runtime environment. Where are we?');
+  Module['setWindowTitle'] = function(title) { document.title = title };
 }
 
-if (!Module['print']) {
-  Module['print'] = function(){};
-}
-if (!Module['printErr']) {
-  Module['printErr'] = Module['print'];
-}
-if (!Module['arguments']) {
-  Module['arguments'] = [];
-}
-if (!Module['thisProgram']) {
-  Module['thisProgram'] = './this.program';
-}
-if (!Module['quit']) {
-  Module['quit'] = function(status, toThrow) {
-    throw toThrow;
-  }
-}
+// console.log is checked first, as 'print' on the web will open a print dialogue
+// printErr is preferable to console.warn (works better in shells)
+Module['print'] = typeof console !== 'undefined' ? console.log : (typeof print !== 'undefined' ? print : null);
+Module['printErr'] = typeof printErr !== 'undefined' ? printErr : ((typeof console !== 'undefined' && console.warn) || Module['print']);
 
 // *** Environment setup code ***
 
 // Closure helpers
 Module.print = Module['print'];
 Module.printErr = Module['printErr'];
-
-// Callbacks
-Module['preRun'] = [];
-Module['postRun'] = [];
 
 // Merge back in the overrides
 for (key in moduleOverrides) {
@@ -737,14 +693,14 @@ function addFunction(func) {
   for (var i = 0; i < functionPointers.length; i++) {
     if (!functionPointers[i]) {
       functionPointers[i] = func;
-      return 2*(1 + i);
+      return 1 + i;
     }
   }
   throw 'Finished up all reserved function pointers. Use a higher value for RESERVED_FUNCTION_POINTERS.';
 }
 
 function removeFunction(index) {
-  functionPointers[(index-2)/2] = null;
+  functionPointers[index-1] = null;
 }
 
 var funcWrappers = {};
@@ -1391,6 +1347,14 @@ function allocateUTF8(str) {
   return ret;
 }
 
+// Allocate stack space for a JS string, and write it there.
+function allocateUTF8OnStack(str) {
+  var size = lengthBytesUTF8(str) + 1;
+  var ret = stackAlloc(size);
+  stringToUTF8Array(str, HEAP8, ret, size);
+  return ret;
+}
+
 function demangle(func) {
   return func;
 }
@@ -1490,73 +1454,11 @@ function abortOnCannotGrowMemory() {
   abort('Cannot enlarge memory arrays. Either (1) compile with  -s TOTAL_MEMORY=X  with X higher than the current value ' + TOTAL_MEMORY + ', (2) compile with  -s ALLOW_MEMORY_GROWTH=1  which allows increasing the size at runtime, or (3) if you want malloc to return NULL (0) instead of this abort, compile with  -s ABORTING_MALLOC=0 ');
 }
 
-if (!Module['reallocBuffer']) Module['reallocBuffer'] = function(size) {
-  var ret;
-  try {
-    if (ArrayBuffer.transfer) {
-      ret = ArrayBuffer.transfer(buffer, size);
-    } else {
-      var oldHEAP8 = HEAP8;
-      ret = new ArrayBuffer(size);
-      var temp = new Int8Array(ret);
-      temp.set(oldHEAP8);
-    }
-  } catch(e) {
-    return false;
-  }
-  var success = _emscripten_replace_memory(ret);
-  if (!success) return false;
-  return ret;
-};
 
 function enlargeMemory() {
-  // TOTAL_MEMORY is the current size of the actual array, and DYNAMICTOP is the new top.
-
-
-  var PAGE_MULTIPLE = Module["usingWasm"] ? WASM_PAGE_SIZE : ASMJS_PAGE_SIZE; // In wasm, heap size must be a multiple of 64KB. In asm.js, they need to be multiples of 16MB.
-  var LIMIT = 2147483648 - PAGE_MULTIPLE; // We can do one page short of 2GB as theoretical maximum.
-
-  if (HEAP32[DYNAMICTOP_PTR>>2] > LIMIT) {
-    return false;
-  }
-
-  var OLD_TOTAL_MEMORY = TOTAL_MEMORY;
-  TOTAL_MEMORY = Math.max(TOTAL_MEMORY, MIN_TOTAL_MEMORY); // So the loop below will not be infinite, and minimum asm.js memory size is 16MB.
-
-  while (TOTAL_MEMORY < HEAP32[DYNAMICTOP_PTR>>2]) { // Keep incrementing the heap size as long as it's less than what is requested.
-    if (TOTAL_MEMORY <= 536870912) {
-      TOTAL_MEMORY = alignUp(2 * TOTAL_MEMORY, PAGE_MULTIPLE); // Simple heuristic: double until 1GB...
-    } else {
-      TOTAL_MEMORY = Math.min(alignUp((3 * TOTAL_MEMORY + 2147483648) / 4, PAGE_MULTIPLE), LIMIT); // ..., but after that, add smaller increments towards 2GB, which we cannot reach
-    }
-  }
-
-
-  var replacement = Module['reallocBuffer'](TOTAL_MEMORY);
-  if (!replacement || replacement.byteLength != TOTAL_MEMORY) {
-    // restore the state to before this call, we failed
-    TOTAL_MEMORY = OLD_TOTAL_MEMORY;
-    return false;
-  }
-
-  // everything worked
-
-  updateGlobalBuffer(replacement);
-  updateGlobalBufferViews();
-
-
-
-
-  return true;
+  abortOnCannotGrowMemory();
 }
 
-var byteLength;
-try {
-  byteLength = Function.prototype.call.bind(Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, 'byteLength').get);
-  byteLength(new ArrayBuffer(4)); // can fail on older ie
-} catch(e) { // can fail on older node/v8
-  byteLength = function(buffer) { return buffer.byteLength; };
-}
 
 var TOTAL_STACK = Module['TOTAL_STACK'] || 5242880;
 var TOTAL_MEMORY = Module['TOTAL_MEMORY'] || 16777216;
@@ -1572,7 +1474,7 @@ if (Module['buffer']) {
 } else {
   // Use a WebAssembly memory where available
   if (typeof WebAssembly === 'object' && typeof WebAssembly.Memory === 'function') {
-    Module['wasmMemory'] = new WebAssembly.Memory({ 'initial': TOTAL_MEMORY / WASM_PAGE_SIZE });
+    Module['wasmMemory'] = new WebAssembly.Memory({ 'initial': TOTAL_MEMORY / WASM_PAGE_SIZE, 'maximum': TOTAL_MEMORY / WASM_PAGE_SIZE });
     buffer = Module['wasmMemory'].buffer;
   } else
   {
@@ -2103,7 +2005,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 35552;
+STATICTOP = STATIC_BASE + 35488;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -2112,7 +2014,7 @@ STATICTOP = STATIC_BASE + 35552;
 
 
 
-var STATIC_BUMP = 35552;
+var STATIC_BUMP = 35488;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -2270,7 +2172,6 @@ var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
 
 Module["asm"] = asm;
-var _emscripten_replace_memory = Module["_emscripten_replace_memory"] = function() {  return Module["asm"]["_emscripten_replace_memory"].apply(null, arguments) };
 var _free = Module["_free"] = function() {  return Module["asm"]["_free"].apply(null, arguments) };
 var _malloc = Module["_malloc"] = function() {  return Module["asm"]["_malloc"].apply(null, arguments) };
 var _memcpy = Module["_memcpy"] = function() {  return Module["asm"]["_memcpy"].apply(null, arguments) };
@@ -2441,6 +2342,7 @@ function run(args) {
   }
 }
 Module['run'] = run;
+
 
 function exit(status, implicit) {
 
