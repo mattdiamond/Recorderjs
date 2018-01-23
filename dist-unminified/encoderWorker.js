@@ -774,7 +774,6 @@ var Runtime = {
   },
   funcWrappers: {},
   getFuncWrapper: function (func, sig) {
-    if (!func) return; // on null pointer, return undefined
     assert(sig);
     if (!Runtime.funcWrappers[sig]) {
       Runtime.funcWrappers[sig] = {};
@@ -1867,7 +1866,7 @@ var memoryInitializer = null;
 
 
 
-function integrateWasmJS() {
+function integrateWasmJS(Module) {
   // wasm.js has several methods for creating the compiled code module here:
   //  * 'native-wasm' : use native WebAssembly support in the browser
   //  * 'interpret-s-expr': load s-expression code from a .wast and interpret
@@ -2010,8 +2009,7 @@ function integrateWasmJS() {
 
   function getBinaryPromise() {
     // if we don't have the binary yet, and have the Fetch api, use that
-    // in some environments, like Electron's render process, Fetch api may be present, but have a different context than expected, let's only use it on the Web
-    if (!Module['wasmBinary'] && (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) && typeof fetch === 'function') {
+    if (!Module['wasmBinary'] && typeof fetch === 'function') {
       return fetch(wasmBinaryFile, { credentials: 'same-origin' }).then(function(response) {
         if (!response['ok']) {
           throw "failed to load wasm binary file at '" + wasmBinaryFile + "'";
@@ -2087,33 +2085,15 @@ function integrateWasmJS() {
       }
     }
 
-    function receiveInstantiatedSource(output) {
-      // 'output' is a WebAssemblyInstantiatedSource object which has both the module and instance.
+    getBinaryPromise().then(function(binary) {
+      return WebAssembly.instantiate(binary, info)
+    }).then(function(output) {
       // receiveInstance() will swap in the exports (to Module.asm) so they can be called
       receiveInstance(output['instance']);
-    }
-    function instantiateArrayBuffer(receiver) {
-      getBinaryPromise().then(function(binary) {
-        return WebAssembly.instantiate(binary, info);
-      }).then(receiver).catch(function(reason) {
-        Module['printErr']('failed to asynchronously prepare wasm: ' + reason);
-        abort(reason);
-      });
-    }
-    // Prefer streaming instantiation if available.
-    if (!Module['wasmBinary'] && typeof WebAssembly.instantiateStreaming === 'function') {
-      WebAssembly.instantiateStreaming(fetch(wasmBinaryFile, { credentials: 'same-origin' }), info)
-        .then(receiveInstantiatedSource)
-        .catch(function(reason) {
-          // We expect the most common failure cause to be a bad MIME type for the binary,
-          // in which case falling back to ArrayBuffer instantiation should work.
-          Module['printErr']('wasm streaming compile failed: ' + reason);
-          Module['printErr']('falling back to ArrayBuffer instantiation');
-          instantiateArrayBuffer(receiveInstantiatedSource);
-        });
-    } else {
-      instantiateArrayBuffer(receiveInstantiatedSource);
-    }
+    }).catch(function(reason) {
+      Module['printErr']('failed to asynchronously prepare wasm: ' + reason);
+      abort(reason);
+    });
     return {}; // no exports yet; we'll fill them in later
   }
 
@@ -2264,8 +2244,6 @@ function integrateWasmJS() {
     var exports;
     exports = doNativeWasm(global, env, providedBuffer);
 
-    if (!exports) abort('no binaryen method succeeded. consider enabling more options, like interpreting, if you want that: https://github.com/kripken/emscripten/wiki/WebAssembly#binaryen-methods');
-
 
     return exports;
   };
@@ -2273,7 +2251,7 @@ function integrateWasmJS() {
   var methodHandler = Module['asm']; // note our method handler, as we may modify Module['asm'] later
 }
 
-integrateWasmJS();
+integrateWasmJS(Module);
 
 // === Body ===
 
@@ -2459,7 +2437,6 @@ Runtime.getTempRet0 = Module['getTempRet0'];
 // === Auto-generated postamble setup entry stuff ===
 
 Module['asm'] = asm;
-
 
 
 
