@@ -4,7 +4,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Ogg Opus Encoder Example</title>
-  <script src="../dist-unminified/recorder.js"></script>
+  <script src="../dist/recorder.min.js"></script>
   <style type='text/css'>
     ul { list-style: none; }
     li { margin: 1em; }
@@ -71,7 +71,7 @@
         numberOfChannels: parseInt(numberOfChannels.value, 10),
         encoderBitRate: parseInt(bitRate.value,10),
         encoderSampleRate: parseInt(encoderSampleRate.value,10),
-        encoderPath: "../dist-unminified/encoderWorker.js"
+        encoderPath: "../dist/encoderWorker.min.js"
       });
 
       recorder.onstart = function(e){
