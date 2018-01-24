@@ -302,10 +302,10 @@ OggOpusEncoder.prototype.initChecksumTable = function(){
 };
 
 OggOpusEncoder.prototype.setOpusControl = function( control, value ){
-    var location = this._malloc( 4 );
-    this.HEAP32[ location >> 2 ] = value;
-    this._opus_encoder_ctl( this.encoder, control, location );
-    this._free( location );
+  var location = this._malloc( 4 );
+  this.HEAP32[ location >> 2 ] = value;
+  this._opus_encoder_ctl( this.encoder, control, location );
+  this._free( location );
 };
 
 OggOpusEncoder.prototype.initCodec = function() {

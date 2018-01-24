@@ -16,7 +16,6 @@
   <h1>Decoder Example</h1>
   <p>Choose either a file from disk, or a file from a server.</p>
   <p>File is decoded to pcm buffers and then played back as Riff</p>
-  <p>The remote file is Paper Lights by <a href="http://magnatune.com/artists/ehren/">Ehren Starks</a>, encoded at 96 kb/s</p>
 
   <h2>Options</h2>
 
@@ -41,8 +40,8 @@
     function decodeOgg(arrayBuffer){
 
       var typedArray = new Uint8Array(arrayBuffer);
-      var decoderWorker = new Worker('../dist/decoderWorker.min.js');
-      var wavWorker = new Worker('../dist/waveWorker.min.js');
+      var decoderWorker = new Worker('../dist-unminified/decoderWorker.js');
+      var wavWorker = new Worker('../dist-unminified/waveWorker.js');
       var desiredSampleRate = parseInt(sampleRate.value,10);
 
       decoderWorker.postMessage({ 
@@ -118,7 +117,7 @@
 
     remoteButton.onclick = function(){
       var xhr = new XMLHttpRequest();
-      xhr.open("GET", "./ehren-paper_lights-96.opus", true);
+      xhr.open("GET", "./mono.opus", true);
       xhr.responseType = "arraybuffer";
 
       xhr.onload = function(e) {

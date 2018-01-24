@@ -1,14 +1,22 @@
 # Opus & Wave Recorder
 
-A javascript library to encode the output of Web Audio API nodes in Ogg Opus or WAV format using WebAssembly. Audio encoded and decoded using libopus v1.2.1. Audio resampling is performed by speexDSP 1.2RC3.
-Encoded and muxed audio will be returned as typedArray in `dataAvailable` event.
+A javascript library to encode the output of Web Audio API nodes in Ogg Opus or WAV format using WebAssembly.
 
-For legacy asm.js, please use version 1.2.0
 
+#### Libraries Used
+
+- Libopus: v1.2.1 compiled with emscripten 1.37.28
+- speexDSP: 1.2RC3 compiled with emscripten 1.37.28
+
+#### Required Files
+
+The required files are in the `dist` folder. Unminified sources are in `dist-unminified`.
+Examples for recording, encoding, and decoding are in `examples` folder.
+
+---------
 ### Usage
 
 
----------
 #### Constructor
 
 The `Recorder` object is available in the global namespace and supports CommonJS and AMD imports.
@@ -16,9 +24,10 @@ The `Recorder` object is available in the global namespace and supports CommonJS
 ```js
 var rec = new Recorder([config]);
 ```
+
 Creates a recorder instance.
 
-- **config** - An optional configuration object (see **config** section below)
+- **config** - An optional configuration object.
 
 
 ---------
@@ -41,7 +50,6 @@ Creates a recorder instance.
 - **streamPages**                 - (*optional*) `dataAvailable` event will fire after each encoded page. Defaults to `false`.
 
 
----------
 #### Config Options for WAV recorder
 
 - **bufferLength**                - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to `4096`.
@@ -57,29 +65,10 @@ Creates a recorder instance.
 #### Instance Methods
 
 ```js
-rec.addEventListener( type, listener[, useCapture] )
-```
-
-**addEventListener** will add an event listener to the event target. Available events are `streamError`, `streamReady`, `dataAvailable`, `start`, `pause`, `resume` and `stop`.
-
-```js
-rec.initStream()
-```
-
-**initStream** will request the user for permission to access the the audio stream and raise `streamReady` or `streamError`.
-Returns a Promise which resolves the audio stream when it is ready.
-
-```js
 rec.pause()
 ```
 
 **pause** will keep the stream and monitoring alive, but will not be recording the buffers. Will raise the pause event. Subsequent calls to **resume** will add to the current recording.
-
-```js
-rec.removeEventListener( type, listener[, useCapture] )
-```
-
-**removeEventListener** will remove an event listener from the event target.
 
 ```js
 rec.resume()
@@ -94,10 +83,10 @@ rec.setMonitorGain( gain )
 **setMonitorGain** will set the volume on what will be passed to the monitor. Monitor level does not affect the recording volume. Gain is an a-weighted value between `0` and `1`.
 
 ```js
-rec.start()
+rec.start( [sourceNode] )
 ```
 
-**start** will initalize the worker and begin capturing audio if the audio stream is ready. Will raise the `start` event when started.
+**start** Initalizes the worker, audio context, and an audio stream and begin capturing audio. Returns a promise which resolves when recording is started. Will callback `onstart` when started. Optionally accepts a source node which can be used in place of initializing the microphone stream. For iOS support, `start` needs to be initiated from a user action.
 
 ```js
 rec.stop()
@@ -109,7 +98,7 @@ rec.stop()
 rec.clearStream()
 ```
 
-**clearStream** will stop and delete the stream got from `initStream`, you will only ever call this manually if you have `config.leaveStreamOpen` set to `true`.
+**clearStream** will stop and delete the stream as well as close the audio context. You will only ever call this manually if you have `config.leaveStreamOpen` set to `true`.
 
 
 ---------
@@ -120,6 +109,47 @@ Recorder.isRecordingSupported()
 ```
 
 Returns a truthy value indicating if the browser supports recording.
+
+
+---------
+#### Callback Handlers
+
+```js
+rec.ondataavailable( arrayBuffer )
+```
+A callback which returns an array buffer of audio data. If `streamPages` is `true`, this will be called with each page of encoded audio.  If `streamPages` is `false`, this will be called when the recording is finished with the complete data.
+
+
+```js
+rec.onpause()
+```
+
+A callback which occurs when media recording is paused.
+
+```js
+rec.onresume()
+```
+
+A callback which occurs when media recording resumes after being paused.
+
+
+```js
+rec.onstart()
+```
+
+A callback which occurs when media recording starts.
+
+```js
+rec.onstop()
+```
+
+A callback which occurs when media recording ends.
+
+```js
+rec.onstreamerror( error )
+```
+
+A callback which occurs when a stream error occurs.
 
 
 ---------
@@ -146,6 +176,7 @@ Unsupported:
 - macOS Safari v11 native opus playback not yet supported
 - iOS Safari v11 native opus playback not yet supported
 - Microsoft Edge native opus playback not yet supported
+- iOS Safari requires `rec.start()` to be called from a user initiated event
 
 
 ---------
@@ -187,8 +218,3 @@ Clean the dist folder and git submodules:
 make clean
 ```
 
-
----------
-### Required Files
-
-The required files to record audio to ogg/opus are `dist/recorder.min.js` and `dist/encoderWorker.min.js`. Optionally `dist/decoderWorker.min.js` will help decode ogg/opus files and `dist/waveWorker.min.js` is a helper to transform floating point PCM data into wave/pcm. The source files `src/encoderWorker.js` and `src/decoderWorker.js` do not work without building process; it will produce an error `ReferenceError: _malloc is not defined`. You need to either use compiled file in `dist/` folder or build by yourself.
