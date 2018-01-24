@@ -50,7 +50,7 @@ Creates a recorder instance.
 - **streamPages**                 - (*optional*) `dataAvailable` event will fire after each encoded page. Defaults to `false`.
 
 
-#### Config Options for WAV recorder
+#### Config options for WAV recorder
 
 - **bufferLength**                - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to `4096`.
 - **encoderPath**                 - (*optional*) Path to `encoderWorker.min.js` or `waveWorker.min.js` worker script. Defaults to `encoderWorker.min.js`
@@ -171,6 +171,7 @@ Unsupported:
 ---------
 ### Known Issues
 
+- iOS 10.2.2 and iOS 10.2.5 are not working due to a regression in WebAssembly: https://bugs.webkit.org/show_bug.cgi?id=181781
 - Firefox does not support sample rates above 48000Hz: https://bugzilla.mozilla.org/show_bug.cgi?id=1124981
 - macOS Safari v11 does not sample rates above 44100Hz
 - macOS Safari v11 native opus playback not yet supported
