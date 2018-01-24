@@ -153,6 +153,15 @@ A callback which occurs when a stream error occurs.
 
 
 ---------
+### Gotchas
+- To be able to read the mic stream, the page must be served over https
+- iOS Safari requires `rec.start()` to be called from a user initiated event
+- macOS Safari v11 native opus playback is not yet supported
+- iOS Safari v11 native opus playback is not yet supported
+- Microsoft Edge native opus playback is not yet supported
+
+
+---------
 ### Browser Support
 
 Supported:
@@ -174,10 +183,6 @@ Unsupported:
 - iOS 11.2.2 and iOS 11.2.5 are not working due to a regression in WebAssembly: https://bugs.webkit.org/show_bug.cgi?id=181781
 - Firefox does not support sample rates above 48000Hz: https://bugzilla.mozilla.org/show_bug.cgi?id=1124981
 - macOS Safari v11 does not sample rates above 44100Hz
-- macOS Safari v11 native opus playback not yet supported
-- iOS Safari v11 native opus playback not yet supported
-- Microsoft Edge native opus playback not yet supported
-- iOS Safari requires `rec.start()` to be called from a user initiated event
 
 
 ---------
