@@ -171,7 +171,7 @@ Unsupported:
 ---------
 ### Known Issues
 
-- iOS 10.2.2 and iOS 10.2.5 are not working due to a regression in WebAssembly: https://bugs.webkit.org/show_bug.cgi?id=181781
+- iOS 11.2.2 and iOS 11.2.5 are not working due to a regression in WebAssembly: https://bugs.webkit.org/show_bug.cgi?id=181781
 - Firefox does not support sample rates above 48000Hz: https://bugzilla.mozilla.org/show_bug.cgi?id=1124981
 - macOS Safari v11 does not sample rates above 44100Hz
 - macOS Safari v11 native opus playback not yet supported
