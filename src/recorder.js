@@ -89,6 +89,11 @@ Recorder.prototype.initAudioContext = function( sourceNode ){
 Recorder.prototype.initAudioGraph = function(){
   var self = this;
 
+  // First buffer can contain old data. Don't encode it.
+  this.encodeBuffers = function(){
+    delete this.encodeBuffers;
+  };
+
   this.monitorNode = this.audioContext.createGain();
   this.setMonitorGain( this.config.monitorGain );
   this.monitorNode.connect( this.audioContext.destination );
@@ -152,22 +157,16 @@ Recorder.prototype.setMonitorGain = function( gain ){
 Recorder.prototype.start = function( sourceNode ){
   if ( this.state === "inactive" ) {
     var self = this;
-
     this.state = "recording";
     this.initAudioContext( sourceNode );
-    this.encoder.postMessage( Object.assign({
-      command: 'init',
-      originalSampleRate: this.audioContext.sampleRate,
-      wavSampleRate: this.audioContext.sampleRate
-    }, this.config));
-
-    // First buffer can contain old data. Don't encode it.
-    this.encodeBuffers = function(){
-      delete this.encodeBuffers;
-    };
-
     this.initAudioGraph();
+
     return this.initSourceNode( sourceNode ).then( function( sourceNode ){
+      self.encoder.postMessage( Object.assign({
+        command: 'init',
+        originalSampleRate: self.audioContext.sampleRate,
+        wavSampleRate: self.audioContext.sampleRate
+      }, self.config));
       self.sourceNode = sourceNode;
       self.sourceNode.connect( self.monitorNode );
       self.sourceNode.connect( self.scriptProcessorNode );
