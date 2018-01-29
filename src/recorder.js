@@ -157,11 +157,11 @@ Recorder.prototype.setMonitorGain = function( gain ){
 Recorder.prototype.start = function( sourceNode ){
   if ( this.state === "inactive" ) {
     var self = this;
-    this.state = "recording";
     this.initAudioContext( sourceNode );
     this.initAudioGraph();
 
     return this.initSourceNode( sourceNode ).then( function( sourceNode ){
+      self.state = "recording";
       self.encoder.postMessage( Object.assign({
         command: 'init',
         originalSampleRate: self.audioContext.sampleRate,
@@ -171,9 +171,6 @@ Recorder.prototype.start = function( sourceNode ){
       self.sourceNode.connect( self.monitorNode );
       self.sourceNode.connect( self.scriptProcessorNode );
       self.onstart();
-    }, function( error ){
-      self.onstreamerror( error );
-      throw error;
     });
   }
 };
@@ -230,7 +227,6 @@ Recorder.prototype.onpause = function(){};
 Recorder.prototype.onresume = function(){};
 Recorder.prototype.onstart = function(){};
 Recorder.prototype.onstop = function(){};
-Recorder.prototype.onstreamerror = function(){};
 
 
 module.exports = Recorder;
