@@ -35,7 +35,6 @@ describe('Recorder', function(){
     sinon.spy(Recorder.prototype, 'onstop');
     sinon.spy(Recorder.prototype, 'onpause');
     sinon.spy(Recorder.prototype, 'onresume');
-    sinon.spy(Recorder.prototype, 'onstreamerror');
   };
 
   beforeEach(function(){
@@ -303,9 +302,9 @@ describe('Recorder', function(){
     return rec.start().then( function(){ 
       throw new Error('Unexpected promise resolving.');
     }, function( ev ){
+      expect(rec.state).to.equal('inactive');
       expect(ev).instanceof(Error);
       expect(ev.message).to.equal('PermissionDeniedError')
-      expect(rec.onstreamerror).to.have.been.calledOnce;
     });
   });
 

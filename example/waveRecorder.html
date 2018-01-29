@@ -51,11 +51,6 @@
       log.innerHTML += "\n" + text + " " + (data || '');
     }
 
-    start.addEventListener( "click", function(){ recorder.start(); });
-    pause.addEventListener( "click", function(){ recorder.pause(); });
-    resume.addEventListener( "click", function(){ recorder.resume(); });
-    stopButton.addEventListener( "click", function(){ recorder.stop(); });
-
     if (!Recorder.isRecordingSupported()) {
       screenLogger("Recording features are not supported in your browser.");
     }
@@ -66,6 +61,15 @@
         numberOfChannels: parseInt(numberOfChannels.value, 10),
         wavBitDepth: parseInt(bitDepth.value,10),
         encoderPath: "../dist-unminified/waveWorker.js"
+      });
+
+      pause.addEventListener( "click", function(){ recorder.pause(); });
+      resume.addEventListener( "click", function(){ recorder.resume(); });
+      stopButton.addEventListener( "click", function(){ recorder.stop(); });
+      start.addEventListener( "click", function(){ 
+        recorder.start().catch(function(e){
+          screenLogger('Error encountered: ' + e.message );
+        });
       });
 
       recorder.onstart = function(){
