@@ -274,6 +274,16 @@ describe('Recorder', function(){
     });
   });
 
+  it('should pause & resume recording', function () {
+    var rec = new Recorder();
+    return rec.start().then(function() {
+      rec.pause();
+      expect(rec.state).to.equal('paused');
+      rec.resume();
+      expect(rec.state).to.equal('recording');
+    });
+  });
+
   it('should stop recording and leave stream open', function () {
     var rec = new Recorder({
       leaveStreamOpen: true
