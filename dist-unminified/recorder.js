@@ -100,6 +100,7 @@ var Recorder = function( config ){
     leaveStreamOpen: false,
     maxBuffersPerPage: 40,
     monitorGain: 0,
+    microphoneGain: 0.9,
     numberOfChannels: 1,
     resampleQuality: 3,
     mediaTrackConstraints: true,
@@ -174,6 +175,9 @@ Recorder.prototype.initAudioGraph = function(){
     delete this.encodeBuffers;
   };
 
+  this.volumeNode = this.audioContext.createGain();
+  this.setMicrophoneGain( this.config.microphoneGain );
+
   this.monitorNode = this.audioContext.createGain();
   this.setMonitorGain( this.config.monitorGain );
   this.monitorNode.connect( this.audioContext.destination );
@@ -197,7 +201,9 @@ Recorder.prototype.initSourceNode = function( sourceNode ){
   var self = this;
   return global.navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( function( stream ){
     self.stream = stream;
-    return self.audioContext.createMediaStreamSource( stream );
+    self.microphone = self.audioContext.createMediaStreamSource( stream );
+    self.microphone.connect( self.volumeNode );
+    return self.volumeNode;
   });
 };
 
@@ -223,6 +229,16 @@ Recorder.prototype.resume = function() {
   if ( this.state === "paused" ) {
     this.state = "recording";
     this.onresume();
+  }
+};
+
+Recorder.prototype.setMicrophoneGain = function( gain ){
+  gain = parseFloat(gain);
+
+  this.config.microphoneGain = gain;
+
+  if ( this.volumeNode && this.audioContext ) {
+    this.volumeNode.gain.setTargetAtTime(gain, this.audioContext.currentTime, 0.01);
   }
 };
 
