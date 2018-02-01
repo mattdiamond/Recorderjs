@@ -85,13 +85,13 @@ rec.setMicrophoneGain( gain )
 rec.muteMicrophone()
 ```
 
-**muteMicrophone** will set the microphone recording volume `0`.
+**muteMicrophone** will set the microphone recording volume `0`. Will callback `onmutemicrophone` when muted.
 
 ```js
 rec.unmuteMicrophone()
 ```
 
-**unmuteMicrophone** will set the microphone recording volume to the value of `microphoneGain` or the default, `0.9`.
+**unmuteMicrophone** will set the microphone recording volume to the value of `microphoneGain` or the default, `0.9`. Will callback `onunmutemicrophone` when unmuted.
 
 ```js
 rec.setMonitorGain( gain )
