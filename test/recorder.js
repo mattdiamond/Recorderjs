@@ -35,6 +35,8 @@ describe('Recorder', function(){
     sinon.spy(Recorder.prototype, 'onstop');
     sinon.spy(Recorder.prototype, 'onpause');
     sinon.spy(Recorder.prototype, 'onresume');
+    sinon.spy(Recorder.prototype, 'onmutemicrophone');
+    sinon.spy(Recorder.prototype, 'onunmutemicrophone');
   };
 
   beforeEach(function(){
@@ -110,6 +112,7 @@ describe('Recorder', function(){
     var rec = new Recorder();
     expect(rec.state).to.equal('inactive');
     expect(rec.config).to.have.property('bufferLength', 4096);
+    expect(rec.config).to.have.property('microphoneGain', 0.9);
     expect(rec.config).to.have.property('monitorGain', 0);
     expect(rec.config).to.have.property('numberOfChannels', 1);
     expect(rec.config).to.have.property('encoderSampleRate', 48000);
@@ -134,6 +137,7 @@ describe('Recorder', function(){
     var rec = new Recorder();
     expect(rec.state).to.equal('inactive');
     expect(rec.config).to.have.property('bufferLength', 4096);
+    expect(rec.config).to.have.property('microphoneGain', 0.9);
     expect(rec.config).to.have.property('monitorGain', 0);
     expect(rec.config).to.have.property('numberOfChannels', 1);
     expect(rec.config).to.have.property('encoderSampleRate', 48000);
@@ -151,6 +155,7 @@ describe('Recorder', function(){
   it('should create an instance with config', function () {
     var rec = new Recorder({
       bufferLength: 2048,
+      monitorGain: 0.9,
       monitorGain: 100,
       numberOfChannels: 2,
       bitRate: 16000,
@@ -167,6 +172,7 @@ describe('Recorder', function(){
 
     expect(rec.state).to.equal('inactive');
     expect(rec.config).to.have.property('bufferLength', 2048);
+    expect(rec.config).to.have.property('microphoneGain', 0.9);
     expect(rec.config).to.have.property('monitorGain', 100);
     expect(rec.config).to.have.property('numberOfChannels', 2);
     expect(rec.config).to.have.property('bitRate', 16000);

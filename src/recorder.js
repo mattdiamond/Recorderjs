@@ -154,10 +154,12 @@ Recorder.prototype.resume = function() {
 
 Recorder.prototype.muteMicrophone = function() {
   this.setMicrophoneGain(0);
+  this.onmutemicrophone();
 };
 
 Recorder.prototype.unmuteMicrophone = function () {
   this.setMicrophoneGain(this.config.microphoneGain);
+  this.onunmutemicrophone();
 };
 
 Recorder.prototype.setMicrophoneGain = function( gain ){
@@ -249,6 +251,8 @@ Recorder.prototype.streamPage = function( page ) {
 Recorder.prototype.ondataavailable = function(){};
 Recorder.prototype.onpause = function(){};
 Recorder.prototype.onresume = function(){};
+Recorder.prototype.onmutemicrophone = function(){};
+Recorder.prototype.onunmutemicrophone = function(){};
 Recorder.prototype.onstart = function(){};
 Recorder.prototype.onstop = function(){};
 
