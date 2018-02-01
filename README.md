@@ -149,6 +149,18 @@ rec.onresume()
 
 A callback which occurs when media recording resumes after being paused.
 
+```js
+rec.onmutemicrophone()
+```
+
+A callback which occurs when the microphone recording is muted.
+
+```js
+rec.onunmutemicrophone()
+```
+
+A callback which occurs when the microphone recording is unmuted.
+
 
 ```js
 rec.onstart()
