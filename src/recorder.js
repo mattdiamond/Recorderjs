@@ -152,6 +152,14 @@ Recorder.prototype.resume = function() {
   }
 };
 
+Recorder.prototype.muteMicrophone = function() {
+  this.setMicrophoneGain(0);
+};
+
+Recorder.prototype.unmuteMicrophone = function () {
+  this.setMicrophoneGain(this.config.microphoneGain);
+};
+
 Recorder.prototype.setMicrophoneGain = function( gain ){
   gain = parseFloat( gain );
 

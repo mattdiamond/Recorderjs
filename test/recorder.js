@@ -293,6 +293,22 @@ describe('Recorder', function(){
     });
   });
 
+  it('should mute the microphone volume', function () {
+    var rec = new Recorder();
+    return rec.start().then(function () {
+      rec.muteMicrophone();
+      expect(rec.config.microphoneGain).to.equal(0);
+    });
+  });
+
+  it('should unmute the microphone volume', function () {
+    var rec = new Recorder();
+    return rec.start().then(function () {
+      rec.unmuteMicrophone();
+      expect(rec.config.microphoneGain).not.to.equal(0);
+    });
+  });
+
   it('should stop recording and leave stream open', function () {
     var rec = new Recorder({
       leaveStreamOpen: true
