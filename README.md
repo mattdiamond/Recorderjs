@@ -82,18 +82,6 @@ rec.setMicrophoneGain( gain )
 **setMicrophoneGain** will set the volume on what will be passed to the recorder. Gain is an a-weighted value between `0` and `1`.
 
 ```js
-rec.muteMicrophone()
-```
-
-**muteMicrophone** will set the microphone recording volume `0`. Will callback `onmutemicrophone` when muted.
-
-```js
-rec.unmuteMicrophone()
-```
-
-**unmuteMicrophone** will set the microphone recording volume to the value of `microphoneGain` or the default, `0.9`. Will callback `onunmutemicrophone` when unmuted.
-
-```js
 rec.setMonitorGain( gain )
 ```
 
@@ -148,19 +136,6 @@ rec.onresume()
 ```
 
 A callback which occurs when media recording resumes after being paused.
-
-```js
-rec.onmutemicrophone()
-```
-
-A callback which occurs when the microphone recording is muted.
-
-```js
-rec.onunmutemicrophone()
-```
-
-A callback which occurs when the microphone recording is unmuted.
-
 
 ```js
 rec.onstart()

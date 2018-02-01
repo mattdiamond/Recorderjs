@@ -35,8 +35,6 @@ describe('Recorder', function(){
     sinon.spy(Recorder.prototype, 'onstop');
     sinon.spy(Recorder.prototype, 'onpause');
     sinon.spy(Recorder.prototype, 'onresume');
-    sinon.spy(Recorder.prototype, 'onmutemicrophone');
-    sinon.spy(Recorder.prototype, 'onunmutemicrophone');
   };
 
   beforeEach(function(){
@@ -296,22 +294,6 @@ describe('Recorder', function(){
       rec.setMicrophoneGain(0.3);
       expect(rec.config.microphoneGain).to.equal(0.3);
       expect(rec.config.microphoneGain).not.to.equal(0.9);
-    });
-  });
-
-  it('should mute the microphone volume', function () {
-    var rec = new Recorder();
-    return rec.start().then(function () {
-      rec.muteMicrophone();
-      expect(rec.config.microphoneGain).to.equal(0);
-    });
-  });
-
-  it('should unmute the microphone volume', function () {
-    var rec = new Recorder();
-    return rec.start().then(function () {
-      rec.unmuteMicrophone();
-      expect(rec.config.microphoneGain).not.to.equal(0);
     });
   });
 
