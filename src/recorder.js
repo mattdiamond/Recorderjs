@@ -153,7 +153,7 @@ Recorder.prototype.resume = function() {
 };
 
 Recorder.prototype.setMicrophoneGain = function( gain ){
-  gain = parseFloat(gain);
+  gain = parseFloat( gain );
 
   this.config.microphoneGain = gain;
 
