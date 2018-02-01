@@ -100,7 +100,7 @@ var Recorder = function( config ){
     leaveStreamOpen: false,
     maxBuffersPerPage: 40,
     monitorGain: 0,
-    microphoneGain: 0.9,
+    microphoneGain: 1,
     numberOfChannels: 1,
     resampleQuality: 3,
     mediaTrackConstraints: true,

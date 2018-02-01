@@ -110,7 +110,7 @@ describe('Recorder', function(){
     var rec = new Recorder();
     expect(rec.state).to.equal('inactive');
     expect(rec.config).to.have.property('bufferLength', 4096);
-    expect(rec.config).to.have.property('microphoneGain', 0.9);
+    expect(rec.config).to.have.property('microphoneGain', 1);
     expect(rec.config).to.have.property('monitorGain', 0);
     expect(rec.config).to.have.property('numberOfChannels', 1);
     expect(rec.config).to.have.property('encoderSampleRate', 48000);
@@ -135,7 +135,7 @@ describe('Recorder', function(){
     var rec = new Recorder();
     expect(rec.state).to.equal('inactive');
     expect(rec.config).to.have.property('bufferLength', 4096);
-    expect(rec.config).to.have.property('microphoneGain', 0.9);
+    expect(rec.config).to.have.property('microphoneGain', 1);
     expect(rec.config).to.have.property('monitorGain', 0);
     expect(rec.config).to.have.property('numberOfChannels', 1);
     expect(rec.config).to.have.property('encoderSampleRate', 48000);
@@ -170,7 +170,7 @@ describe('Recorder', function(){
 
     expect(rec.state).to.equal('inactive');
     expect(rec.config).to.have.property('bufferLength', 2048);
-    expect(rec.config).to.have.property('microphoneGain', 0.9);
+    expect(rec.config).to.have.property('microphoneGain', 1);
     expect(rec.config).to.have.property('monitorGain', 100);
     expect(rec.config).to.have.property('numberOfChannels', 2);
     expect(rec.config).to.have.property('bitRate', 16000);
@@ -293,7 +293,7 @@ describe('Recorder', function(){
     return rec.start().then(function() {
       rec.setMicrophoneGain(0.3);
       expect(rec.config.microphoneGain).to.equal(0.3);
-      expect(rec.config.microphoneGain).not.to.equal(0.9);
+      expect(rec.config.microphoneGain).not.to.equal(1);
     });
   });
 

@@ -37,7 +37,7 @@ Creates a recorder instance.
 - **encoderPath**                 - (*optional*) Path to `encoderWorker.min.js` or `waveWorker.min.js` worker script. Defaults to `encoderWorker.min.js`
 - **leaveStreamOpen**             - (*optional*) Keep the stream and context around when trying to `stop` recording, so you can re-`start` without re-initializing the stream and context. Defaults to `false`.
 - **mediaTrackConstraints**       - (*optional*) Object to specify [media track constraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints). Defaults to `true`.
-- **microphoneGain**              - (*optional*) Sets the gain of the microphone input. Gain is an a-weighted value between `0` and `1`. Defaults to `0.9`
+- **microphoneGain**              - (*optional*) Sets the gain of the microphone input. Gain is an a-weighted value between `0` and `1`. Defaults to `1`
 - **monitorGain**                 - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between `0` and `1`. Defaults to `0`
 - **numberOfChannels**            - (*optional*) The number of channels to record. `1` = mono, `2` = stereo. Defaults to `1`. Maximum `2` channels are supported.
 
