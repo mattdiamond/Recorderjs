@@ -153,7 +153,7 @@ describe('Recorder', function(){
   it('should create an instance with config', function () {
     var rec = new Recorder({
       bufferLength: 2048,
-      monitorGain: 0.9,
+      recordingGain: 0.5,
       monitorGain: 100,
       numberOfChannels: 2,
       bitRate: 16000,
@@ -170,7 +170,7 @@ describe('Recorder', function(){
 
     expect(rec.state).to.equal('inactive');
     expect(rec.config).to.have.property('bufferLength', 2048);
-    expect(rec.config).to.have.property('recordingGain', 1);
+    expect(rec.config).to.have.property('recordingGain', 0.5);
     expect(rec.config).to.have.property('monitorGain', 100);
     expect(rec.config).to.have.property('numberOfChannels', 2);
     expect(rec.config).to.have.property('bitRate', 16000);
