@@ -100,7 +100,7 @@ var Recorder = function( config ){
     leaveStreamOpen: false,
     maxBuffersPerPage: 40,
     monitorGain: 0,
-    sourceGain: 1,
+    recordingGain: 1,
     numberOfChannels: 1,
     resampleQuality: 3,
     mediaTrackConstraints: true,
@@ -176,7 +176,7 @@ Recorder.prototype.initAudioGraph = function(){
   };
 
   this.volumeNode = this.audioContext.createGain();
-  this.setSourceGain( this.config.sourceGain );
+  this.setRecordingGain( this.config.recordingGain );
 
   this.monitorNode = this.audioContext.createGain();
   this.setMonitorGain( this.config.monitorGain );
@@ -232,10 +232,10 @@ Recorder.prototype.resume = function() {
   }
 };
 
-Recorder.prototype.setSourceGain = function( gain ){
+Recorder.prototype.setRecordingGain = function( gain ){
   gain = parseFloat( gain );
 
-  this.config.sourceGain = gain;
+  this.config.recordingGain = gain;
 
   if ( this.volumeNode && this.audioContext ) {
     this.volumeNode.gain.setTargetAtTime(gain, this.audioContext.currentTime, 0.01);
