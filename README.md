@@ -85,7 +85,7 @@ rec.setSourceGain( gain )
 rec.setMonitorGain( gain )
 ```
 
-**setMonitorGain** will set the volume on what will be passed to the monitor. Gain is an a-weighted value between `0` and `1`.
+**setMonitorGain** will set the volume on what will be passed to the monitor. Monitor level does not affect the recording volume. Gain is an a-weighted value between `0` and `1`.
 
 ```js
 rec.start( [sourceNode] )
