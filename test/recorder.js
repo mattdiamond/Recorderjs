@@ -278,16 +278,6 @@ describe('Recorder', function(){
     });
   });
 
-  it('should pause & resume recording', function () {
-    var rec = new Recorder();
-    return rec.start().then(function() {
-      rec.pause();
-      expect(rec.state).to.equal('paused');
-      rec.resume();
-      expect(rec.state).to.equal('recording');
-    });
-  });
-
   it('should set the source volume', function () {
     var rec = new Recorder();
     return rec.start().then(function() {
