@@ -268,9 +268,9 @@ describe('Recorder', function(){
     return rec.start().then(function(){
       rec.stop();
       expect(rec.state).to.equal('inactive');
-      expect(rec.monitorNode.disconnect).to.have.been.calledTwice;
+      expect(rec.monitorNode.disconnect).to.have.been.calledOnce;
       expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
-      expect(rec.sourceNode.disconnect).to.have.been.calledTwice;
+      expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
       expect(clearStreamSpy).to.have.been.calledOnce;
       expect(rec.stream).to.be.undefined;
       expect(rec.audioContext).to.be.undefined;
@@ -295,9 +295,9 @@ describe('Recorder', function(){
     return rec.start().then(function(){
       rec.stop();
       expect(rec.state).to.equal('inactive');
-      expect(rec.monitorNode.disconnect).to.have.been.calledTwice;
+      expect(rec.monitorNode.disconnect).to.have.been.calledOnce;
       expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
-      expect(rec.sourceNode.disconnect).to.have.been.calledTwice;
+      expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
       expect(clearStreamSpy).not.to.have.been.called;
       expect(rec.stream).not.to.be.undefined;
       expect(rec.audioContext).not.to.be.undefined;

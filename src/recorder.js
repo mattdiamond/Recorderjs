@@ -95,13 +95,13 @@ Recorder.prototype.initAudioGraph = function(){
     delete this.encodeBuffers;
   };
 
-  this.volumeNode = this.audioContext.createGain();
+  this.monitorNode = this.audioContext.createGain();
+  this.recordingNode = this.audioContext.createGain();
+
+  this.setMonitorGain( this.config.monitorGain );
   this.setRecordingGain( this.config.recordingGain );
 
-  this.monitorNode = this.audioContext.createGain();
-  this.setMonitorGain( this.config.monitorGain );
   this.monitorNode.connect( this.audioContext.destination );
-
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
   this.scriptProcessorNode.connect( this.audioContext.destination );
   this.scriptProcessorNode.onaudioprocess = function( e ) {
@@ -111,19 +111,21 @@ Recorder.prototype.initAudioGraph = function(){
 
 Recorder.prototype.initSourceNode = function( sourceNode ){
   if ( sourceNode && sourceNode.context ) {
-    return global.Promise.resolve( sourceNode );
+    sourceNode.connect( this.recordingNode );
+    return global.Promise.resolve( this.recordingNode );
   }
 
   if ( this.stream && this.sourceNode ) {
-    return global.Promise.resolve( this.sourceNode );
+    this.sourceNode.connect( this.recordingNode );
+    return global.Promise.resolve( this.recordingNode );
   }
 
   var self = this;
   return global.navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( function( stream ){
     self.stream = stream;
-    self.microphone = self.audioContext.createMediaStreamSource( stream );
-    self.microphone.connect( self.volumeNode );
-    return self.volumeNode;
+    var sourceStream = self.audioContext.createMediaStreamSource( stream );
+    sourceStream.connect( self.recordingNode );
+    return self.recordingNode;
   });
 };
 
@@ -153,12 +155,10 @@ Recorder.prototype.resume = function() {
 };
 
 Recorder.prototype.setRecordingGain = function( gain ){
-  gain = parseFloat( gain );
-
   this.config.recordingGain = gain;
 
-  if ( this.volumeNode && this.audioContext ) {
-    this.volumeNode.gain.setTargetAtTime(gain, this.audioContext.currentTime, 0.01);
+  if ( this.recordingNode && this.audioContext ) {
+    this.recordingNode.gain.setTargetAtTime(gain, this.audioContext.currentTime, 0.01);
   }
 };
 
@@ -195,6 +195,7 @@ Recorder.prototype.stop = function(){
   if ( this.state !== "inactive" ) {
     this.state = "inactive";
     this.monitorNode.disconnect();
+    this.recordingNode.disconnect();
     this.scriptProcessorNode.disconnect();
     this.sourceNode.disconnect();
 
