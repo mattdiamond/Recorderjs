@@ -361,6 +361,14 @@ for (key in Module) {
   }
 }
 
+Module['arguments'] = [];
+Module['thisProgram'] = './this.program';
+Module['quit'] = function(status, toThrow) {
+  throw toThrow;
+};
+Module['preRun'] = [];
+Module['postRun'] = [];
+
 // The environment setup code below is customized to use Module.
 // *** Environment setup code ***
 var ENVIRONMENT_IS_WEB = false;
@@ -383,7 +391,7 @@ if (Module['ENVIRONMENT']) {
   } else if (Module['ENVIRONMENT'] === 'SHELL') {
     ENVIRONMENT_IS_SHELL = true;
   } else {
-    throw new Error('The provided Module[\'ENVIRONMENT\'] value is not valid. It must be one of: WEB|WORKER|NODE|SHELL.');
+    throw new Error('Module[\'ENVIRONMENT\'] value is not valid. must be one of: WEB|WORKER|NODE|SHELL.');
   }
 } else {
   ENVIRONMENT_IS_WEB = typeof window === 'object';
@@ -396,9 +404,6 @@ if (Module['ENVIRONMENT']) {
 if (ENVIRONMENT_IS_NODE) {
   // Expose functionality in the same simple way that the shells work
   // Note that we pollute the global namespace here, otherwise we break in node
-  if (!Module['print']) Module['print'] = console.log;
-  if (!Module['printErr']) Module['printErr'] = console.warn;
-
   var nodeFS;
   var nodePath;
 
@@ -420,12 +425,8 @@ if (ENVIRONMENT_IS_NODE) {
     return ret;
   };
 
-  if (!Module['thisProgram']) {
-    if (process['argv'].length > 1) {
-      Module['thisProgram'] = process['argv'][1].replace(/\\/g, '/');
-    } else {
-      Module['thisProgram'] = 'unknown-program';
-    }
+  if (process['argv'].length > 1) {
+    Module['thisProgram'] = process['argv'][1].replace(/\\/g, '/');
   }
 
   Module['arguments'] = process['argv'].slice(2);
@@ -449,15 +450,10 @@ if (ENVIRONMENT_IS_NODE) {
   Module['inspect'] = function () { return '[Emscripten Module object]'; };
 }
 else if (ENVIRONMENT_IS_SHELL) {
-  if (!Module['print']) Module['print'] = print;
-  if (typeof printErr != 'undefined') Module['printErr'] = printErr; // not present in v8 or older sm
-
   if (typeof read != 'undefined') {
     Module['read'] = function shell_read(f) {
       return read(f);
     };
-  } else {
-    Module['read'] = function shell_read() { throw 'no read() available' };
   }
 
   Module['readBinary'] = function readBinary(f) {
@@ -519,59 +515,19 @@ else if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
     Module['arguments'] = arguments;
   }
 
-  if (typeof console !== 'undefined') {
-    if (!Module['print']) Module['print'] = function shell_print(x) {
-      console.log(x);
-    };
-    if (!Module['printErr']) Module['printErr'] = function shell_printErr(x) {
-      console.warn(x);
-    };
-  } else {
-    // Probably a worker, and without console.log. We can do very little here...
-    var TRY_USE_DUMP = false;
-    if (!Module['print']) Module['print'] = (TRY_USE_DUMP && (typeof(dump) !== "undefined") ? (function(x) {
-      dump(x);
-    }) : (function(x) {
-      // self.postMessage(x); // enable this if you want stdout to be sent as messages
-    }));
-  }
-
-  if (typeof Module['setWindowTitle'] === 'undefined') {
-    Module['setWindowTitle'] = function(title) { document.title = title };
-  }
-}
-else {
-  // Unreachable because SHELL is dependent on the others
-  throw new Error('Unknown runtime environment. Where are we?');
+  Module['setWindowTitle'] = function(title) { document.title = title };
 }
 
-if (!Module['print']) {
-  Module['print'] = function(){};
-}
-if (!Module['printErr']) {
-  Module['printErr'] = Module['print'];
-}
-if (!Module['arguments']) {
-  Module['arguments'] = [];
-}
-if (!Module['thisProgram']) {
-  Module['thisProgram'] = './this.program';
-}
-if (!Module['quit']) {
-  Module['quit'] = function(status, toThrow) {
-    throw toThrow;
-  }
-}
+// console.log is checked first, as 'print' on the web will open a print dialogue
+// printErr is preferable to console.warn (works better in shells)
+Module['print'] = typeof console !== 'undefined' ? console.log : (typeof print !== 'undefined' ? print : null);
+Module['printErr'] = typeof printErr !== 'undefined' ? printErr : ((typeof console !== 'undefined' && console.warn) || Module['print']);
 
 // *** Environment setup code ***
 
 // Closure helpers
 Module.print = Module['print'];
 Module.printErr = Module['printErr'];
-
-// Callbacks
-Module['preRun'] = [];
-Module['postRun'] = [];
 
 // Merge back in the overrides
 for (key in moduleOverrides) {
@@ -656,14 +612,14 @@ function addFunction(func) {
   for (var i = 0; i < functionPointers.length; i++) {
     if (!functionPointers[i]) {
       functionPointers[i] = func;
-      return 2*(1 + i);
+      return 1 + i;
     }
   }
   throw 'Finished up all reserved function pointers. Use a higher value for RESERVED_FUNCTION_POINTERS.';
 }
 
 function removeFunction(index) {
-  functionPointers[(index-2)/2] = null;
+  functionPointers[index-1] = null;
 }
 
 var funcWrappers = {};
@@ -1307,6 +1263,14 @@ function allocateUTF8(str) {
   var size = lengthBytesUTF8(str) + 1;
   var ret = _malloc(size);
   if (ret) stringToUTF8Array(str, HEAP8, ret, size);
+  return ret;
+}
+
+// Allocate stack space for a JS string, and write it there.
+function allocateUTF8OnStack(str) {
+  var size = lengthBytesUTF8(str) + 1;
+  var ret = stackAlloc(size);
+  stringToUTF8Array(str, HEAP8, ret, size);
   return ret;
 }
 
@@ -2017,6 +1981,12 @@ function copyTempDouble(ptr) {
 
   var _llvm_ctlz_i32=true;
 
+  var _llvm_fabs_f32=Math_abs;
+
+  var _llvm_floor_f32=Math_floor;
+
+  var _llvm_floor_f64=Math_floor;
+
   function _llvm_stackrestore(p) {
       var self = _llvm_stacksave;
       var ret = self.LLVM_SAVEDSTACKS[p];
@@ -2103,7 +2073,7 @@ function invoke_iiiiiii(index,a1,a2,a3,a4,a5,a6) {
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "invoke_iiiiiii": invoke_iiiiiii, "___setErrNo": ___setErrNo, "_abort": _abort, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_llvm_stackrestore": _llvm_stackrestore, "_llvm_stacksave": _llvm_stacksave, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "invoke_iiiiiii": invoke_iiiiiii, "___setErrNo": ___setErrNo, "_abort": _abort, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_llvm_fabs_f32": _llvm_fabs_f32, "_llvm_floor_f32": _llvm_floor_f32, "_llvm_floor_f64": _llvm_floor_f64, "_llvm_stackrestore": _llvm_stackrestore, "_llvm_stacksave": _llvm_stacksave, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
@@ -2205,6 +2175,7 @@ Module['asm'] = asm;
 
 
 
+
 /**
  * @constructor
  * @extends {Error}
@@ -2219,7 +2190,6 @@ ExitStatus.prototype = new Error();
 ExitStatus.prototype.constructor = ExitStatus;
 
 var initialStackTop;
-var preloadStartTime = null;
 var calledMain = false;
 
 dependenciesFulfilled = function runCaller() {
@@ -2235,8 +2205,6 @@ dependenciesFulfilled = function runCaller() {
 /** @type {function(Array=)} */
 function run(args) {
   args = args || Module['arguments'];
-
-  if (preloadStartTime === null) preloadStartTime = Date.now();
 
   if (runDependencies > 0) {
     return;
@@ -2258,7 +2226,6 @@ function run(args) {
 
     preMain();
 
-
     if (Module['onRuntimeInitialized']) Module['onRuntimeInitialized']();
 
 
@@ -2278,6 +2245,7 @@ function run(args) {
   }
 }
 Module['run'] = run;
+
 
 function exit(status, implicit) {
 
