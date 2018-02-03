@@ -43,10 +43,10 @@
   },
   "devDependencies": {
     "chai": "^4.1.1",
-    "mocha": "^4.1.0",
+    "mocha": "^5.0.0",
     "promise": "^8.0.1",
     "require-uncached": "^1.0.3",
-    "sinon": "^4.1.5",
+    "sinon": "^4.2.2",
     "sinon-chai": "^2.14.0",
     "webpack": "^3.10.0"
   },
