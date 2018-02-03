@@ -39,13 +39,15 @@ describe('Recorder', function(){
 
   beforeEach(function(){
     global.AudioContext = sandbox.stub();
-    global.AudioContext.prototype.createGain = sandbox.stub().returns({ 
-      connect: sandbox.stub(),
-      disconnect: sandbox.stub(),
-      gain: {
-        setTargetAtTime: sandbox.stub()
-      }
-    });
+    global.AudioContext.prototype.createGain = () => {
+      return {
+        connect: sandbox.stub(),
+        disconnect: sandbox.stub(),
+        gain: {
+          setTargetAtTime: sandbox.stub()
+        }
+      };
+    };
     global.AudioContext.prototype.createScriptProcessor = sandbox.stub().returns({
       connect: sandbox.stub(),
       disconnect: sandbox.stub()
@@ -79,13 +81,15 @@ describe('Recorder', function(){
   var mockWebkit = function(){
     delete global.AudioContext;
     global.webkitAudioContext = sandbox.stub();
-    global.webkitAudioContext.prototype.createGain = sandbox.stub().returns({ 
-      connect: sandbox.stub(),
-      disconnect: sandbox.stub(),
-      gain: {
-        setTargetAtTime: sandbox.stub()
-      }
-    });
+    global.webkitAudioContext.prototype.createGain = () => {
+      return {
+        connect: sandbox.stub(),
+        disconnect: sandbox.stub(),
+        gain: {
+          setTargetAtTime: sandbox.stub()
+        }
+      };
+    };
     global.webkitAudioContext.prototype.createScriptProcessor = sandbox.stub().returns({
       connect: sandbox.stub(),
       disconnect: sandbox.stub()
@@ -110,6 +114,7 @@ describe('Recorder', function(){
     var rec = new Recorder();
     expect(rec.state).to.equal('inactive');
     expect(rec.config).to.have.property('bufferLength', 4096);
+    expect(rec.config).to.have.property('recordingGain', 1);
     expect(rec.config).to.have.property('monitorGain', 0);
     expect(rec.config).to.have.property('numberOfChannels', 1);
     expect(rec.config).to.have.property('encoderSampleRate', 48000);
@@ -134,6 +139,7 @@ describe('Recorder', function(){
     var rec = new Recorder();
     expect(rec.state).to.equal('inactive');
     expect(rec.config).to.have.property('bufferLength', 4096);
+    expect(rec.config).to.have.property('recordingGain', 1);
     expect(rec.config).to.have.property('monitorGain', 0);
     expect(rec.config).to.have.property('numberOfChannels', 1);
     expect(rec.config).to.have.property('encoderSampleRate', 48000);
@@ -151,6 +157,7 @@ describe('Recorder', function(){
   it('should create an instance with config', function () {
     var rec = new Recorder({
       bufferLength: 2048,
+      recordingGain: 0.5,
       monitorGain: 100,
       numberOfChannels: 2,
       bitRate: 16000,
@@ -167,6 +174,7 @@ describe('Recorder', function(){
 
     expect(rec.state).to.equal('inactive');
     expect(rec.config).to.have.property('bufferLength', 2048);
+    expect(rec.config).to.have.property('recordingGain', 0.5);
     expect(rec.config).to.have.property('monitorGain', 100);
     expect(rec.config).to.have.property('numberOfChannels', 2);
     expect(rec.config).to.have.property('bitRate', 16000);
@@ -247,7 +255,6 @@ describe('Recorder', function(){
       ])
     });
 
-    requireRecorder();
     var rec = new Recorder();
     return rec.start().then(function(){
       expect(rec.stream).to.not.be.undefined;
@@ -264,13 +271,22 @@ describe('Recorder', function(){
     return rec.start().then(function(){
       rec.stop();
       expect(rec.state).to.equal('inactive');
-      expect(rec.monitorNode.disconnect).to.have.been.calledOnce;
+      expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
       expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
-      expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
+      expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
+      expect(rec.sourceNode.disconnect).to.have.been.calledOnce;;
       expect(clearStreamSpy).to.have.been.calledOnce;
       expect(rec.stream).to.be.undefined;
       expect(rec.audioContext).to.be.undefined;
       expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
+    });
+  });
+
+  it('should set the recording gain', function () {
+    var rec = new Recorder();
+    return rec.start().then(function() {
+      rec.setRecordingGain(0.3);
+      expect(rec.config.recordingGain).to.equal(0.3);
     });
   });
 
@@ -282,8 +298,9 @@ describe('Recorder', function(){
     return rec.start().then(function(){
       rec.stop();
       expect(rec.state).to.equal('inactive');
-      expect(rec.monitorNode.disconnect).to.have.been.calledOnce;
+      expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
       expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
+      expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
       expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
       expect(clearStreamSpy).not.to.have.been.called;
       expect(rec.stream).not.to.be.undefined;
@@ -294,8 +311,6 @@ describe('Recorder', function(){
 
   it('should call start promise catch', function () {
     global.navigator.mediaDevices.getUserMedia = () => Promise.reject(new Error('PermissionDeniedError'));
-    requireRecorder();
-
     var rec = new Recorder();
     return rec.start().then( function(){ 
       throw new Error('Unexpected promise resolving.');
