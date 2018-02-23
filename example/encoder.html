@@ -25,6 +25,11 @@
   </div>
 
   <div>
+    <label>recordingGain</label>
+    <input id="recordingGain" type="number" value="1" />
+  </div>
+
+  <div>
     <label>numberOfChannels</label>
     <input id="numberOfChannels" type="number" value="1" />
   </div>
@@ -40,7 +45,8 @@
   </div>
 
   <h2>Commands</h2>
-  <button id="start">start</button>
+  <button id="init">init recorder with options</button>
+  <button id="start" disabled>start</button>
   <button id="pause" disabled>pause</button>
   <button id="resume" disabled>resume</button>
   <button id="stopButton" disabled>stop</button>
@@ -61,68 +67,75 @@
     }
 
     else {
-      var recorder = new Recorder({
-        monitorGain: parseInt(monitorGain.value, 10),
-        numberOfChannels: parseInt(numberOfChannels.value, 10),
-        encoderBitRate: parseInt(bitRate.value,10),
-        encoderSampleRate: parseInt(encoderSampleRate.value,10),
-        encoderPath: "../dist/encoderWorker.min.js"
-      });
-
-      pause.addEventListener( "click", function(){ recorder.pause(); });
-      resume.addEventListener( "click", function(){ recorder.resume(); });
-      stopButton.addEventListener( "click", function(){ recorder.stop(); });
-      start.addEventListener( "click", function(){ 
-        recorder.start().catch(function(e){
-          screenLogger('Error encountered: ' + e.message );
-        });
-      });
-
-      recorder.onstart = function(e){
-        screenLogger('Recorder is started');
-        start.disabled = resume.disabled = true;
-        pause.disabled = stopButton.disabled = false;
-      };
-
-      recorder.onstop = function(e){
-        screenLogger('Recorder is stopped');
+      init.addEventListener( "click", function(){
+        init.disabled = true;
         start.disabled = false;
-        pause.disabled = resume.disabled = stopButton.disabled = true;
-      };
+  
+        var recorder = new Recorder({
+          monitorGain: parseInt(monitorGain.value, 10),
+          recordingGain: parseInt(recordingGain.value, 10),
+          numberOfChannels: parseInt(numberOfChannels.value, 10),
+          encoderBitRate: parseInt(bitRate.value,10),
+          encoderSampleRate: parseInt(encoderSampleRate.value,10),
+          encoderPath: "../dist/encoderWorker.min.js"
+        });
 
-      recorder.onpause = function(e){
-        screenLogger('Recorder is paused');
-        pause.disabled = start.disabled = true;
-        resume.disabled = stopButton.disabled = false;
-      };
+        pause.addEventListener( "click", function(){ recorder.pause(); });
+        resume.addEventListener( "click", function(){ recorder.resume(); });
+        stopButton.addEventListener( "click", function(){ recorder.stop(); });
+        start.addEventListener( "click", function(){ 
+          recorder.start().catch(function(e){
+            screenLogger('Error encountered:', e.message );
+          });
+        });
 
-      recorder.onresume = function(e){
-        screenLogger('Recorder is resuming');
-        start.disabled = resume.disabled = true;
-        pause.disabled = stopButton.disabled = false;
-      };
+        recorder.onstart = function(e){
+          screenLogger('Recorder is started');
+          start.disabled = resume.disabled = true;
+          pause.disabled = stopButton.disabled = false;
+        };
 
-      recorder.ondataavailable = function( typedArray ){
-        var dataBlob = new Blob( [typedArray], { type: 'audio/ogg' } );
-        var fileName = new Date().toISOString() + ".opus";
-        var url = URL.createObjectURL( dataBlob );
+        recorder.onstop = function(e){
+          screenLogger('Recorder is stopped');
+          start.disabled = false;
+          pause.disabled = resume.disabled = stopButton.disabled = true;
+        };
 
-        var audio = document.createElement('audio');
-        audio.controls = true;
-        audio.src = url;
+        recorder.onpause = function(e){
+          screenLogger('Recorder is paused');
+          pause.disabled = start.disabled = true;
+          resume.disabled = stopButton.disabled = false;
+        };
 
-        var link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        link.innerHTML = link.download;
+        recorder.onresume = function(e){
+          screenLogger('Recorder is resuming');
+          start.disabled = resume.disabled = true;
+          pause.disabled = stopButton.disabled = false;
+        };
 
-        var li = document.createElement('li');
-        li.appendChild(link);
-        li.appendChild(audio);
+        recorder.ondataavailable = function( typedArray ){
+          var dataBlob = new Blob( [typedArray], { type: 'audio/ogg' } );
+          var fileName = new Date().toISOString() + ".opus";
+          var url = URL.createObjectURL( dataBlob );
 
-        recordingslist.appendChild(li);
-      };
+          var audio = document.createElement('audio');
+          audio.controls = true;
+          audio.src = url;
+
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          link.innerHTML = link.download;
+
+          var li = document.createElement('li');
+          li.appendChild(link);
+          li.appendChild(audio);
+
+          recordingslist.appendChild(li);
+        };
+      });
     }
+    
   </script>
 </body>
 </html>
