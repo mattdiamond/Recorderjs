@@ -38,9 +38,10 @@
     <label>bitDepth</label>
     <input id="bitDepth" type="number" value="16" />
   </div>
-
-  <h2>Commands</h2>
+  
   <button id="init">init recorder with options</button>
+
+  <h2>Recorder Commands</h2>
   <button id="start" disabled>start</button>
   <button id="pause" disabled>pause</button>
   <button id="resume" disabled>resume</button>
@@ -65,6 +66,10 @@
       init.addEventListener( "click", function(){
         init.disabled = true;
         start.disabled = false;
+        monitorGain.disabled = true;
+        recordingGain.disabled = true;
+        numberOfChannels.disabled = true;
+        bitDepth.disabled = true;
   
         var recorder = new Recorder({
           monitorGain: parseInt(monitorGain.value, 10),
