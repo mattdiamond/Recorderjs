@@ -97,7 +97,7 @@ rec.start( [sourceNode] )
 rec.stop()
 ```
 
-**stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published. Will raise the `stop` event when stopped.
+**stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published. Will call the `onstop` callback when stopped.
 
 ```js
 rec.clearStream()
