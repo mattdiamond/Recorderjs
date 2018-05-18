@@ -67,13 +67,13 @@ Creates a recorder instance.
 rec.pause()
 ```
 
-**pause** will keep the stream and monitoring alive, but will not be recording the buffers. Will raise the pause event. Subsequent calls to **resume** will add to the current recording.
+**pause** will keep the stream and monitoring alive, but will not be recording the buffers. Will call the `onpause` callback when paused. Subsequent calls to **resume** will add to the current recording.
 
 ```js
 rec.resume()
 ```
 
-**resume** will resume the recording if paused. Will raise the resume event.
+**resume** will resume the recording if paused. Will call the `onresume` callback when recording is resumed.
 
 ```js
 rec.setRecordingGain( gain )
@@ -97,7 +97,7 @@ rec.start( [sourceNode] )
 rec.stop()
 ```
 
-**stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published. Will raise the `stop` event when stopped.
+**stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published. Will call the `onstop` callback when stopped.
 
 ```js
 rec.clearStream()
