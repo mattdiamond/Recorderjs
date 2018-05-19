@@ -136,42 +136,35 @@ WavePCM.prototype.record = function( buffers ){
     for ( var channel = 0; channel < this.numberOfChannels; channel++ ) {
 
       var outputIndex = ( i * this.numberOfChannels + channel ) * this.bytesPerSample;
-      var sample = buffers[ channel ][ i ];
 
-      // Check for clipping
-      if ( sample > 1 ) {
-        sample = 1;
-      }
+      // clip the signal if it exceeds [-1, 1]
+      var sample = Math.max(-1, Math.min(1, buffers[ channel ][ i ]));
 
-      else if ( sample < -1 ) {
-        sample = -1;
-      }
-
-      // bit reduce and convert to signed integer
+      // bit reduce and convert to integer
       switch ( this.bytesPerSample ) {
-        case 4: // 32 bits
-          sample = sample * 2147483648;
+        case 4: // 32 bits signed
+          sample = sample * (sample < 0 ? 2147483648 : 2147483647);
           reducedData[ outputIndex ] = sample;
           reducedData[ outputIndex + 1 ] = sample >> 8;
           reducedData[ outputIndex + 2 ] = sample >> 16;
           reducedData[ outputIndex + 3 ] = sample >> 24;
           break;
 
-        case 3: // 24 bits
-          sample = sample * 8388608;
+        case 3: // 24 bits signed
+          sample = sample * (sample < 0 ? 8388608 : 8388607);
           reducedData[ outputIndex ] = sample;
           reducedData[ outputIndex + 1 ] = sample >> 8;
           reducedData[ outputIndex + 2 ] = sample >> 16;
           break;
 
-        case 2: // 16 bits
-          sample = sample * 32768;
+        case 2: // 16 bits signed
+          sample = sample * (sample < 0 ? 32768 : 32767);
           reducedData[ outputIndex ] = sample;
           reducedData[ outputIndex + 1 ] = sample >> 8;
           break;
 
-        case 1: // 8 bits
-          reducedData[ outputIndex ] = ( sample + 1 ) * 128; // unsigned integer.
+        case 1: // 8 bits unsigned
+          reducedData[ outputIndex ] = ((sample * 0.5) + 0.5) * 255;
           break;
 
         default:
