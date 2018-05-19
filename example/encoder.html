@@ -49,7 +49,9 @@
     <input id="encoderApplication" type="number" value="2049" />
   </div>
 
-  <button id="init">init recorder with options</button>
+  <div>
+    <button id="init">init recorder with options</button>
+  </div>
 
   <h2>Recorder Commands</h2>
   <button id="start" disabled>Start</button>
@@ -87,6 +89,7 @@
           recordingGain: parseInt(recordingGain.value, 10),
           numberOfChannels: parseInt(numberOfChannels.value, 10),
           encoderBitRate: bitRate.value ? parseInt(bitRate.value,10) : undefined,
+          encoderApplication: encoderApplication.value ? parseInt(encoderApplication.value,10) : undefined,
           encoderSampleRate: parseInt(encoderSampleRate.value,10),
           encoderPath: "../dist/encoderWorker.min.js"
         });
