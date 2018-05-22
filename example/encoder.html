@@ -83,16 +83,24 @@
         numberOfChannels.disabled = true;
         bitRate.disabled = true;
         encoderSampleRate.disabled = true;
-  
-        var recorder = new Recorder({
+
+        var options = {
           monitorGain: parseInt(monitorGain.value, 10),
           recordingGain: parseInt(recordingGain.value, 10),
           numberOfChannels: parseInt(numberOfChannels.value, 10),
-          encoderBitRate: bitRate.value ? parseInt(bitRate.value,10) : undefined,
-          encoderApplication: encoderApplication.value ? parseInt(encoderApplication.value,10) : undefined,
           encoderSampleRate: parseInt(encoderSampleRate.value,10),
           encoderPath: "../dist/encoderWorker.min.js"
-        });
+        };
+
+        if (bitRate.value) {
+          Object.assign(options, { encoderBitRate: parseInt(bitRate.value,10) });
+        }
+
+        if (encoderApplication.value) {
+          Object.assign(options, { encoderApplication: parseInt(encoderApplication.value,10) });
+        }
+  
+        var recorder = new Recorder(options);
 
         pause.addEventListener( "click", function(){ recorder.pause(); });
         resume.addEventListener( "click", function(){ recorder.resume(); });
