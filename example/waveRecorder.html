@@ -15,7 +15,6 @@
 
   <h1>Wave Recorder example</h1>
   <p>Before you enable monitoring, make sure to either plug in headphones or turn the volume down.</p>
-  <p>This ogg opus implementation does not support more than 2 channels.</p>
 
   <h2>Options</h2>
 
@@ -38,8 +37,10 @@
     <label>bitDepth</label>
     <input id="bitDepth" type="number" value="16" />
   </div>
-  
-  <button id="init">init recorder with options</button>
+
+  <div>
+    <button id="init">init recorder with options</button>
+  </div>
 
   <h2>Recorder Commands</h2>
   <button id="start" disabled>start</button>

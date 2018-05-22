@@ -1,6 +1,6 @@
 {
   "name": "opus-recorder",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "A library for recording opus encoded audio",
   "homepage": "https://github.com/chris-rudmin/opus-recorder",
   "author": "Chris Rudmin",
@@ -46,9 +46,10 @@
     "mocha": "^5.0.0",
     "promise": "^8.0.1",
     "require-uncached": "^1.0.3",
-    "sinon": "^4.2.2",
-    "sinon-chai": "^2.14.0",
-    "webpack": "^3.10.0"
+    "sinon": "^4.5.0",
+    "sinon-chai": "^3.0.0",
+    "webpack": "^4.8.3",
+    "webpack-cli": "^2.1.3"
   },
   "dependencies": {}
 }

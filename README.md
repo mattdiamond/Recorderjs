@@ -5,8 +5,8 @@ A javascript library to encode the output of Web Audio API nodes in Ogg Opus or 
 
 #### Libraries Used
 
-- Libopus: v1.2.1 compiled with emscripten 1.37.33
-- speexDSP: 1.2RC3 compiled with emscripten 1.37.33
+- Libopus: v1.2.1 compiled with emscripten 1.38.1
+- speexDSP: 1.2RC3 compiled with emscripten 1.38.1
 
 #### Required Files
 
@@ -64,6 +64,12 @@ Creates a recorder instance.
 #### Instance Methods
 
 ```js
+rec.clearStream()
+```
+
+**clearStream** will stop and delete the stream as well as close the audio context. You will only ever call this manually if you have `config.leaveStreamOpen` set to `true`.
+
+```js
 rec.pause()
 ```
 
@@ -98,12 +104,6 @@ rec.stop()
 ```
 
 **stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published. Will call the `onstop` callback when stopped.
-
-```js
-rec.clearStream()
-```
-
-**clearStream** will stop and delete the stream as well as close the audio context. You will only ever call this manually if you have `config.leaveStreamOpen` set to `true`.
 
 
 ---------

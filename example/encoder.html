@@ -40,17 +40,24 @@
   </div>
 
   <div>
-    <label>bitRate</label>
-    <input id="bitRate" type="number" value="64000" />
+    <label>encoderBitRate</label>
+    <input id="encoderBitRate" type="number" value="" />
   </div>
 
-  <button id="init">init recorder with options</button>
+  <div>
+    <label>encoderApplication</label>
+    <input id="encoderApplication" type="number" value="" />
+  </div>
+
+  <div>
+    <button id="init">Init recorder with options</button>
+  </div>
 
   <h2>Recorder Commands</h2>
-  <button id="start" disabled>start</button>
-  <button id="pause" disabled>pause</button>
-  <button id="resume" disabled>resume</button>
-  <button id="stopButton" disabled>stop</button>
+  <button id="start" disabled>Start</button>
+  <button id="pause" disabled>Pause</button>
+  <button id="resume" disabled>Resume</button>
+  <button id="stopButton" disabled>Stop</button>
 
   <h2>Recordings</h2>
   <ul id="recordingslist"></ul>
@@ -74,17 +81,26 @@
         monitorGain.disabled = true;
         recordingGain.disabled = true;
         numberOfChannels.disabled = true;
-        bitRate.disabled = true;
+        encoderBitRate.disabled = true;
         encoderSampleRate.disabled = true;
-  
-        var recorder = new Recorder({
+
+        var options = {
           monitorGain: parseInt(monitorGain.value, 10),
           recordingGain: parseInt(recordingGain.value, 10),
           numberOfChannels: parseInt(numberOfChannels.value, 10),
-          encoderBitRate: parseInt(bitRate.value,10),
           encoderSampleRate: parseInt(encoderSampleRate.value,10),
           encoderPath: "../dist/encoderWorker.min.js"
-        });
+        };
+
+        if (encoderBitRate.value) {
+          Object.assign(options, { encoderBitRate: parseInt(encoderBitRate.value,10) });
+        }
+
+        if (encoderApplication.value) {
+          Object.assign(options, { encoderApplication: parseInt(encoderApplication.value,10) });
+        }
+  
+        var recorder = new Recorder(options);
 
         pause.addEventListener( "click", function(){ recorder.pause(); });
         resume.addEventListener( "click", function(){ recorder.resume(); });
