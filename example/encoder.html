@@ -40,8 +40,8 @@
   </div>
 
   <div>
-    <label>bitRate</label>
-    <input id="bitRate" type="number" value="" />
+    <label>encoderBitRate</label>
+    <input id="encoderBitRate" type="number" value="" />
   </div>
 
   <div>
@@ -81,7 +81,7 @@
         monitorGain.disabled = true;
         recordingGain.disabled = true;
         numberOfChannels.disabled = true;
-        bitRate.disabled = true;
+        encoderBitRate.disabled = true;
         encoderSampleRate.disabled = true;
 
         var options = {
@@ -92,8 +92,8 @@
           encoderPath: "../dist/encoderWorker.min.js"
         };
 
-        if (bitRate.value) {
-          Object.assign(options, { encoderBitRate: parseInt(bitRate.value,10) });
+        if (encoderBitRate.value) {
+          Object.assign(options, { encoderBitRate: parseInt(encoderBitRate.value,10) });
         }
 
         if (encoderApplication.value) {
