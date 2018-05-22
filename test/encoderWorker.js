@@ -265,4 +265,36 @@ describe('encoderWorker', function() {
     });
   });
 
+  it('should set serial minimum value as 0', function (done) {
+    sandbox.stub(Math, 'random').returns(0);
+    var messageRecieved = false;
+
+    global.postMessage = function(page){
+      if (!messageRecieved) {
+        messageRecieved = true;
+        var dataView = new DataView(page.buffer);
+        expect(dataView.getUint32(14, true)).to.equal(0);
+        done();
+      }
+    }
+
+    getEncoder();
+  });
+
+  it('should set serial maximum value as 2^32 - 1', function (done) {
+    sandbox.stub(Math, 'random').returns(1);
+    var messageRecieved = false;
+
+    global.postMessage = function(page){
+      if (!messageRecieved) {
+        messageRecieved = true;
+        var dataView = new DataView(page.buffer);
+        expect(dataView.getUint32(14, true)).to.equal(4294967295);
+        done();
+      }
+    }
+
+    getEncoder();
+  });
+
 });
