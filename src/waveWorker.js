@@ -63,7 +63,7 @@ WavePCM.prototype.record = function( buffers ){
       // bit reduce and convert to integer
       switch ( this.bytesPerSample ) {
         case 4: // 32 bits signed
-          sample = sample * (sample < 0 ? 2147483648 : 2147483647);
+          sample = sample * 2147483647.5 - 0.5;
           reducedData[ outputIndex ] = sample;
           reducedData[ outputIndex + 1 ] = sample >> 8;
           reducedData[ outputIndex + 2 ] = sample >> 16;
@@ -71,20 +71,20 @@ WavePCM.prototype.record = function( buffers ){
           break;
 
         case 3: // 24 bits signed
-          sample = sample * (sample < 0 ? 8388608 : 8388607);
+          sample = sample * 8388607.5 - 0.5;
           reducedData[ outputIndex ] = sample;
           reducedData[ outputIndex + 1 ] = sample >> 8;
           reducedData[ outputIndex + 2 ] = sample >> 16;
           break;
 
         case 2: // 16 bits signed
-          sample = sample * (sample < 0 ? 32768 : 32767);
+          sample = sample * 32767.5 - 0.5;
           reducedData[ outputIndex ] = sample;
           reducedData[ outputIndex + 1 ] = sample >> 8;
           break;
 
         case 1: // 8 bits unsigned
-          reducedData[ outputIndex ] = ((sample * 0.5) + 0.5) * 255;
+          reducedData[ outputIndex ] = (sample + 1) * 127.5;
           break;
 
         default:
