@@ -139,4 +139,130 @@ describe('encoderWorker', function() {
     getEncoder();
   });
 
+  it('should set granule position to 0', function (done) {
+    var pageBufferCount = 0;
+
+    global.postMessage = function(page) {
+      pageBufferCount++;
+
+      if (pageBufferCount == 3) {
+        var dataView = new DataView(page.buffer);
+        expect(dataView.getUint32(6, true)).to.equal(0);
+        expect(dataView.getInt32(10, true)).to.equal(0);
+        done();
+      }
+    };
+
+    getEncoder().then(function(encoder) {
+      encoder.lastPositiveGranulePosition = 1;
+      encoder.granulePosition = 0;
+      encoder.generatePage();
+    });
+  });
+
+  it('should set granule position to -1', function (done) {
+    var pageBufferCount = 0;
+
+    global.postMessage = function(page) {
+      pageBufferCount++;
+
+      if (pageBufferCount == 3) {
+        var dataView = new DataView(page.buffer);
+        expect(dataView.getUint32(6, true)).to.equal(4294967295);
+        expect(dataView.getInt32(10, true)).to.equal(-1);
+        done();
+      }
+    };
+
+    getEncoder().then(function(encoder) {
+      encoder.lastPositiveGranulePosition = 1;
+      encoder.granulePosition = -1;
+      encoder.generatePage();
+    });
+  });
+
+  it('should set granule position to -2^32', function (done) {
+    var pageBufferCount = 0;
+
+    global.postMessage = function(page) {
+      pageBufferCount++;
+
+      if (pageBufferCount == 3) {
+        var dataView = new DataView(page.buffer);
+        expect(dataView.getUint32(6, true)).to.equal(0);
+        expect(dataView.getInt32(10, true)).to.equal(-1);
+        done();
+      }
+    };
+
+    getEncoder().then(function(encoder) {
+      encoder.lastPositiveGranulePosition = 1;
+      encoder.granulePosition = -4294967296;
+      encoder.generatePage();
+    });
+  });
+
+  it('should set granule position to -2^32 - 1', function (done) {
+    var pageBufferCount = 0;
+
+    global.postMessage = function(page) {
+      pageBufferCount++;
+
+      if (pageBufferCount == 3) {
+        var dataView = new DataView(page.buffer);
+        expect(dataView.getUint32(6, true)).to.equal(4294967295);
+        expect(dataView.getInt32(10, true)).to.equal(-2);
+        done();
+      }
+    };
+
+    getEncoder().then(function(encoder) {
+      encoder.lastPositiveGranulePosition = 1;
+      encoder.granulePosition = -4294967297;
+      encoder.generatePage();
+    });
+  });
+
+  it('should set granule position to 2^32 - 1', function (done) {
+    var pageBufferCount = 0;
+
+    global.postMessage = function(page) {
+      pageBufferCount++;
+
+      if (pageBufferCount == 3) {
+        var dataView = new DataView(page.buffer);
+        expect(dataView.getUint32(6, true)).to.equal(4294967295);
+        expect(dataView.getInt32(10, true)).to.equal(0);
+        done();
+      }
+    };
+
+    getEncoder().then(function(encoder) {
+      encoder.lastPositiveGranulePosition = 1;
+      encoder.granulePosition = 4294967295;
+      encoder.generatePage();
+    });
+  });
+
+  it('should set granule position to 2^32', function (done) {
+    var pageBufferCount = 0;
+
+    global.postMessage = function(page) {
+      pageBufferCount++;
+
+      if (pageBufferCount == 3) {
+        var dataView = new DataView(page.buffer);
+        expect(dataView.getUint32(6, true)).to.equal(0);
+        expect(dataView.getInt32(10, true)).to.equal(1);
+        done();
+      }
+    };
+
+    getEncoder().then(function(encoder) {
+      encoder.lastPositiveGranulePosition = 1;
+      encoder.granulePosition = 4294967296;
+      encoder.generatePage();
+    });
+  });
+
 });

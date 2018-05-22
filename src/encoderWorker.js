@@ -48,7 +48,7 @@ var OggOpusEncoder = function( config, Module ){
     numberOfChannels: 1,
     originalSampleRate: 44100,
     resampleQuality: 3, // Value between 0 and 10 inclusive. 10 being highest quality.
-    serial: Math.floor( Math.random() * Math.pow(2,32) )
+    serial: Math.floor( Math.random() * (Math.pow(2,32) - 1) )
   }, config );
 
   this._opus_encoder_create = Module._opus_encoder_create;
@@ -171,10 +171,14 @@ OggOpusEncoder.prototype.generatePage = function(){
   pageBufferView.setUint8( 4, 0, true ); // Version
   pageBufferView.setUint8( 5, this.headerType, true ); // 1 = continuation, 2 = beginning of stream, 4 = end of stream
 
-  // Number of samples upto and including this page at 48000Hz, into 64 bits
+  // Number of samples upto and including this page at 48000Hz, into signed 64 bit Little Endian integer
+  // Javascript Number maximum value is 53 bits or 2^53 - 1 
   pageBufferView.setUint32( 6, granulePosition, true );
-  if ( granulePosition > 4294967296 || granulePosition < 0 ) {
-    pageBufferView.setUint32( 10, Math.floor( granulePosition/4294967296 ), true );
+  if (granulePosition < 0) {
+    pageBufferView.setInt32( 10, Math.ceil(granulePosition/4294967297) - 1, true );
+  }
+  else {
+    pageBufferView.setInt32( 10, Math.floor(granulePosition/4294967296), true );
   }
 
   pageBufferView.setUint32( 14, this.config.serial, true ); // Bitstream serial number
