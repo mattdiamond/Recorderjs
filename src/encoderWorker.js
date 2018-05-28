@@ -48,7 +48,7 @@ var OggOpusEncoder = function( config, Module ){
     numberOfChannels: 1,
     originalSampleRate: 44100,
     resampleQuality: 3, // Value between 0 and 10 inclusive. 10 being highest quality.
-    serial: Math.round(Math.random() * 4294967295)
+    serial: Math.floor(Math.random() * 4294967296)
   }, config );
 
   this._opus_encoder_create = Module._opus_encoder_create;
