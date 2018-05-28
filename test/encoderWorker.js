@@ -282,7 +282,7 @@ describe('encoderWorker', function() {
   });
 
   it('should set serial maximum value as 2^32 - 1', function (done) {
-    sandbox.stub(Math, 'random').returns(1);
+    sandbox.stub(Math, 'random').returns(0.9999999999999);
     var messageRecieved = false;
 
     global.postMessage = function(page){
