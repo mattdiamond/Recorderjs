@@ -225,8 +225,8 @@ if (ENVIRONMENT_IS_NODE) {
   });
 
   Module['inspect'] = function () { return '[Emscripten Module object]'; };
-}
-else if (ENVIRONMENT_IS_SHELL) {
+} else
+if (ENVIRONMENT_IS_SHELL) {
   if (typeof read != 'undefined') {
     Module['read'] = function shell_read(f) {
       return read(f);
@@ -254,8 +254,8 @@ else if (ENVIRONMENT_IS_SHELL) {
       quit(status);
     }
   }
-}
-else if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
+} else
+if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
   Module['read'] = function shell_read(url) {
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url, false);
@@ -289,6 +289,9 @@ else if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
   };
 
   Module['setWindowTitle'] = function(title) { document.title = title };
+} else
+{
+  throw new Error('not compiled for this environment');
 }
 
 // console.log is checked first, as 'print' on the web will open a print dialogue
@@ -1706,7 +1709,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 35552;
+STATICTOP = STATIC_BASE + 35216;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1715,7 +1718,7 @@ STATICTOP = STATIC_BASE + 35552;
 
 
 
-var STATIC_BUMP = 35552;
+var STATIC_BUMP = 35216;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -1761,6 +1764,8 @@ function copyTempDouble(ptr) {
       Module['abort']();
     }
 
+  var _llvm_cos_f64=Math_cos;
+
   var _llvm_ctlz_i32=true;
 
   
@@ -1770,13 +1775,30 @@ function copyTempDouble(ptr) {
   return _llvm_exp2_f32.apply(null, arguments)
   }
 
+  var _llvm_exp_f64=Math_exp;
+
   var _llvm_fabs_f32=Math_abs;
 
   var _llvm_floor_f32=Math_floor;
 
   var _llvm_floor_f64=Math_floor;
 
+  
+  function _llvm_log10_f32(x) {
+      return Math.log(x) / Math.LN10; // TODO: Math.log10, when browser support is there
+    }function _llvm_log10_f64() {
+  return _llvm_log10_f32.apply(null, arguments)
+  }
+
+  var _llvm_log_f64=Math_log;
+
   var _llvm_pow_f64=Math_pow;
+
+  var _llvm_sin_f64=Math_sin;
+
+  var _llvm_sqrt_f32=Math_sqrt;
+
+  var _llvm_sqrt_f64=Math_sqrt;
 
   function _llvm_stackrestore(p) {
       var self = _llvm_stacksave;
@@ -1876,7 +1898,7 @@ function invoke_viiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "invoke_iiiiiii": invoke_iiiiiii, "invoke_viiiiiii": invoke_viiiiiii, "___setErrNo": ___setErrNo, "_abort": _abort, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_llvm_exp2_f32": _llvm_exp2_f32, "_llvm_exp2_f64": _llvm_exp2_f64, "_llvm_fabs_f32": _llvm_fabs_f32, "_llvm_floor_f32": _llvm_floor_f32, "_llvm_floor_f64": _llvm_floor_f64, "_llvm_pow_f64": _llvm_pow_f64, "_llvm_stackrestore": _llvm_stackrestore, "_llvm_stacksave": _llvm_stacksave, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "invoke_iiiiiii": invoke_iiiiiii, "invoke_viiiiiii": invoke_viiiiiii, "___setErrNo": ___setErrNo, "_abort": _abort, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_llvm_cos_f64": _llvm_cos_f64, "_llvm_exp2_f32": _llvm_exp2_f32, "_llvm_exp2_f64": _llvm_exp2_f64, "_llvm_exp_f64": _llvm_exp_f64, "_llvm_fabs_f32": _llvm_fabs_f32, "_llvm_floor_f32": _llvm_floor_f32, "_llvm_floor_f64": _llvm_floor_f64, "_llvm_log10_f32": _llvm_log10_f32, "_llvm_log10_f64": _llvm_log10_f64, "_llvm_log_f64": _llvm_log_f64, "_llvm_pow_f64": _llvm_pow_f64, "_llvm_sin_f64": _llvm_sin_f64, "_llvm_sqrt_f32": _llvm_sqrt_f32, "_llvm_sqrt_f64": _llvm_sqrt_f64, "_llvm_stackrestore": _llvm_stackrestore, "_llvm_stacksave": _llvm_stacksave, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
