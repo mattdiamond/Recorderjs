@@ -381,6 +381,15 @@ function warnOnce(text) {
   }
 }
 
+var asm2wasmImports = { // special asm2wasm imports
+    "f64-rem": function(x, y) {
+        return x % y;
+    },
+    "debugger": function() {
+        debugger;
+    }
+};
+
 
 
 var jsCallStartIndex = 1;
@@ -458,7 +467,6 @@ var Runtime = {
 // Then the stack.
 // Then 'dynamic' memory for sbrk.
 var GLOBAL_BASE = 1024;
-
 
 
 // === Preamble library stuff ===
@@ -700,7 +708,6 @@ function getMemory(size) {
 /** @type {function(number, number=)} */
 function Pointer_stringify(ptr, length) {
   if (length === 0 || !ptr) return '';
-  // TODO: use TextDecoder
   // Find the length, and check for UTF while doing so
   var hasUtf = 0;
   var t;
@@ -1221,7 +1228,7 @@ var __ATPRERUN__  = []; // functions called before the runtime is initialized
 var __ATINIT__    = []; // functions called during startup
 var __ATMAIN__    = []; // functions called when main() is to be run
 var __ATEXIT__    = []; // functions called during shutdown
-var __ATPOSTRUN__ = []; // functions called after the runtime has exited
+var __ATPOSTRUN__ = []; // functions called after the main() is called
 
 var runtimeInitialized = false;
 var runtimeExited = false;
@@ -1464,14 +1471,7 @@ function integrateWasmJS() {
   var info = {
     'global': null,
     'env': null,
-    'asm2wasm': { // special asm2wasm imports
-      "f64-rem": function(x, y) {
-        return x % y;
-      },
-      "debugger": function() {
-        debugger;
-      }
-    },
+    'asm2wasm': asm2wasmImports,
     'parent': Module // Module inside wasm-js.cpp refers to wasm-js.cpp; this allows access to the outside program.
   };
 

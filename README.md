@@ -5,8 +5,8 @@ A javascript library to encode the output of Web Audio API nodes in Ogg Opus or 
 
 #### Libraries Used
 
-- Libopus: v1.2.1 compiled with emscripten 1.38.1
-- speexDSP: 1.2RC3 compiled with emscripten 1.38.1
+- Libopus: v1.2.1 compiled with emscripten 1.38.6
+- speexDSP: 1.2RC3 compiled with emscripten 1.38.6
 
 #### Required Files
 
@@ -35,7 +35,6 @@ Creates a recorder instance.
 
 - **bufferLength**                - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to `4096`.
 - **encoderPath**                 - (*optional*) Path to `encoderWorker.min.js` or `waveWorker.min.js` worker script. Defaults to `encoderWorker.min.js`
-- **leaveStreamOpen**             - (*optional*) Keep the stream and context around when trying to `stop` recording, so you can re-`start` without re-initializing the stream and context. Defaults to `false`.
 - **mediaTrackConstraints**       - (*optional*) Object to specify [media track constraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints). Defaults to `true`.
 - **monitorGain**                 - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between `0` and `1`. Defaults to `0`
 - **numberOfChannels**            - (*optional*) The number of channels to record. `1` = mono, `2` = stereo. Defaults to `1`. Maximum `2` channels are supported.
@@ -63,11 +62,6 @@ Creates a recorder instance.
 ---------
 #### Instance Methods
 
-```js
-rec.clearStream()
-```
-
-**clearStream** will stop and delete the stream as well as close the audio context. You will only ever call this manually if you have `config.leaveStreamOpen` set to `true`.
 
 ```js
 rec.pause()
@@ -97,7 +91,7 @@ rec.setMonitorGain( gain )
 rec.start( [sourceNode] )
 ```
 
-**start** Initalizes the worker, audio context, and an audio stream and begin capturing audio. Returns a promise which resolves when recording is started. Will callback `onstart` when started. Optionally accepts a source node which can be used in place of initializing the microphone stream. For iOS support, `start` needs to be initiated from a user action.
+**start** Initalizes the worker, audio context, and an audio stream and begin capturing audio. Returns a promise which resolves when recording is started. Will callback `onstart` when started. Optionally accepts a source node which can be used in place of initializing the microphone stream. For iOS support, `start` needs to be initiated from a user action. If a sourceNode is provided, then the stream and audioContext will need to be managed by the implementation.
 
 ```js
 rec.stop()
