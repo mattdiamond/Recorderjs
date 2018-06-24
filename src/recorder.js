@@ -75,6 +75,7 @@ Recorder.prototype.encodeBuffers = function( inputBuffer ){
 Recorder.prototype.initAudioContext = function( sourceNode ){
   if (sourceNode && sourceNode.context) {
     this.audioContext = sourceNode.context;
+    this.closeAudioContext = false;
   }
 
   else {
