@@ -79,6 +79,7 @@ Recorder.prototype.initAudioContext = function( sourceNode ){
 
   else {
     this.audioContext = new AudioContext();
+    this.closeAudioContext = true;
   }
 
   return this.audioContext;
@@ -164,7 +165,6 @@ Recorder.prototype.setMonitorGain = function( gain ){
 Recorder.prototype.start = function( sourceNode ){
   if ( this.state === "inactive" ) {
     var self = this;
-    this.closeAudioContext = sourceNode ? false : true;
     this.initWorker();
     this.initAudioContext( sourceNode );
     this.initAudioGraph();
