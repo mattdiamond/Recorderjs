@@ -17,7 +17,6 @@ var Recorder = function( config ){
     encoderFrameSize: 20,
     encoderPath: 'encoderWorker.min.js',
     encoderSampleRate: 48000,
-    leaveStreamOpen: false,
     maxBuffersPerPage: 40,
     mediaTrackConstraints: true,
     monitorGain: 0,
@@ -27,8 +26,6 @@ var Recorder = function( config ){
     streamPages: false,
     wavBitDepth: 16,
   }, config );
-
-  this.initWorker();
 };
 
 
@@ -40,7 +37,7 @@ Recorder.isRecordingSupported = function(){
 
 // Instance Methods
 Recorder.prototype.clearStream = function(){
-  if ( this.stream ) {
+  if ( this.stream ){
 
     if ( this.stream.getTracks ) {
       this.stream.getTracks().forEach( function( track ){
@@ -55,7 +52,7 @@ Recorder.prototype.clearStream = function(){
     delete this.stream;
   }
 
-  if ( this.audioContext ){
+  if ( this.audioContext && this.closeAudioContext ){
     this.audioContext.close();
     delete this.audioContext;
   }
@@ -78,10 +75,12 @@ Recorder.prototype.encodeBuffers = function( inputBuffer ){
 Recorder.prototype.initAudioContext = function( sourceNode ){
   if (sourceNode && sourceNode.context) {
     this.audioContext = sourceNode.context;
+    this.closeAudioContext = false;
   }
 
-  if ( !this.audioContext ) {
+  else {
     this.audioContext = new AudioContext();
+    this.closeAudioContext = true;
   }
 
   return this.audioContext;
@@ -115,10 +114,6 @@ Recorder.prototype.initSourceNode = function( sourceNode ){
 
   if ( sourceNode && sourceNode.context ) {
     return global.Promise.resolve( sourceNode );
-  }
-
-  if ( this.stream && this.sourceNode ) {
-    return global.Promise.resolve( this.sourceNode );
   }
 
   return global.navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( function( stream ){
@@ -171,6 +166,7 @@ Recorder.prototype.setMonitorGain = function( gain ){
 Recorder.prototype.start = function( sourceNode ){
   if ( this.state === "inactive" ) {
     var self = this;
+    this.initWorker();
     this.initAudioContext( sourceNode );
     this.initAudioGraph();
 
@@ -196,11 +192,7 @@ Recorder.prototype.stop = function(){
     this.scriptProcessorNode.disconnect();
     this.recordingGainNode.disconnect();
     this.sourceNode.disconnect();
-
-    if ( !this.config.leaveStreamOpen ) {
-      this.clearStream();
-    }
-
+    this.clearStream();
     this.encoder.postMessage({ command: "done" });
   }
 };
@@ -214,7 +206,6 @@ Recorder.prototype.storePage = function( page ) {
     }, 0);
 
     this.ondataavailable( outputData );
-    this.initWorker();
     this.onstop();
   }
 
@@ -226,7 +217,6 @@ Recorder.prototype.storePage = function( page ) {
 
 Recorder.prototype.streamPage = function( page ) {
   if ( page === null ) {
-    this.initWorker();
     this.onstop();
   }
 

@@ -120,7 +120,6 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('encoderSampleRate', 48000);
     expect(rec.config).to.have.property('encoderPath', 'encoderWorker.min.js');
     expect(rec.config).to.have.property('streamPages', false);
-    expect(rec.config).to.have.property('leaveStreamOpen', false);
     expect(rec.config).to.have.property('maxBuffersPerPage', 40);
     expect(rec.config).to.have.property('mediaTrackConstraints', true);
     expect(rec.config).to.have.property('encoderApplication', 2049);
@@ -145,7 +144,6 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('encoderSampleRate', 48000);
     expect(rec.config).to.have.property('encoderPath', 'encoderWorker.min.js');
     expect(rec.config).to.have.property('streamPages', false);
-    expect(rec.config).to.have.property('leaveStreamOpen', false);
     expect(rec.config).to.have.property('maxBuffersPerPage', 40);
     expect(rec.config).to.have.property('mediaTrackConstraints', true);
     expect(rec.config).to.have.property('encoderApplication', 2049);
@@ -181,7 +179,6 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('encoderSampleRate', 16000);
     expect(rec.config).to.have.property('encoderPath', '../dist/encoderWorker.min.js');
     expect(rec.config).to.have.property('streamPages', true);
-    expect(rec.config).to.have.property('leaveStreamOpen', false);
     expect(rec.config).to.have.property('maxBuffersPerPage', 1000);
     expect(rec.config).to.have.property('encoderApplication', 2048);
     expect(rec.config).to.have.property('encoderFrameSize', 40);
@@ -192,6 +189,9 @@ describe('Recorder', function(){
   it('should start recording', function(){
     var rec = new Recorder();
     return rec.start().then( function(){
+      expect(global.Worker).to.have.been.calledWithNew;
+      expect(rec.encoder.addEventListener).to.have.been.calledOnce;
+      expect(rec.encoder.addEventListener).to.have.been.calledWith('message');
       expect(rec.state).to.equal('recording');
       expect(rec.sourceNode.connect).to.have.been.calledTwice;
       expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ 
@@ -213,19 +213,6 @@ describe('Recorder', function(){
     });
   });
 
-  it('should use the existing audio stream if already initialized', function(){
-    var rec = new Recorder({
-      leaveStreamOpen: true
-    });
-
-    return rec.start().then( function(){
-      rec.stop();
-      return rec.start().then( function(){
-        expect(global.navigator.mediaDevices.getUserMedia).to.have.been.calledOnce;
-      });
-    });
-  });
-
   it('should clear the audio stream', function () {
     var rec = new Recorder();
     return rec.start().then(function(){
@@ -242,6 +229,30 @@ describe('Recorder', function(){
       rec.stop();
       expect(rec.audioContext).to.be.undefined;
       expect(global.AudioContext.prototype.close).to.have.been.calledOnce;
+    });
+  });
+
+  it('should start recording with a supplied audio stream', function(){
+    var rec = new Recorder();
+    var context = new AudioContext();
+    var stream = context.createMediaStreamSource();
+    stream.context = context;
+    return rec.start(stream).then( function(){
+      expect(rec.stream).to.be.undefined;
+      expect(rec.sourceNode).not.to.be.undefined;
+    });
+  });
+
+  it('should not close the audio context with supplied audio stream', function () {
+    var rec = new Recorder();
+    var context = new AudioContext();
+    var stream = context.createMediaStreamSource();
+    stream.context = context;
+    return rec.start(stream).then(function(){
+      expect(rec.audioContext).to.not.be.undefined;
+      rec.stop();
+      expect(rec.audioContext).not.to.be.undefined;
+      expect(global.AudioContext.prototype.close).not.to.have.been.called;
     });
   });
 
@@ -290,25 +301,6 @@ describe('Recorder', function(){
     });
   });
 
-  it('should stop recording and leave stream open', function () {
-    var rec = new Recorder({
-      leaveStreamOpen: true
-    });
-    var clearStreamSpy = sinon.spy(rec, 'clearStream');
-    return rec.start().then(function(){
-      rec.stop();
-      expect(rec.state).to.equal('inactive');
-      expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
-      expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
-      expect(clearStreamSpy).not.to.have.been.called;
-      expect(rec.stream).not.to.be.undefined;
-      expect(rec.audioContext).not.to.be.undefined;
-      expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
-    });
-  });
-
   it('should call start promise catch', function () {
     global.navigator.mediaDevices.getUserMedia = () => Promise.reject(new Error('PermissionDeniedError'));
     var rec = new Recorder();
@@ -321,24 +313,4 @@ describe('Recorder', function(){
     });
   });
 
-  it('should init worker', function () {
-    var rec = new Recorder();
-    expect(global.Worker).to.have.been.calledWithNew;
-    expect(rec.encoder.addEventListener).to.have.been.calledOnce;
-    expect(rec.encoder.addEventListener).to.have.been.calledWith('message');
-  });
-
-  it('should re-init worker when storePage completes', function () {
-    var rec = new Recorder();
-    expect(global.Worker).to.have.been.calledOnce;
-    rec.storePage(null);
-    expect(global.Worker).to.have.been.calledTwice;
-  });
-
-  it('should re-init worker when streamPage completes', function () {
-    var rec = new Recorder();
-    expect(global.Worker).to.have.been.calledOnce;
-    rec.streamPage(null);
-    expect(global.Worker).to.have.been.calledTwice;
-  });
 });
