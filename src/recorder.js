@@ -249,6 +249,7 @@ export class Recorder {
         let click = document.createEvent("Event");
         click.initEvent("click", true, true);
         link.dispatchEvent(click);
+        (window.URL || window.webkitURL).revokeObjectURL(url);
     }
 }
 

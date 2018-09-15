@@ -289,6 +289,7 @@ var Recorder = exports.Recorder = (function () {
             var click = document.createEvent("Event");
             click.initEvent("click", true, true);
             link.dispatchEvent(click);
+            (window.URL || window.webkitURL).revokeObjectURL(url);
         }
     }]);
 
