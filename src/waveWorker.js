@@ -19,6 +19,7 @@ global['onmessage'] = function( e ){
 
     case 'init':
       recorder = new WavePCM( e['data'] );
+      global['postMessage']( {message: 'ready'} );
       break;
 
     default:
@@ -121,10 +122,9 @@ WavePCM.prototype.requestData = function(){
     wav.set( this.recordedBuffers[i], i * bufferLength + headerLength );
   }
 
-  global['postMessage']( wav, [wav.buffer] );
-  global['postMessage'](null);
+  global['postMessage']( {message: 'page', page: wav}, [wav.buffer] );
+  global['postMessage']( {message: 'page', page: null} );
   global['close']();
 };
-
 
 module.exports = WavePCM

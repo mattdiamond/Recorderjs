@@ -70,8 +70,17 @@ describe('Recorder', function(){
     });
 
     global.Worker = sandbox.stub();
-    global.Worker.prototype.addEventListener = sandbox.stub();
-    global.Worker.prototype.postMessage =  sandbox.stub();
+    var messageHandler = function() {};
+    global.Worker.prototype.addEventListener = sinon.spy(function( event, callback ) {
+      if(event == 'message') {
+        messageHandler = callback;
+      }
+    });
+    global.Worker.prototype.postMessage = sinon.spy(function( message ) {
+      if(message['command'] == 'init') {
+        messageHandler({data: {message: 'ready'}});
+      }
+    });
 
     global.Promise = Promise;
 

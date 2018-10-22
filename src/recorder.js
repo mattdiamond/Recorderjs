@@ -124,13 +124,28 @@ Recorder.prototype.initSourceNode = function( sourceNode ){
 
 Recorder.prototype.initWorker = function(){
   var self = this;
-  var streamPage = function( e ) { self.streamPage( e.data ); };
-  var storePage = function( e ) { self.storePage( e.data ); };
+  var onPage = (this.config.streamPages ? this.streamPage : this.storePage).bind(this);
 
   this.recordedPages = [];
   this.totalLength = 0;
   this.encoder = new global.Worker( this.config.encoderPath );
-  this.encoder.addEventListener( "message", this.config.streamPages ? streamPage : storePage );
+  return new Promise((resolve, reject) => {
+    this.encoder.addEventListener( "message", function(e) {
+      switch( e['data']['message'] ){
+        case 'ready':
+          resolve();
+          break;
+        case 'page':
+          onPage(e['data']['page']);
+          break;
+      }
+    });
+    this.encoder.postMessage( Object.assign({
+      command: 'init',
+      originalSampleRate: this.audioContext.sampleRate,
+      wavSampleRate: this.audioContext.sampleRate
+    }, this.config));
+  });
 };
 
 Recorder.prototype.pause = function(){
@@ -165,22 +180,18 @@ Recorder.prototype.setMonitorGain = function( gain ){
 
 Recorder.prototype.start = function( sourceNode ){
   if ( this.state === "inactive" ) {
-    var self = this;
-    this.initWorker();
     this.initAudioContext( sourceNode );
     this.initAudioGraph();
 
-    return this.initSourceNode( sourceNode ).then( function( sourceNode ){
-      self.state = "recording";
-      self.encoder.postMessage( Object.assign({
-        command: 'init',
-        originalSampleRate: self.audioContext.sampleRate,
-        wavSampleRate: self.audioContext.sampleRate
-      }, self.config));
-      self.sourceNode = sourceNode;
-      self.sourceNode.connect( self.monitorGainNode );
-      self.sourceNode.connect( self.recordingGainNode );
-      self.onstart();
+    return this.initSourceNode( sourceNode ).then( ( sourceNode ) => {
+      this.sourceNode = sourceNode;
+
+      return this.initWorker().then(() => {
+        this.state = "recording";
+        this.sourceNode.connect( this.monitorGainNode );
+        this.sourceNode.connect( this.recordingGainNode );
+        this.onstart();
+      });
     });
   }
 };
