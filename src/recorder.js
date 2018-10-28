@@ -138,6 +138,9 @@ Recorder.prototype.initWorker = function(){
         case 'page':
           onPage(e['data']['page']);
           break;
+        case 'done':
+          this.finish();
+          break;
       }
     });
     this.encoder.postMessage( Object.assign({
@@ -209,7 +212,16 @@ Recorder.prototype.stop = function(){
 };
 
 Recorder.prototype.storePage = function( page ) {
-  if ( page === null ) {
+  this.recordedPages.push( page );
+  this.totalLength += page.length;
+};
+
+Recorder.prototype.streamPage = function( page ) {
+  this.ondataavailable( page );
+};
+
+Recorder.prototype.finish = function() {
+  if( !this.config.streamPages ) {
     var outputData = new Uint8Array( this.totalLength );
     this.recordedPages.reduce( function( offset, page ){
       outputData.set( page, offset );
@@ -217,23 +229,8 @@ Recorder.prototype.storePage = function( page ) {
     }, 0);
 
     this.ondataavailable( outputData );
-    this.onstop();
   }
-
-  else {
-    this.recordedPages.push( page );
-    this.totalLength += page.length;
-  }
-};
-
-Recorder.prototype.streamPage = function( page ) {
-  if ( page === null ) {
-    this.onstop();
-  }
-
-  else {
-    this.ondataavailable( page );
-  }
+  this.onstop();
 };
 
 

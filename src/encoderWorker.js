@@ -119,7 +119,7 @@ OggOpusEncoder.prototype.encodeFinalFrame = function() {
   this.encode( finalFrameBuffers );
   this.headerType += 4;
   this.generatePage();
-  global['postMessage']( {message: 'page', page: null} );
+  global['postMessage']( {message: 'done'} );
   global['close']();
 };
 

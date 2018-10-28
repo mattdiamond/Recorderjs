@@ -123,7 +123,7 @@ WavePCM.prototype.requestData = function(){
   }
 
   global['postMessage']( {message: 'page', page: wav}, [wav.buffer] );
-  global['postMessage']( {message: 'page', page: null} );
+  global['postMessage']( {message: 'done'} );
   global['close']();
 };
 
