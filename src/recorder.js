@@ -130,7 +130,7 @@ Recorder.prototype.initWorker = function(){
   this.totalLength = 0;
   this.encoder = new global.Worker( this.config.encoderPath );
   return new Promise((resolve, reject) => {
-    this.encoder.addEventListener( "message", function(e) {
+    this.encoder.addEventListener( "message", (e) => {
       switch( e['data']['message'] ){
         case 'ready':
           resolve();
