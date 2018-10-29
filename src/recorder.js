@@ -87,7 +87,6 @@ Recorder.prototype.initAudioContext = function( sourceNode ){
 };
 
 Recorder.prototype.initAudioGraph = function(){
-  var self = this;
 
   // First buffer can contain old data. Don't encode it.
   this.encodeBuffers = function(){
@@ -96,8 +95,8 @@ Recorder.prototype.initAudioGraph = function(){
 
   this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
   this.scriptProcessorNode.connect( this.audioContext.destination );
-  this.scriptProcessorNode.onaudioprocess = function( e ) {
-    self.encodeBuffers( e.inputBuffer );
+  this.scriptProcessorNode.onaudioprocess = ( e ) => {
+    this.encodeBuffers( e.inputBuffer );
   };
 
   this.monitorGainNode = this.audioContext.createGain();
@@ -110,25 +109,23 @@ Recorder.prototype.initAudioGraph = function(){
 };
 
 Recorder.prototype.initSourceNode = function( sourceNode ){
-  var self = this;
-
   if ( sourceNode && sourceNode.context ) {
     return global.Promise.resolve( sourceNode );
   }
 
-  return global.navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( function( stream ){
-    self.stream = stream;
-    return self.audioContext.createMediaStreamSource( stream );
+  return global.navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( ( stream ) => {
+    this.stream = stream;
+    return this.audioContext.createMediaStreamSource( stream );
   });
 };
 
 Recorder.prototype.initWorker = function(){
-  var self = this;
   var onPage = (this.config.streamPages ? this.streamPage : this.storePage).bind(this);
 
   this.recordedPages = [];
   this.totalLength = 0;
-  this.encoder = new global.Worker( this.config.encoderPath );
+  this.encoder =  new global.Worker(this.config.encoderPath);
+
   return new Promise((resolve, reject) => {
     this.encoder.addEventListener( "message", (e) => {
       switch( e['data']['message'] ){
@@ -143,6 +140,7 @@ Recorder.prototype.initWorker = function(){
           break;
       }
     });
+
     this.encoder.postMessage( Object.assign({
       command: 'init',
       originalSampleRate: this.audioContext.sampleRate,
@@ -186,15 +184,12 @@ Recorder.prototype.start = function( sourceNode ){
     this.initAudioContext( sourceNode );
     this.initAudioGraph();
 
-    return this.initSourceNode( sourceNode ).then( ( sourceNode ) => {
-      this.sourceNode = sourceNode;
-
-      return this.initWorker().then(() => {
-        this.state = "recording";
-        this.sourceNode.connect( this.monitorGainNode );
-        this.sourceNode.connect( this.recordingGainNode );
-        this.onstart();
-      });
+    return Promise.all([this.initSourceNode(sourceNode), this.initWorker()]).then((results) => {
+      this.sourceNode = results[0];
+      this.state = "recording";
+      this.sourceNode.connect( this.monitorGainNode );
+      this.sourceNode.connect( this.recordingGainNode );
+      this.onstart();
     });
   }
 };
