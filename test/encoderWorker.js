@@ -85,12 +85,12 @@ describe('encoderWorker', function() {
 
   it('should default input sample rate field to originalSampleRate', function (done) {
     var pageBufferCount = 0;
-    global.postMessage = function(page){
+    global.postMessage = function(message){
       pageBufferCount++;
 
       // First Page
       if (pageBufferCount == 1) {
-        var pageData = getPacket(page);
+        var pageData = getPacket(message.page);
         var dataView = new DataView(pageData.buffer);
         expect(dataView.getUint32(12, true)).to.equal(44100);
         done();
@@ -102,12 +102,12 @@ describe('encoderWorker', function() {
 
   it('should override input sample rate field', function (done) {
     var pageBufferCount = 0;
-    global.postMessage = function(page){
+    global.postMessage = function(message){
       pageBufferCount++;
 
       // First Page
       if (pageBufferCount == 1) {
-        var pageData = getPacket(page, 1);
+        var pageData = getPacket(message.page, 1);
         var dataView = new DataView(pageData.buffer);
         expect(dataView.getUint32(12, true)).to.equal(16000);
         done();
@@ -122,12 +122,12 @@ describe('encoderWorker', function() {
 
   it('should have vendor \'RecorderJS\' in the second page', function (done) {
     var pageBufferCount = 0;
-    global.postMessage = function(page){
+    global.postMessage = function(message){
       pageBufferCount++;
 
       // Second Page
       if (pageBufferCount == 2) {
-        var pageData = getPacket(page, 1);
+        var pageData = getPacket(message.page, 1);
         var dataView = new DataView(pageData.buffer);
         var vendorLength = dataView.getUint8(8, true);
         var vendorData = pageData.subarray(12, 12 + vendorLength);
@@ -142,11 +142,11 @@ describe('encoderWorker', function() {
   it('should set granule position to 0', function (done) {
     var pageBufferCount = 0;
 
-    global.postMessage = function(page) {
+    global.postMessage = function(message) {
       pageBufferCount++;
 
       if (pageBufferCount == 3) {
-        var dataView = new DataView(page.buffer);
+        var dataView = new DataView(message.page.buffer);
         expect(dataView.getUint32(6, true)).to.equal(0);
         expect(dataView.getInt32(10, true)).to.equal(0);
         done();
@@ -163,11 +163,11 @@ describe('encoderWorker', function() {
   it('should set granule position to -1', function (done) {
     var pageBufferCount = 0;
 
-    global.postMessage = function(page) {
+    global.postMessage = function(message) {
       pageBufferCount++;
 
       if (pageBufferCount == 3) {
-        var dataView = new DataView(page.buffer);
+        var dataView = new DataView(message.page.buffer);
         expect(dataView.getUint32(6, true)).to.equal(4294967295);
         expect(dataView.getInt32(10, true)).to.equal(-1);
         done();
@@ -184,11 +184,11 @@ describe('encoderWorker', function() {
   it('should set granule position to -2^32', function (done) {
     var pageBufferCount = 0;
 
-    global.postMessage = function(page) {
+    global.postMessage = function(message) {
       pageBufferCount++;
 
       if (pageBufferCount == 3) {
-        var dataView = new DataView(page.buffer);
+        var dataView = new DataView(message.page.buffer);
         expect(dataView.getUint32(6, true)).to.equal(0);
         expect(dataView.getInt32(10, true)).to.equal(-1);
         done();
@@ -205,11 +205,11 @@ describe('encoderWorker', function() {
   it('should set granule position to -2^32 - 1', function (done) {
     var pageBufferCount = 0;
 
-    global.postMessage = function(page) {
+    global.postMessage = function(message) {
       pageBufferCount++;
 
       if (pageBufferCount == 3) {
-        var dataView = new DataView(page.buffer);
+        var dataView = new DataView(message.page.buffer);
         expect(dataView.getUint32(6, true)).to.equal(4294967295);
         expect(dataView.getInt32(10, true)).to.equal(-2);
         done();
@@ -226,11 +226,11 @@ describe('encoderWorker', function() {
   it('should set granule position to 2^32 - 1', function (done) {
     var pageBufferCount = 0;
 
-    global.postMessage = function(page) {
+    global.postMessage = function(message) {
       pageBufferCount++;
 
       if (pageBufferCount == 3) {
-        var dataView = new DataView(page.buffer);
+        var dataView = new DataView(message.page.buffer);
         expect(dataView.getUint32(6, true)).to.equal(4294967295);
         expect(dataView.getInt32(10, true)).to.equal(0);
         done();
@@ -247,11 +247,11 @@ describe('encoderWorker', function() {
   it('should set granule position to 2^32', function (done) {
     var pageBufferCount = 0;
 
-    global.postMessage = function(page) {
+    global.postMessage = function(message) {
       pageBufferCount++;
 
       if (pageBufferCount == 3) {
-        var dataView = new DataView(page.buffer);
+        var dataView = new DataView(message.page.buffer);
         expect(dataView.getUint32(6, true)).to.equal(0);
         expect(dataView.getInt32(10, true)).to.equal(1);
         done();
@@ -269,10 +269,10 @@ describe('encoderWorker', function() {
     sandbox.stub(Math, 'random').returns(0);
     var messageRecieved = false;
 
-    global.postMessage = function(page){
+    global.postMessage = function(message){
       if (!messageRecieved) {
         messageRecieved = true;
-        var dataView = new DataView(page.buffer);
+        var dataView = new DataView(message.page.buffer);
         expect(dataView.getUint32(14, true)).to.equal(0);
         done();
       }
@@ -285,10 +285,10 @@ describe('encoderWorker', function() {
     sandbox.stub(Math, 'random').returns(0.9999999999999);
     var messageRecieved = false;
 
-    global.postMessage = function(page){
+    global.postMessage = function(message){
       if (!messageRecieved) {
         messageRecieved = true;
-        var dataView = new DataView(page.buffer);
+        var dataView = new DataView(message.page.buffer);
         expect(dataView.getUint32(14, true)).to.equal(4294967295);
         done();
       }

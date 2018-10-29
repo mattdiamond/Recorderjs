@@ -22,6 +22,7 @@ global['onmessage'] = function( e ){
 
       case 'init':
         encoder = new OggOpusEncoder( e['data'], Module );
+        global['postMessage']( {message: 'ready'} );
         break;
 
       default:
@@ -118,7 +119,7 @@ OggOpusEncoder.prototype.encodeFinalFrame = function() {
   this.encode( finalFrameBuffers );
   this.headerType += 4;
   this.generatePage();
-  global['postMessage'](null);
+  global['postMessage']( {message: 'done'} );
   global['close']();
 };
 
@@ -188,7 +189,7 @@ OggOpusEncoder.prototype.generatePage = function(){
   page.set( this.segmentData.subarray(0, this.segmentDataIndex), 27 + this.segmentTableIndex ); // Segment Data
   pageBufferView.setUint32( 22, this.getChecksum( page ), true ); // Checksum
 
-  global['postMessage']( page, [page.buffer] );
+  global['postMessage']( {message: 'page', page: page}, [page.buffer] );
   this.segmentTableIndex = 0;
   this.segmentDataIndex = 0;
   this.buffersInPage = 0;
