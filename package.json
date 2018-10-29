@@ -42,14 +42,14 @@
     "webpack": "webpack"
   },
   "devDependencies": {
-    "chai": "^4.1.1",
+    "chai": "^4.2.0",
     "mocha": "^5.0.0",
-    "promise": "^8.0.1",
+    "promise": "^8.0.2",
     "require-uncached": "^1.0.3",
-    "sinon": "^6.1.5",
+    "sinon": "^7.1.0",
     "sinon-chai": "^3.2.0",
-    "webpack": "^4.17.0",
-    "webpack-cli": "^3.1.0"
+    "webpack": "^4.23.1",
+    "webpack-cli": "^3.1.2"
   },
   "dependencies": {}
 }
