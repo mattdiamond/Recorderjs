@@ -69,7 +69,7 @@ var OggOpusEncoder = function( config, Module ){
   this.segmentDataIndex = 0;
   this.segmentTable = new Uint8Array( 255 ); // Maximum data segments
   this.segmentTableIndex = 0;
-  this.buffersInPage = 0;
+  this.framesInPage = 0;
 
   this.initChecksumTable();
   this.initCodec();
@@ -102,12 +102,12 @@ OggOpusEncoder.prototype.encode = function( buffers ) {
       var packetLength = this._opus_encode_float( this.encoder, this.encoderBufferPointer, this.encoderSamplesPerChannel, this.encoderOutputPointer, this.encoderOutputMaxLength );
       this.segmentPacket( packetLength );
       this.resampleBufferIndex = 0;
-    }
-  }
 
-  this.buffersInPage++;
-  if ( this.buffersInPage >= this.config.maxFramesPerPage ) {
-    this.generatePage();
+      this.framesInPage++;
+      if ( this.framesInPage >= this.config.maxFramesPerPage ) {
+        this.generatePage();
+      }
+    }
   }
 };
 
@@ -192,7 +192,7 @@ OggOpusEncoder.prototype.generatePage = function(){
   global['postMessage']( {message: 'page', page: page}, [page.buffer] );
   this.segmentTableIndex = 0;
   this.segmentDataIndex = 0;
-  this.buffersInPage = 0;
+  this.framesInPage = 0;
   if ( granulePosition > 0 ) {
     this.lastPositiveGranulePosition = granulePosition;
   }
