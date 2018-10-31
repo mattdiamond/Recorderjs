@@ -129,7 +129,7 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('encoderSampleRate', 48000);
     expect(rec.config).to.have.property('encoderPath', 'encoderWorker.min.js');
     expect(rec.config).to.have.property('streamPages', false);
-    expect(rec.config).to.have.property('maxBuffersPerPage', 40);
+    expect(rec.config).to.have.property('maxFramesPerPage', 40);
     expect(rec.config).to.have.property('mediaTrackConstraints', true);
     expect(rec.config).to.have.property('encoderApplication', 2049);
     expect(rec.config).to.have.property('encoderFrameSize', 20);
@@ -153,7 +153,7 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('encoderSampleRate', 48000);
     expect(rec.config).to.have.property('encoderPath', 'encoderWorker.min.js');
     expect(rec.config).to.have.property('streamPages', false);
-    expect(rec.config).to.have.property('maxBuffersPerPage', 40);
+    expect(rec.config).to.have.property('maxFramesPerPage', 40);
     expect(rec.config).to.have.property('mediaTrackConstraints', true);
     expect(rec.config).to.have.property('encoderApplication', 2049);
     expect(rec.config).to.have.property('encoderFrameSize', 20);
@@ -172,7 +172,7 @@ describe('Recorder', function(){
       encoderPath: "../dist/encoderWorker.min.js",
       streamPages: true,
       leaveStreamOpen: false,
-      maxBuffersPerPage: 1000,
+      maxFramesPerPage: 1000,
       encoderApplication: 2048,
       encoderFrameSize: 40,
       resampleQuality: 10,
@@ -188,11 +188,18 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('encoderSampleRate', 16000);
     expect(rec.config).to.have.property('encoderPath', '../dist/encoderWorker.min.js');
     expect(rec.config).to.have.property('streamPages', true);
-    expect(rec.config).to.have.property('maxBuffersPerPage', 1000);
+    expect(rec.config).to.have.property('maxFramesPerPage', 1000);
     expect(rec.config).to.have.property('encoderApplication', 2048);
     expect(rec.config).to.have.property('encoderFrameSize', 40);
     expect(rec.config).to.have.property('resampleQuality', 10);
     expect(rec.config).to.have.property('wavBitDepth', 32);
+  });
+
+  it('should support deprecated maxBuffersPerPage setting', function () {
+    var rec = new Recorder({
+      maxBuffersPerPage: 1000
+    });
+    expect(rec.config).to.have.property('maxFramesPerPage', 1000);
   });
 
   it('should start recording', function(){

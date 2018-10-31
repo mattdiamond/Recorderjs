@@ -45,7 +45,7 @@ var OggOpusEncoder = function( config, Module ){
                               // 2051 = Restricted Low Delay (Lowest latency)
     encoderFrameSize: 20, // Specified in ms.
     encoderSampleRate: 48000, // Desired encoding sample rate. Audio will be resampled
-    maxBuffersPerPage: 40, // Tradeoff latency with overhead
+    maxFramesPerPage: 40, // Tradeoff latency with overhead
     numberOfChannels: 1,
     originalSampleRate: 44100,
     resampleQuality: 3, // Value between 0 and 10 inclusive. 10 being highest quality.
@@ -106,7 +106,7 @@ OggOpusEncoder.prototype.encode = function( buffers ) {
   }
 
   this.buffersInPage++;
-  if ( this.buffersInPage >= this.config.maxBuffersPerPage ) {
+  if ( this.buffersInPage >= this.config.maxFramesPerPage ) {
     this.generatePage();
   }
 };

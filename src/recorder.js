@@ -10,6 +10,8 @@ var Recorder = function( config ){
     throw new Error("Recording is not supported in this browser");
   }
 
+  if ( !config ) config = {};
+
   this.state = "inactive";
   this.config = Object.assign({
     bufferLength: 4096,
@@ -17,7 +19,7 @@ var Recorder = function( config ){
     encoderFrameSize: 20,
     encoderPath: 'encoderWorker.min.js',
     encoderSampleRate: 48000,
-    maxBuffersPerPage: 40,
+    maxFramesPerPage: 40,
     mediaTrackConstraints: true,
     monitorGain: 0,
     numberOfChannels: 1,
@@ -26,6 +28,11 @@ var Recorder = function( config ){
     streamPages: false,
     wavBitDepth: 16,
   }, config );
+
+  if('maxBuffersPerPage' in config && !('maxFramesPerPage' in config)) {
+    console.warn('maxBuffersPerPage option is DEPRECATED. Use maxFramesPerPage');
+    this.config.maxFramesPerPage = config.maxBuffersPerPage;
+  }
 };
 
 

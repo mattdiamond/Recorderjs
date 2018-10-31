@@ -52,7 +52,7 @@ describe('encoderWorker', function() {
     return getEncoder().then(function(encoder){
       expect(encoder.config).to.have.property('numberOfChannels', 1);
       expect(encoder.config).to.have.property('encoderSampleRate', 48000);
-      expect(encoder.config).to.have.property('maxBuffersPerPage', 40);
+      expect(encoder.config).to.have.property('maxFramesPerPage', 40);
       expect(encoder.config).to.have.property('encoderApplication', 2049);
       expect(encoder.config).to.have.property('encoderFrameSize', 20);
       expect(encoder.config).to.have.property('bufferLength', 4096);
