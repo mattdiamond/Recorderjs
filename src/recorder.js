@@ -10,6 +10,8 @@ var Recorder = function( config ){
     throw new Error("Recording is not supported in this browser");
   }
 
+  if ( !config ) config = {};
+
   this.state = "inactive";
   this.config = Object.assign({
     bufferLength: 4096,
@@ -17,7 +19,7 @@ var Recorder = function( config ){
     encoderFrameSize: 20,
     encoderPath: 'encoderWorker.min.js',
     encoderSampleRate: 48000,
-    maxBuffersPerPage: 40,
+    maxFramesPerPage: 40,
     mediaTrackConstraints: true,
     monitorGain: 0,
     numberOfChannels: 1,

@@ -52,7 +52,7 @@ describe('encoderWorker', function() {
     return getEncoder().then(function(encoder){
       expect(encoder.config).to.have.property('numberOfChannels', 1);
       expect(encoder.config).to.have.property('encoderSampleRate', 48000);
-      expect(encoder.config).to.have.property('maxBuffersPerPage', 40);
+      expect(encoder.config).to.have.property('maxFramesPerPage', 40);
       expect(encoder.config).to.have.property('encoderApplication', 2049);
       expect(encoder.config).to.have.property('encoderFrameSize', 20);
       expect(encoder.config).to.have.property('bufferLength', 4096);
@@ -297,4 +297,65 @@ describe('encoderWorker', function() {
     getEncoder();
   });
 
+  const testingFrameSize = 50;
+
+  function bufferForFrames(amount) {
+    return [new Float32Array(Math.ceil(amount * testingFrameSize * 44.1))];
+  }
+
+  function getEncoderWithMaxFramesPerPage(value) {
+    const options = {
+      maxFramesPerPage: value,
+      encoderFrameSize: testingFrameSize,
+      encoderSampleRate: 48000,
+      originalSampleRate: 44100
+    };
+    return getEncoder(options);
+  }
+
+  it('should emit page when enough buffers are collected for a frame', function (done) {
+    getEncoderWithMaxFramesPerPage(1).then((encoder) => {
+      let pages = 0;
+      global.postMessage = function(message){
+        if ( message.message === 'page' ) pages++;
+      };
+
+      expect(pages).to.equal(0);
+      encoder.encode(bufferForFrames(0.5));
+      expect(pages).to.equal(0);
+      encoder.encode(bufferForFrames(0.5));
+      expect(pages).to.equal(1);
+      done();
+    });
+  });
+
+  it('should break pages when buffer is too long', function (done) {
+    getEncoderWithMaxFramesPerPage(1).then((encoder) => {
+      let pages = 0;
+      global.postMessage = function(message){
+        if ( message.message === 'page' ) pages++;
+      };
+
+      expect(pages).to.equal(0);
+      encoder.encode(bufferForFrames(2));
+      expect(pages).to.equal(2);
+      done();
+    });
+  });
+
+  it('should combines multiple frames per page', function (done) {
+    getEncoderWithMaxFramesPerPage(2).then((encoder) => {
+      let pages = 0;
+      global.postMessage = function(message){
+        if ( message.message === 'page' ) pages++;
+      };
+
+      expect(pages).to.equal(0);
+      encoder.encode(bufferForFrames(2));
+      expect(pages).to.equal(1);
+      encoder.encode(bufferForFrames(4));
+      expect(pages).to.equal(3);
+      done();
+    });
+  });
 });
