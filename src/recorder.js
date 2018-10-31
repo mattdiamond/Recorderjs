@@ -28,11 +28,6 @@ var Recorder = function( config ){
     streamPages: false,
     wavBitDepth: 16,
   }, config );
-
-  if('maxBuffersPerPage' in config && !('maxFramesPerPage' in config)) {
-    console.warn('maxBuffersPerPage option is DEPRECATED. Use maxFramesPerPage');
-    this.config.maxFramesPerPage = config.maxBuffersPerPage;
-  }
 };
 
 

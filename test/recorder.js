@@ -195,13 +195,6 @@ describe('Recorder', function(){
     expect(rec.config).to.have.property('wavBitDepth', 32);
   });
 
-  it('should support deprecated maxBuffersPerPage setting', function () {
-    var rec = new Recorder({
-      maxBuffersPerPage: 1000
-    });
-    expect(rec.config).to.have.property('maxFramesPerPage', 1000);
-  });
-
   it('should start recording', function(){
     var rec = new Recorder();
     return rec.start().then( function(){
