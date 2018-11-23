@@ -52,7 +52,7 @@ describe('Recorder', function(){
       connect: sandbox.stub(),
       disconnect: sandbox.stub()
     });
-    global.AudioContext.prototype.createMediaStreamSource = sandbox.stub().returns({ 
+    global.AudioContext.prototype.createMediaStreamSource = sandbox.stub().returns({
       connect: sandbox.stub(),
       disconnect: sandbox.stub()
     });
@@ -70,16 +70,35 @@ describe('Recorder', function(){
     });
 
     global.Worker = sandbox.stub();
-    var messageHandler = function() {};
+    var messageHandlers = [];
     global.Worker.prototype.addEventListener = sinon.spy(function( event, callback ) {
       if(event == 'message') {
-        messageHandler = callback;
+        messageHandlers.push(callback);
+      }
+    });
+    global.Worker.prototype.removeEventListener = sinon.spy(function( event, callback ) {
+      if ( event == 'message' ) {
+        var index = messageHandlers.indexOf(callback);
+        if ( index > -1 ) {
+          messageHandlers.splice(index, 1);
+        }
       }
     });
     global.Worker.prototype.postMessage = sinon.spy(function( message ) {
-      if(message['command'] == 'init') {
-        messageHandler({data: {message: 'ready'}});
-      }
+      // run callbacks in next tick
+      global.Promise.resolve().then(() => {
+        function call(e) {
+          messageHandlers.forEach( (h) => h(e) );
+        }
+        switch (message['command']) {
+          case 'init':
+            return call({data: {message: 'ready'}});
+          case 'done':
+            return call({data: {message: 'done'}});
+          case 'flush':
+            return call({data: {message: 'flushed'}});
+        }
+      });
     });
 
     global.Promise = Promise;
@@ -299,6 +318,59 @@ describe('Recorder', function(){
       expect(rec.stream).to.be.undefined;
       expect(rec.audioContext).to.be.undefined;
       expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
+    });
+  });
+
+  it('the stop promise should only return when finished', function () {
+      var rec = new Recorder();
+      var encoder;
+      var clearStreamSpy = sinon.spy(rec, 'clearStream');
+      var finishSpy = sinon.spy(rec, 'finish');
+      return rec.start().then(function() {
+        encoder = rec.encoder;
+        return rec.stop();
+      }).then(function() {
+        expect(rec.state).to.equal('inactive');
+        expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
+        expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
+        expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
+        expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
+        expect(clearStreamSpy).to.have.been.calledOnce;
+        expect(finishSpy).to.have.been.calledOnce;
+        expect(rec.stream).to.be.undefined;
+        expect(rec.audioContext).to.be.undefined;
+        expect(encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
+      });
+  });
+
+  it('Supports pause and resume', function () {
+    var rec = new Recorder();
+    return rec.start().then(function() {
+      return rec.pause();
+    }).then(function() {
+      expect(rec.state).to.equal('paused');
+      expect(rec.onpause).to.have.been.calledOnce;
+      expect(rec.encoder.postMessage).not.to.have.been.calledWithMatch({ command: 'flush' });
+
+      rec.resume();
+      expect(rec.state).to.equal('recording');
+    });
+  });
+
+  it('Supports flushing pause and resume', function () {
+    var rec = new Recorder();
+    return rec.start().then(function() {
+      var promise = rec.pause(true);
+      expect(rec.state).to.equal('paused');
+      expect(rec.onpause).not.to.have.been.called;
+      expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ command: 'flush' });
+      return promise;
+    }).then(function() {
+      expect(rec.state).to.equal('paused');
+      expect(rec.onpause).to.have.been.calledOnce;
+
+      rec.resume();
+      expect(rec.state).to.equal('recording');
     });
   });
 
