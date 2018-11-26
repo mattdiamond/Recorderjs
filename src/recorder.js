@@ -154,7 +154,7 @@ Recorder.prototype.initWorker = function(){
 Recorder.prototype.pause = function( flush ) {
   if ( this.state === "recording" ) {
     this.state = "paused";
-    if ( flush ) {
+    if ( flush && this.config.streamPages ) {
       return new Promise((resolve, reject) => {
         const callback = (e) => {
           if ( e["data"]["message"] === 'flushed' ) {

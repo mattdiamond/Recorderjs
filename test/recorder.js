@@ -358,7 +358,7 @@ describe('Recorder', function(){
   });
 
   it('Supports flushing pause and resume', function () {
-    var rec = new Recorder();
+    var rec = new Recorder({streamPages: true});
     return rec.start().then(function() {
       var promise = rec.pause(true);
       expect(rec.state).to.equal('paused');
