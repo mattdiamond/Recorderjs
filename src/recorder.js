@@ -155,16 +155,19 @@ Recorder.prototype.pause = function( flush ) {
   if ( this.state === "recording" ) {
     this.state = "paused";
     if ( flush && this.config.streamPages ) {
+      var encoder = this.encoder;
       return new Promise((resolve, reject) => {
-        const callback = (e) => {
+        var callback = (e) => {
           if ( e["data"]["message"] === 'flushed' ) {
-            this.encoder.removeEventListener( "message", callback );
+            encoder.removeEventListener( "message", callback );
+            encoder = null;
+            callback = null;
             this.onpause();
             resolve();
           }
         };
-        this.encoder.addEventListener( "message", callback );
-        this.encoder.postMessage( { command: "flush" } );
+        encoder.addEventListener( "message", callback );
+        encoder.postMessage( { command: "flush" } );
       });
     }
     this.onpause();
@@ -218,10 +221,19 @@ Recorder.prototype.stop = function(){
     this.recordingGainNode.disconnect();
     this.sourceNode.disconnect();
     this.clearStream();
-    this.encoder.postMessage({ command: "done" });
 
+    var encoder = this.encoder;
     return new Promise((resolve) => {
-      this._finished = resolve;
+      var callback = (e) => {
+        if ( e["data"]["message"] === 'done' ) {
+          encoder.removeEventListener( "message", callback );
+          encoder = null;
+          callback = null;
+          resolve();
+        }
+      };
+      encoder.addEventListener( "message", callback );
+      encoder.postMessage({ command: "done" });
     });
   }
   return Promise.resolve();
@@ -247,10 +259,6 @@ Recorder.prototype.finish = function() {
     this.ondataavailable( outputData );
   }
   this.onstop();
-  if ( this._finished ) {
-    this._finished();
-    delete this._finished;
-  }
 };
 
 

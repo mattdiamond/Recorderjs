@@ -339,6 +339,7 @@ describe('Recorder', function(){
         expect(finishSpy).to.have.been.calledOnce;
         expect(rec.stream).to.be.undefined;
         expect(rec.audioContext).to.be.undefined;
+        expect(rec.onstop).to.have.been.calledOnce;
         expect(encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
       });
   });
