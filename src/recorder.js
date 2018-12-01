@@ -160,8 +160,6 @@ Recorder.prototype.pause = function( flush ) {
         var callback = (e) => {
           if ( e["data"]["message"] === 'flushed' ) {
             encoder.removeEventListener( "message", callback );
-            encoder = null;
-            callback = null;
             this.onpause();
             resolve();
           }
@@ -227,8 +225,6 @@ Recorder.prototype.stop = function(){
       var callback = (e) => {
         if ( e["data"]["message"] === 'done' ) {
           encoder.removeEventListener( "message", callback );
-          encoder = null;
-          callback = null;
           resolve();
         }
       };
