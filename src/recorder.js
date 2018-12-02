@@ -151,10 +151,25 @@ Recorder.prototype.initWorker = function(){
   });
 };
 
-Recorder.prototype.pause = function(){
-  if ( this.state === "recording" ){
+Recorder.prototype.pause = function( flush ) {
+  if ( this.state === "recording" ) {
     this.state = "paused";
+    if ( flush && this.config.streamPages ) {
+      var encoder = this.encoder;
+      return new Promise((resolve, reject) => {
+        var callback = (e) => {
+          if ( e["data"]["message"] === 'flushed' ) {
+            encoder.removeEventListener( "message", callback );
+            this.onpause();
+            resolve();
+          }
+        };
+        encoder.addEventListener( "message", callback );
+        encoder.postMessage( { command: "flush" } );
+      });
+    }
     this.onpause();
+    return Promise.resolve();
   }
 };
 
@@ -204,8 +219,20 @@ Recorder.prototype.stop = function(){
     this.recordingGainNode.disconnect();
     this.sourceNode.disconnect();
     this.clearStream();
-    this.encoder.postMessage({ command: "done" });
+
+    var encoder = this.encoder;
+    return new Promise((resolve) => {
+      var callback = (e) => {
+        if ( e["data"]["message"] === 'done' ) {
+          encoder.removeEventListener( "message", callback );
+          resolve();
+        }
+      };
+      encoder.addEventListener( "message", callback );
+      encoder.postMessage({ command: "done" });
+    });
   }
+  return Promise.resolve();
 };
 
 Recorder.prototype.storePage = function( page ) {

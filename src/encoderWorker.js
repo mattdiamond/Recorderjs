@@ -22,6 +22,12 @@ global['onmessage'] = function( e ){
         }
         break;
 
+      case 'flush':
+        if (encoder) {
+          encoder.flush();
+        }
+        break;
+
       case 'init':
         encoder = new OggOpusEncoder( e['data'], Module );
         global['postMessage']( {message: 'ready'} );
@@ -113,12 +119,23 @@ OggOpusEncoder.prototype.encode = function( buffers ) {
   }
 };
 
-OggOpusEncoder.prototype.encodeFinalFrame = function() {
-  var finalFrameBuffers = [];
-  for ( var i = 0; i < this.config.numberOfChannels; ++i ) {
-    finalFrameBuffers.push( new Float32Array( this.config.bufferLength - (this.resampleBufferIndex / this.config.numberOfChannels) ));
+OggOpusEncoder.prototype.flush = function() {
+  if ( this.framesInPage ) {
+    this.generatePage();
   }
-  this.encode( finalFrameBuffers );
+  // discard any pending data in resample buffer (only a few ms worth)
+  this.resampleBufferIndex = 0;
+  global['postMessage']( {message: 'flushed'} );
+};
+
+OggOpusEncoder.prototype.encodeFinalFrame = function() {
+  if ( this.resampleBufferIndex > 0 ) {
+    var finalFrameBuffers = [];
+    for ( var i = 0; i < this.config.numberOfChannels; ++i ) {
+      finalFrameBuffers.push( new Float32Array( this.config.bufferLength - (this.resampleBufferIndex / this.config.numberOfChannels) ));
+    }
+    this.encode( finalFrameBuffers );
+  }
   this.headerType += 4;
   this.generatePage();
 };
