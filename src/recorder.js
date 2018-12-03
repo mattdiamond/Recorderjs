@@ -28,6 +28,8 @@ var Recorder = function( config ){
     streamPages: false,
     wavBitDepth: 16,
   }, config );
+
+  this.encodedSamplePosition = 0;
 };
 
 
@@ -135,6 +137,7 @@ Recorder.prototype.initWorker = function(){
           resolve();
           break;
         case 'page':
+          this.encodedSamplePosition = e['data']['samplePosition'];
           onPage(e['data']['page']);
           break;
         case 'done':

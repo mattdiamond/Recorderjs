@@ -99,6 +99,14 @@ rec.stop()
 
 **stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published. Will call the `onstop` callback when stopped.
 
+---------
+#### Instance Fields
+
+```js
+rec.encodedSamplePosition
+```
+
+Reads the currently encoded sample position (the number of samples up to and including the most recent data provided to `ondataavailable`). For Opus, the encoded sample rate is always 48kHz, so a time position can be determined by dividing by 48000.
 
 ---------
 #### Static Methods
