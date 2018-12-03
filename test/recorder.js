@@ -87,8 +87,9 @@ describe('Recorder', function(){
     global.Worker.prototype.postMessage = sinon.spy(function( message ) {
       // run callbacks in next tick
       global.Promise.resolve().then(() => {
+        var handlers = messageHandlers.slice(0);
         function call(e) {
-          messageHandlers.forEach( (h) => h(e) );
+          handlers.forEach( (h) => h(e) );
         }
         switch (message['command']) {
           case 'init':
@@ -372,6 +373,42 @@ describe('Recorder', function(){
 
       rec.resume();
       expect(rec.state).to.equal('recording');
+    });
+  });
+
+  it('It should support reuse and destruction', function () {
+    var rec = new Recorder({ reuseWorker: true });
+    var encoder;
+    return rec.start().then(function() {
+      return rec.stop();
+    }).then(function() {
+      expect(rec.state).to.equal('inactive');
+      expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
+      expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
+      expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
+      expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
+      expect(rec.stream).to.be.undefined;
+      expect(rec.audioContext).to.be.undefined;
+      encoder = rec.encoder;
+      expect(rec.encoder.postMessage).to.have.been.calledWithMatch({command: 'done'});
+      return rec.start();
+    }).then(function() {
+      expect(rec.state).to.equal('recording');
+      expect(rec.stream).not.to.be.undefined;
+      expect(rec.encoder).to.equal(encoder);
+      return rec.stop();
+    }).then(function() {
+      expect(rec.state).to.equal('inactive');
+      expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
+      expect(rec.scriptProcessorNode.disconnect).to.have.been.calledTwice; // mock is reused
+      expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
+      expect(rec.sourceNode.disconnect).to.have.been.calledTwice; // mock is reused
+      expect(rec.stream).to.be.undefined;
+      expect(rec.audioContext).to.be.undefined;
+      var encoder = rec.encoder;
+      rec.destroy();
+      expect(encoder.postMessage).to.have.been.calledWithMatch({command: 'done'});
+      expect(rec.encoder).to.be.undefined;
     });
   });
 

@@ -52,6 +52,7 @@ Creates a recorder instance.
 - **originalSampleRateOverride**  - (*optional*) Override the ogg opus 'input sample rate' field. Google Speech API requires this field to be `16000`.
 - **resampleQuality**             - (*optional*) Value between 0 and 10 which determines latency and processing for resampling. `0` is fastest with lowest quality. `10` is slowest with highest quality. Defaults to `3`.
 - **streamPages**                 - (*optional*) `dataAvailable` event will fire after each encoded page. Defaults to `false`.
+- **reuseWorker**                 - (*optional*) If true, the worker is not automatically destroyed when `stop` is called. Instead, it is reused for subsequent `start` calls and must be explicitly destroyed after stopping by calling `destroy`. Defaults to `false`. 
 
 
 #### Config options for WAV recorder
@@ -99,6 +100,17 @@ rec.stop()
 
 **stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published. Will call the `onstop` callback when stopped.
 
+```js
+rec.destroy()
+```
+
+**destroy** will destroy the worker freeing up the browser resources. If the recorder is re-started, a new worker will be created. Note that `destroy` is automatically called when stopping unless `reuseWorker` is true.
+
+```js
+rec.loadWorker()
+```
+
+**loadWorker** triggers pre-loading of the worker. This can reduce the startup latency when calling `start`. Call `destroy` to clean the worker when the recorder is stopped/not started, or it will be automatically cleaned up after stopping unless `reuseWorker` is true.
 
 ---------
 #### Static Methods

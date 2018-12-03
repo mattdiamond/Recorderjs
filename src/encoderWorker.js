@@ -18,8 +18,11 @@ global['onmessage'] = function( e ){
         if (encoder) {
           encoder.encodeFinalFrame();
           global['postMessage']( {message: 'done'} );
-          global['close']();
         }
+        break;
+
+      case 'close':
+        global['close']();
         break;
 
       case 'flush':
@@ -29,6 +32,9 @@ global['onmessage'] = function( e ){
         break;
 
       case 'init':
+        if ( encoder ) {
+          encoder.destroy();
+        }
         encoder = new OggOpusEncoder( e['data'], Module );
         global['postMessage']( {message: 'ready'} );
         break;
@@ -61,9 +67,11 @@ var OggOpusEncoder = function( config, Module ){
   }, config );
 
   this._opus_encoder_create = Module._opus_encoder_create;
+  this._opus_encoder_destroy = Module._opus_encoder_destroy;
   this._opus_encoder_ctl = Module._opus_encoder_ctl;
   this._speex_resampler_process_interleaved_float = Module._speex_resampler_process_interleaved_float;
   this._speex_resampler_init = Module._speex_resampler_init;
+  this._speex_resampler_destroy = Module._speex_resampler_destroy;
   this._opus_encode_float = Module._opus_encode_float;
   this._free = Module._free;
   this._malloc = Module._malloc;
@@ -116,6 +124,25 @@ OggOpusEncoder.prototype.encode = function( buffers ) {
         this.generatePage();
       }
     }
+  }
+};
+
+OggOpusEncoder.prototype.destroy = function() {
+  if ( this.encoder ) {
+    this._free(this.encoderSamplesPerChannelPointer);
+    delete this.encoderSamplesPerChannelPointer;
+    this._free(this.encoderBufferPointer);
+    delete this.encoderBufferPointer;
+    this._free(this.encoderOutputPointer);
+    delete this.encoderOutputPointer;
+    this._free(this.resampleSamplesPerChannelPointer);
+    delete this.resampleSamplesPerChannelPointer;
+    this._free(this.resampleBufferPointer);
+    delete this.resampleBufferPointer;
+    this._speex_resampler_destroy(this.resampler);
+    delete this.resampler;
+    this._opus_encoder_destroy(this.encoder);
+    delete this.encoder;
   }
 };
 

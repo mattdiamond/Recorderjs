@@ -26,6 +26,7 @@ var Recorder = function( config ){
     recordingGain: 1,
     resampleQuality: 3,
     streamPages: false,
+    reuseWorker: false,
     wavBitDepth: 16,
   }, config );
 };
@@ -121,15 +122,22 @@ Recorder.prototype.initSourceNode = function( sourceNode ){
   });
 };
 
+Recorder.prototype.loadWorker = function() {
+  if ( this.encoder ) {
+    return;
+  }
+  this.encoder = new global.Worker(this.config.encoderPath);
+};
+
 Recorder.prototype.initWorker = function(){
   var onPage = (this.config.streamPages ? this.streamPage : this.storePage).bind(this);
 
   this.recordedPages = [];
   this.totalLength = 0;
-  this.encoder =  new global.Worker(this.config.encoderPath);
+  this.loadWorker();
 
   return new Promise((resolve, reject) => {
-    this.encoder.addEventListener( "message", (e) => {
+    var callback = (e) => {
       switch( e['data']['message'] ){
         case 'ready':
           resolve();
@@ -138,11 +146,13 @@ Recorder.prototype.initWorker = function(){
           onPage(e['data']['page']);
           break;
         case 'done':
+          this.encoder.removeEventListener( "message", callback );
           this.finish();
           break;
       }
-    });
+    };
 
+    this.encoder.addEventListener( "message", callback );
     this.encoder.postMessage( Object.assign({
       command: 'init',
       originalSampleRate: this.audioContext.sampleRate,
@@ -201,6 +211,8 @@ Recorder.prototype.start = function( sourceNode ){
     this.initAudioContext( sourceNode );
     this.initAudioGraph();
 
+    this.encodedSamplePosition = 0;
+
     return Promise.all([this.initSourceNode(sourceNode), this.initWorker()]).then((results) => {
       this.sourceNode = results[0];
       this.state = "recording";
@@ -230,9 +242,21 @@ Recorder.prototype.stop = function(){
       };
       encoder.addEventListener( "message", callback );
       encoder.postMessage({ command: "done" });
+      if ( !this.config.reuseWorker ) {
+        encoder.postMessage({ command: "close" });
+      }
     });
   }
   return Promise.resolve();
+};
+
+Recorder.prototype.destroy = function(){
+  if ( this.state === "inactive" ) {
+    if ( this.encoder ) {
+      this.encoder.postMessage({ command: "close" });
+      delete this.encoder;
+    }
+  }
 };
 
 Recorder.prototype.storePage = function( page ) {
@@ -255,6 +279,9 @@ Recorder.prototype.finish = function() {
     this.ondataavailable( outputData );
   }
   this.onstop();
+  if ( !this.config.reuseWorker ) {
+    delete this.encoder;
+  }
 };
 
 
