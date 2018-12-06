@@ -123,10 +123,9 @@ Recorder.prototype.initSourceNode = function( sourceNode ){
 };
 
 Recorder.prototype.loadWorker = function() {
-  if ( this.encoder ) {
-    return;
+  if ( !this.encoder ) {
+    this.encoder = new global.Worker(this.config.encoderPath);
   }
-  this.encoder = new global.Worker(this.config.encoderPath);
 };
 
 Recorder.prototype.initWorker = function(){
