@@ -249,7 +249,7 @@ Recorder.prototype.stop = function(){
   return Promise.resolve();
 };
 
-Recorder.prototype.destroy = function(){
+Recorder.prototype.destroyWorker = function(){
   if ( this.state === "inactive" ) {
     if ( this.encoder ) {
       this.encoder.postMessage({ command: "close" });

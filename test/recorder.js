@@ -376,7 +376,7 @@ describe('Recorder', function(){
     });
   });
 
-  it('It should support reuse and destruction', function () {
+  it('It should support worker reuse and destruction', function () {
     var rec = new Recorder({ reuseWorker: true });
     var encoder;
     return rec.start().then(function() {
@@ -406,7 +406,7 @@ describe('Recorder', function(){
       expect(rec.stream).to.be.undefined;
       expect(rec.audioContext).to.be.undefined;
       var encoder = rec.encoder;
-      rec.destroy();
+      rec.destroyWorker();
       expect(encoder.postMessage).to.have.been.calledWithMatch({command: 'done'});
       expect(rec.encoder).to.be.undefined;
     });
