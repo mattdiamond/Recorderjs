@@ -25,6 +25,8 @@ global['onmessage'] = function( e ){
       case 'init':
         encoder = new OggOpusEncoder( e['data'], Module );
         global['postMessage']( {message: 'ready'} );
+        encoder.generateIdPage();
+        encoder.generateCommentPage();
         break;
 
       default:
@@ -76,8 +78,6 @@ var OggOpusEncoder = function( config, Module ){
   this.initChecksumTable();
   this.initCodec();
   this.initResampler();
-  this.generateIdPage();
-  this.generateCommentPage();
 
   if ( this.config.numberOfChannels === 1 ) {
     this.interleave = function( buffers ) { return buffers[0]; };
