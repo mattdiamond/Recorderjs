@@ -233,7 +233,7 @@ OggOpusEncoder.prototype.generatePage = function(){
   page.set( this.segmentData.subarray(0, this.segmentDataIndex), 27 + this.segmentTableIndex ); // Segment Data
   pageBufferView.setUint32( 22, this.getChecksum( page ), true ); // Checksum
 
-  global['postMessage']( {message: 'page', page: page}, [page.buffer] );
+  global['postMessage']( {message: 'page', page: page, samplePosition: this.granulePosition}, [page.buffer] );
   this.segmentTableIndex = 0;
   this.segmentDataIndex = 0;
   this.framesInPage = 0;

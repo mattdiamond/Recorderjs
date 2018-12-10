@@ -113,6 +113,15 @@ rec.loadWorker()
 **loadWorker** triggers pre-loading of the worker. This can reduce the startup latency when calling `start`. Call `destroyWorker` to clean the worker when the recorder is stopped/not started, or it will be automatically cleaned up after stopping unless `reuseWorker` is true.
 
 ---------
+#### Instance Fields
+
+```js
+rec.encodedSamplePosition
+```
+
+Reads the currently encoded sample position (the number of samples up to and including the most recent data provided to `ondataavailable`). For Opus, the encoded sample rate is always 48kHz, so a time position can be determined by dividing by 48000.
+
+---------
 #### Static Methods
 
 ```js
