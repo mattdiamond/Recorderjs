@@ -14,7 +14,12 @@ global['onmessage'] = function( e ){
     case 'done':
       if (recorder) {
         recorder.requestData();
+        recorder = null;
       }
+      break;
+
+    case 'close':
+      global['close']();
       break;
 
     case 'init':
@@ -124,7 +129,6 @@ WavePCM.prototype.requestData = function(){
 
   global['postMessage']( {message: 'page', page: wav}, [wav.buffer] );
   global['postMessage']( {message: 'done'} );
-  global['close']();
 };
 
 module.exports = WavePCM
