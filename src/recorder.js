@@ -189,9 +189,10 @@ Recorder.prototype.start = function( sourceNode ){
     return Promise.all([this.initSourceNode(sourceNode), this.initWorker()]).then((results) => {
       this.sourceNode = results[0];
       this.state = "recording";
+      this.onstart();
+      this.encoder.postMessage({ command: 'getHeaderPages' });
       this.sourceNode.connect( this.monitorGainNode );
       this.sourceNode.connect( this.recordingGainNode );
-      this.onstart();
     });
   }
 };

@@ -14,6 +14,13 @@ global['onmessage'] = function( e ){
         }
         break;
 
+      case 'getHeaderPages':
+        if (encoder){
+          encoder.generateIdPage();
+          encoder.generateCommentPage();
+        }
+        break;
+
       case 'done':
         if (encoder) {
           encoder.encodeFinalFrame();
@@ -76,8 +83,6 @@ var OggOpusEncoder = function( config, Module ){
   this.initChecksumTable();
   this.initCodec();
   this.initResampler();
-  this.generateIdPage();
-  this.generateCommentPage();
 
   if ( this.config.numberOfChannels === 1 ) {
     this.interleave = function( buffers ) { return buffers[0]; };

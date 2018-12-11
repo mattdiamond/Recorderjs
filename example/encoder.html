@@ -136,6 +136,7 @@
         };
 
         recorder.ondataavailable = function( typedArray ){
+          screenLogger('Data received');
           var dataBlob = new Blob( [typedArray], { type: 'audio/ogg' } );
           var fileName = new Date().toISOString() + ".opus";
           var url = URL.createObjectURL( dataBlob );
