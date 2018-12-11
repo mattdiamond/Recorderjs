@@ -14,6 +14,13 @@ global['onmessage'] = function( e ){
         }
         break;
 
+      case 'getHeaderPages':
+        if (encoder){
+          encoder.generateIdPage();
+          encoder.generateCommentPage();
+        }
+        break;
+
       case 'done':
         if (encoder) {
           encoder.encodeFinalFrame();
@@ -25,8 +32,6 @@ global['onmessage'] = function( e ){
       case 'init':
         encoder = new OggOpusEncoder( e['data'], Module );
         global['postMessage']( {message: 'ready'} );
-        encoder.generateIdPage();
-        encoder.generateCommentPage();
         break;
 
       default:
