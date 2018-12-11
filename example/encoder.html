@@ -89,7 +89,6 @@
           recordingGain: parseInt(recordingGain.value, 10),
           numberOfChannels: parseInt(numberOfChannels.value, 10),
           encoderSampleRate: parseInt(encoderSampleRate.value,10),
-          streamPages: true,
           encoderPath: "../dist/encoderWorker.min.js"
         };
 
@@ -137,7 +136,7 @@
         };
 
         recorder.ondataavailable = function( typedArray ){
-          screenLogger('Data recieved');
+          screenLogger('Data received');
           var dataBlob = new Blob( [typedArray], { type: 'audio/ogg' } );
           var fileName = new Date().toISOString() + ".opus";
           var url = URL.createObjectURL( dataBlob );
