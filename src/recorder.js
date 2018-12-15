@@ -124,18 +124,12 @@ Recorder.prototype.initSourceNode = function( sourceNode ){
   });
 };
 
-Recorder.prototype.loadWorker = function() {
-  if ( !this.encoder ) {
-    this.encoder = new global.Worker(this.config.encoderPath);
-  }
-};
-
 Recorder.prototype.initWorker = function(){
   var onPage = (this.config.streamPages ? this.streamPage : this.storePage).bind(this);
 
   this.recordedPages = [];
   this.totalLength = 0;
-  this.loadWorker();
+  this.encoder = this.encoder || new global.Worker(this.config.encoderPath);
 
   return new Promise((resolve, reject) => {
     var callback = (e) => {
