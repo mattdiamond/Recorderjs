@@ -25,7 +25,7 @@ describe('Recorder unsupported', function(){
 
 describe('Recorder', function(){
 
-  var sandbox = sinon.sandbox.create();
+
   var Recorder;
 
   var requireRecorder = function(){
@@ -38,38 +38,38 @@ describe('Recorder', function(){
   };
 
   beforeEach(function(){
-    global.AudioContext = sandbox.stub();
+    global.AudioContext = sinon.stub();
     global.AudioContext.prototype.createGain = () => {
       return {
-        connect: sandbox.stub(),
-        disconnect: sandbox.stub(),
+        connect: sinon.stub(),
+        disconnect: sinon.stub(),
         gain: {
-          setTargetAtTime: sandbox.stub()
+          setTargetAtTime: sinon.stub()
         }
       };
     };
-    global.AudioContext.prototype.createScriptProcessor = sandbox.stub().returns({
-      connect: sandbox.stub(),
-      disconnect: sandbox.stub()
+    global.AudioContext.prototype.createScriptProcessor = sinon.stub().returns({
+      connect: sinon.stub(),
+      disconnect: sinon.stub()
     });
-    global.AudioContext.prototype.createMediaStreamSource = sandbox.stub().returns({
-      connect: sandbox.stub(),
-      disconnect: sandbox.stub()
+    global.AudioContext.prototype.createMediaStreamSource = sinon.stub().returns({ 
+      connect: sinon.stub(),
+      disconnect: sinon.stub()
     });
     global.AudioContext.prototype.sampleRate = 44100;
-    global.AudioContext.prototype.close = sandbox.stub();
+    global.AudioContext.prototype.close = sinon.stub();
 
-    global.Event = sandbox.stub();
-    global.CustomEvent = sandbox.stub();
-    global.ErrorEvent = sandbox.stub();
+    global.Event = sinon.stub();
+    global.CustomEvent = sinon.stub();
+    global.ErrorEvent = sinon.stub();
 
     global.navigator = {};
     global.navigator.mediaDevices = {};
-    global.navigator.mediaDevices.getUserMedia = sandbox.stub().resolves({
-      stop: sandbox.stub()
+    global.navigator.mediaDevices.getUserMedia = sinon.stub().resolves({
+      stop: sinon.stub()
     });
 
-    global.Worker = sandbox.stub();
+    global.Worker = sinon.stub();
     var messageHandlers = [];
     global.Worker.prototype.addEventListener = sinon.spy(function( event, callback ) {
       if(event == 'message') {
@@ -109,30 +109,30 @@ describe('Recorder', function(){
 
   var mockWebkit = function(){
     delete global.AudioContext;
-    global.webkitAudioContext = sandbox.stub();
+    global.webkitAudioContext = sinon.stub();
     global.webkitAudioContext.prototype.createGain = () => {
       return {
-        connect: sandbox.stub(),
-        disconnect: sandbox.stub(),
+        connect: sinon.stub(),
+        disconnect: sinon.stub(),
         gain: {
-          setTargetAtTime: sandbox.stub()
+          setTargetAtTime: sinon.stub()
         }
       };
     };
-    global.webkitAudioContext.prototype.createScriptProcessor = sandbox.stub().returns({
-      connect: sandbox.stub(),
-      disconnect: sandbox.stub()
+    global.webkitAudioContext.prototype.createScriptProcessor = sinon.stub().returns({
+      connect: sinon.stub(),
+      disconnect: sinon.stub()
     });
-    global.webkitAudioContext.prototype.createMediaStreamSource = sandbox.stub().returns({ 
-      connect: sandbox.stub(),
-      disconnect: sandbox.stub()
+    global.webkitAudioContext.prototype.createMediaStreamSource = sinon.stub().returns({ 
+      connect: sinon.stub(),
+      disconnect: sinon.stub()
     });
     global.webkitAudioContext.prototype.sampleRate = 44100;
     requireRecorder();
   };
 
   afterEach(function () {
-    sandbox.restore();
+    sinon.restore();
   });
 
   it('should support Recording', function () {
@@ -286,10 +286,10 @@ describe('Recorder', function(){
   });
 
   it('should clear the audio stream when stream contains tracks', function () {
-    var stopTrack1 = sandbox.stub();
-    var stopTrack2 = sandbox.stub();
-    global.navigator.mediaDevices.getUserMedia = sandbox.stub().resolves({
-      getTracks: sandbox.stub().returns([
+    var stopTrack1 = sinon.stub();
+    var stopTrack2 = sinon.stub();
+    global.navigator.mediaDevices.getUserMedia = sinon.stub().resolves({
+      getTracks: sinon.stub().returns([
         { stop: stopTrack1 },
         { stop: stopTrack2 }
       ])

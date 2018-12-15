@@ -10,7 +10,6 @@ var expect = chai.expect;
 describe('encoderWorker', function() {
 
   var Module = require('../dist/encoderWorker.min');
-  var sandbox = sinon.sandbox.create();
   var _opus_encoder_create_spy;
   var _opus_encoder_destroy_spy;
   var _opus_encoder_ctl_spy;
@@ -23,16 +22,19 @@ describe('encoderWorker', function() {
 
   function getEncoder(config){
     return Module.mainReady.then(function(){
-      _opus_encoder_create_spy = sandbox.spy(Module, '_opus_encoder_create');
-      _opus_encoder_destroy_spy = sandbox.spy(Module, '_opus_encoder_destroy');
-      _opus_encoder_ctl_spy = sandbox.spy(Module, '_opus_encoder_ctl');
-      _speex_resampler_process_interleaved_float_spy = sandbox.spy(Module, '_speex_resampler_process_interleaved_float');
-      _speex_resampler_init_spy = sandbox.spy(Module, '_speex_resampler_init');
-      _speex_resampler_destroy_spy = sandbox.spy(Module, '_speex_resampler_destroy');
-      _opus_encode_float_spy = sandbox.spy(Module, '_opus_encode_float');
-      _malloc_spy = sandbox.spy(Module, '_malloc');
-      _free_spy = sandbox.spy(Module, '_free');
-      return new Module.OggOpusEncoder(config, Module);
+      _opus_encoder_create_spy = sinon.spy(Module, '_opus_encoder_create');
+      _opus_encoder_destroy_spy = sinon.spy(Module, '_opus_encoder_destroy');
+      _opus_encoder_ctl_spy = sinon.spy(Module, '_opus_encoder_ctl');
+      _speex_resampler_process_interleaved_float_spy = sinon.spy(Module, '_speex_resampler_process_interleaved_float');
+      _speex_resampler_init_spy = sinon.spy(Module, '_speex_resampler_init');
+      _speex_resampler_destroy_spy = sinon.spy(Module, '_speex_resampler_destroy');
+      _opus_encode_float_spy = sinon.spy(Module, '_opus_encode_float');
+      _malloc_spy = sinon.spy(Module, '_malloc');
+      _free_spy = sinon.spy(Module, '_free');
+      const encoder = new Module.OggOpusEncoder(config, Module);
+      encoder.generateIdPage();
+      encoder.generateCommentPage();
+      return encoder;
     });
   };
 
@@ -48,12 +50,12 @@ describe('encoderWorker', function() {
   }
 
   beforeEach(function(){
-    global.postMessage = sandbox.stub();
-    global.close = sandbox.stub();
+    global.postMessage = sinon.stub();
+    global.close = sinon.stub();
   });
 
   afterEach(function () {
-    sandbox.restore();
+    sinon.restore();
   });
 
   it('should initialize config', function () {
@@ -274,7 +276,7 @@ describe('encoderWorker', function() {
   });
 
   it('should set serial minimum value as 0', function (done) {
-    sandbox.stub(Math, 'random').returns(0);
+    sinon.stub(Math, 'random').returns(0);
     var messageRecieved = false;
 
     global.postMessage = function(message){
@@ -290,7 +292,7 @@ describe('encoderWorker', function() {
   });
 
   it('should set serial maximum value as 2^32 - 1', function (done) {
-    sandbox.stub(Math, 'random').returns(0.9999999999999);
+    sinon.stub(Math, 'random').returns(0.9999999999999);
     var messageRecieved = false;
 
     global.postMessage = function(message){

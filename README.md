@@ -5,8 +5,8 @@ A javascript library to encode the output of Web Audio API nodes in Ogg Opus or 
 
 #### Libraries Used
 
-- Libopus: v1.3 compiled with emscripten 1.38.15
-- speexDSP: 1.2RC3 compiled with emscripten 1.38.15
+- Libopus: v1.3 compiled with emscripten 1.38.21
+- speexDSP: 1.2RC3 compiled with emscripten 1.38.21
 
 #### Required Files
 
@@ -195,7 +195,7 @@ Unsupported:
 
 - iOS 11.2.2 and iOS 11.2.5 are not working due to a regression in WebAssembly: https://bugs.webkit.org/show_bug.cgi?id=181781
 - Firefox does not support sample rates above 48000Hz: https://bugzilla.mozilla.org/show_bug.cgi?id=1124981
-- macOS Safari v11 does not sample rates above 44100Hz
+- macOS Safari v11 does not support sample rates above 44100Hz
 
 
 ---------
@@ -213,7 +213,7 @@ Windows: Install autotools using [MSYS2](http://www.msys2.org/)
 pacman -S make autoconf automake libtool pkgconfig
 ```
 
-[Inatall Node.js](https://nodejs.org/en/download/)
+[Install Node.js](https://nodejs.org/en/download/)
 
 [Install EMScripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
 

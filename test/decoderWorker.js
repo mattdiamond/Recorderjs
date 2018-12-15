@@ -12,7 +12,6 @@ var expect = chai.expect;
 describe('decoderWorker', function() {
 
   var Module = require('../dist/decoderWorker.min');
-  var sandbox = sinon.sandbox.create();
   var decoder;
   var _opus_decoder_create_spy;
   var _opus_decoder_destroy_spy;
@@ -24,22 +23,22 @@ describe('decoderWorker', function() {
   var joinedMonoOpus = new Uint8Array(fs.readFileSync('../test/sample/joinedMono.opus'));
 
   beforeEach(function(){
-    global.postMessage = sandbox.stub();
-    global.close = sandbox.stub();
+    global.postMessage = sinon.stub();
+    global.close = sinon.stub();
 
     return Module.mainReady.then(function(){
-      _opus_decoder_create_spy = sandbox.spy(Module, '_opus_decoder_create');
-      _opus_decoder_destroy_spy = sandbox.spy(Module, '_opus_decoder_destroy');
-      _speex_resampler_process_interleaved_float_spy = sandbox.spy(Module, '_speex_resampler_process_interleaved_float');
-      _speex_resampler_init_spy = sandbox.spy(Module, '_speex_resampler_init');
-      _speex_resampler_destroy_spy = sandbox.spy(Module, '_speex_resampler_destroy');
-      _opus_decode_float_spy = sandbox.spy(Module, '_opus_decode_float');
+      _opus_decoder_create_spy = sinon.spy(Module, '_opus_decoder_create');
+      _opus_decoder_destroy_spy = sinon.spy(Module, '_opus_decoder_destroy');
+      _speex_resampler_process_interleaved_float_spy = sinon.spy(Module, '_speex_resampler_process_interleaved_float');
+      _speex_resampler_init_spy = sinon.spy(Module, '_speex_resampler_init');
+      _speex_resampler_destroy_spy = sinon.spy(Module, '_speex_resampler_destroy');
+      _opus_decode_float_spy = sinon.spy(Module, '_opus_decode_float');
       decoder = new Module.OggOpusDecoder({}, Module);
     });
   });
 
   afterEach(function () {
-    sandbox.restore();
+    sinon.restore();
   });
 
   it('should initialize config', function () {
