@@ -25,11 +25,23 @@ global['onmessage'] = function( e ){
         if (encoder) {
           encoder.encodeFinalFrame();
           global['postMessage']( {message: 'done'} );
-          global['close']();
+        }
+        break;
+
+      case 'close':
+        global['close']();
+        break;
+
+      case 'flush':
+        if (encoder) {
+          encoder.flush();
         }
         break;
 
       case 'init':
+        if ( encoder ) {
+          encoder.destroy();
+        }
         encoder = new OggOpusEncoder( e['data'], Module );
         global['postMessage']( {message: 'ready'} );
         break;
@@ -62,9 +74,11 @@ var OggOpusEncoder = function( config, Module ){
   }, config );
 
   this._opus_encoder_create = Module._opus_encoder_create;
+  this._opus_encoder_destroy = Module._opus_encoder_destroy;
   this._opus_encoder_ctl = Module._opus_encoder_ctl;
   this._speex_resampler_process_interleaved_float = Module._speex_resampler_process_interleaved_float;
   this._speex_resampler_init = Module._speex_resampler_init;
+  this._speex_resampler_destroy = Module._speex_resampler_destroy;
   this._opus_encode_float = Module._opus_encode_float;
   this._free = Module._free;
   this._malloc = Module._malloc;
@@ -118,12 +132,42 @@ OggOpusEncoder.prototype.encode = function( buffers ) {
   }
 };
 
-OggOpusEncoder.prototype.encodeFinalFrame = function() {
-  var finalFrameBuffers = [];
-  for ( var i = 0; i < this.config.numberOfChannels; ++i ) {
-    finalFrameBuffers.push( new Float32Array( this.config.bufferLength - (this.resampleBufferIndex / this.config.numberOfChannels) ));
+OggOpusEncoder.prototype.destroy = function() {
+  if ( this.encoder ) {
+    this._free(this.encoderSamplesPerChannelPointer);
+    delete this.encoderSamplesPerChannelPointer;
+    this._free(this.encoderBufferPointer);
+    delete this.encoderBufferPointer;
+    this._free(this.encoderOutputPointer);
+    delete this.encoderOutputPointer;
+    this._free(this.resampleSamplesPerChannelPointer);
+    delete this.resampleSamplesPerChannelPointer;
+    this._free(this.resampleBufferPointer);
+    delete this.resampleBufferPointer;
+    this._speex_resampler_destroy(this.resampler);
+    delete this.resampler;
+    this._opus_encoder_destroy(this.encoder);
+    delete this.encoder;
   }
-  this.encode( finalFrameBuffers );
+};
+
+OggOpusEncoder.prototype.flush = function() {
+  if ( this.framesInPage ) {
+    this.generatePage();
+  }
+  // discard any pending data in resample buffer (only a few ms worth)
+  this.resampleBufferIndex = 0;
+  global['postMessage']( {message: 'flushed'} );
+};
+
+OggOpusEncoder.prototype.encodeFinalFrame = function() {
+  if ( this.resampleBufferIndex > 0 ) {
+    var finalFrameBuffers = [];
+    for ( var i = 0; i < this.config.numberOfChannels; ++i ) {
+      finalFrameBuffers.push( new Float32Array( this.config.bufferLength - (this.resampleBufferIndex / this.config.numberOfChannels) ));
+    }
+    this.encode( finalFrameBuffers );
+  }
   this.headerType += 4;
   this.generatePage();
 };
@@ -194,7 +238,7 @@ OggOpusEncoder.prototype.generatePage = function(){
   page.set( this.segmentData.subarray(0, this.segmentDataIndex), 27 + this.segmentTableIndex ); // Segment Data
   pageBufferView.setUint32( 22, this.getChecksum( page ), true ); // Checksum
 
-  global['postMessage']( {message: 'page', page: page}, [page.buffer] );
+  global['postMessage']( {message: 'page', page: page, samplePosition: this.granulePosition}, [page.buffer] );
   this.segmentTableIndex = 0;
   this.segmentDataIndex = 0;
   this.framesInPage = 0;

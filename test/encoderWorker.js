@@ -11,18 +11,26 @@ describe('encoderWorker', function() {
 
   var Module = require('../dist/encoderWorker.min');
   var _opus_encoder_create_spy;
+  var _opus_encoder_destroy_spy;
   var _opus_encoder_ctl_spy;
   var _speex_resampler_process_interleaved_float_spy;
   var _speex_resampler_init_spy;
+  var _speex_resampler_destroy_spy;
   var _opus_encode_float_spy;
+  var _malloc_spy;
+  var _free_spy;
 
   function getEncoder(config){
     return Module.mainReady.then(function(){
       _opus_encoder_create_spy = sinon.spy(Module, '_opus_encoder_create');
+      _opus_encoder_destroy_spy = sinon.spy(Module, '_opus_encoder_destroy');
       _opus_encoder_ctl_spy = sinon.spy(Module, '_opus_encoder_ctl');
       _speex_resampler_process_interleaved_float_spy = sinon.spy(Module, '_speex_resampler_process_interleaved_float');
       _speex_resampler_init_spy = sinon.spy(Module, '_speex_resampler_init');
+      _speex_resampler_destroy_spy = sinon.spy(Module, '_speex_resampler_destroy');
       _opus_encode_float_spy = sinon.spy(Module, '_opus_encode_float');
+      _malloc_spy = sinon.spy(Module, '_malloc');
+      _free_spy = sinon.spy(Module, '_free');
       const encoder = new Module.OggOpusEncoder(config, Module);
       encoder.generateIdPage();
       encoder.generateCommentPage();
@@ -357,6 +365,25 @@ describe('encoderWorker', function() {
       expect(pages).to.equal(1);
       encoder.encode(bufferForFrames(4));
       expect(pages).to.equal(3);
+      done();
+    });
+  });
+
+  it('should cleanup when destroyed', function (done) {
+    getEncoder().then((encoder) => {
+      var enc = encoder.encoder;
+      var resampler = encoder.resampler;
+      encoder.destroy();
+      expect(_opus_encoder_destroy_spy).to.have.been.calledWith(enc);
+      expect(_speex_resampler_destroy_spy).to.have.been.calledWith(resampler);
+
+      expect(encoder).not.to.have.key('encoder');
+      expect(encoder).not.to.have.key('resampler');
+
+      expect(_free_spy).to.have.been.called;
+      expect(_free_spy.callCount).to.equal(_malloc_spy.callCount);
+      var freedPointers = _free_spy.args.map(( args ) => args[0] );
+      expect(_malloc_spy.returnValues).to.have.members(freedPointers);
       done();
     });
   });

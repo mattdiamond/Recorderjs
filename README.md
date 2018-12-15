@@ -52,6 +52,7 @@ Creates a recorder instance.
 - **originalSampleRateOverride**  - (*optional*) Override the ogg opus 'input sample rate' field. Google Speech API requires this field to be `16000`.
 - **resampleQuality**             - (*optional*) Value between 0 and 10 which determines latency and processing for resampling. `0` is fastest with lowest quality. `10` is slowest with highest quality. Defaults to `3`.
 - **streamPages**                 - (*optional*) `dataAvailable` event will fire after each encoded page. Defaults to `false`.
+- **reuseWorker**                 - (*optional*) If true, the worker is not automatically destroyed when `stop` is called. Instead, it is reused for subsequent `start` calls and must be explicitly destroyed after stopping by calling `destroyWorker`. Defaults to `false`. 
 
 
 #### Config options for WAV recorder
@@ -64,10 +65,10 @@ Creates a recorder instance.
 
 
 ```js
-rec.pause()
+rec.pause([flush])
 ```
 
-**pause** will keep the stream and monitoring alive, but will not be recording the buffers. Will call the `onpause` callback when paused. Subsequent calls to **resume** will add to the current recording.
+**pause** will keep the stream and monitoring alive, but will not be recording the buffers. If `flush` is `true` and `streamPages` is set, any pending encoded frames of data will be flushed, and it will return a promise that only resolves after the frames have been flushed to `ondataavailable`. Will call the `onpause` callback when paused. Subsequent calls to **resume** will add to the current recording.
 
 ```js
 rec.resume()
@@ -99,6 +100,26 @@ rec.stop()
 
 **stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published. Will call the `onstop` callback when stopped.
 
+```js
+rec.destroyWorker()
+```
+
+**destroyWorker** will destroy the worker freeing up the browser resources. If the recorder is re-started, a new worker will be created. Note that `destroyWorker` is automatically called when stopping unless `reuseWorker` is true.
+
+```js
+rec.loadWorker()
+```
+
+**loadWorker** triggers pre-loading of the worker. This can reduce the startup latency when calling `start`. Call `destroyWorker` to clean the worker when the recorder is stopped/not started, or it will be automatically cleaned up after stopping unless `reuseWorker` is true.
+
+---------
+#### Instance Fields
+
+```js
+rec.encodedSamplePosition
+```
+
+Reads the currently encoded sample position (the number of samples up to and including the most recent data provided to `ondataavailable`). For Opus, the encoded sample rate is always 48kHz, so a time position can be determined by dividing by 48000.
 
 ---------
 #### Static Methods
