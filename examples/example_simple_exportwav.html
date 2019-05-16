@@ -18,7 +18,8 @@
 
   <button onclick="startRecording(this);">record</button>
   <button onclick="stopRecording(this);" disabled>stop</button>
-  
+  <button onclick="resumeRecording(this);" id='resume'>resume</button>
+
   <h2>Recordings</h2>
   <ul id="recordingslist"></ul>
   
@@ -64,6 +65,14 @@
     recorder.clear();
   }
 
+  function resumeRecording(button) {
+      recorder && recorder.stop();
+      audio_context.resume().then(() => {
+          __log('Playback resumed');
+      });
+
+      recorder.clear();
+  }
   function createDownloadLink() {
     recorder && recorder.exportWAV(function(blob) {
       var url = URL.createObjectURL(blob);
