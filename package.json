@@ -39,12 +39,12 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "mocha": "^5.0.0",
-    "promise": "^8.0.2",
+    "promise": "^8.0.3",
     "require-uncached": "^2.0.0",
-    "sinon": "^7.2.3",
+    "sinon": "^7.5.0",
     "sinon-chai": "^3.3.0",
-    "webpack": "^4.29.3",
-    "webpack-cli": "^3.2.3"
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
   },
   "dependencies": {}
 }
