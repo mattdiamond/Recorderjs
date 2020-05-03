@@ -123,7 +123,7 @@
         }
 
         else if (e.data.message === "page") {
-          totalArray = concatTypedArrays(self.totalArray, e.data);
+          totalArray = concatTypedArrays(self.totalArray, e.data.page);
           self.totalArray = totalArray;
         }
       };
