@@ -2,6 +2,7 @@
 
 <html>
 <head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>File Encoder Example</title>
   <style type="text/css">
@@ -19,27 +20,27 @@
 
   <div>
     <label>File Input sample rate (smp/sec)</label>
-    <input id="sampleRate" type="number" value="22050" />
+    <input id="sampleRate" type="number" value="22050" min="0" />
   </div>
 
   <div>
     <label>Encoder bitRate (bit/sec)</label>
-    <input id="bitRate" type="number" value="32000" />
+    <input id="bitRate" type="number" value="32000" min="0" />
   </div>
 
   <div>
     <label>Encoder sample rate</label>
-    <input id="encoderSampleRate" type="number" value="16000" />
+    <input id="encoderSampleRate" type="number" value="16000" min="8000" max="48000" />
   </div>
   
   <div>
     <label>Resample Quality</label>
-    <input id="resampleQuality" type="number" value="3" />
+    <input id="resampleQuality" type="number" value="3" min="0" max="10" />
   </div>  
 
   <div>
     <label>Encoder Complexity</label>
-    <input id="encoderComplexity" type="number" value="9" />
+    <input id="encoderComplexity" type="number" value="9" min="0" max="10" />
   </div>  
 
   <h2>Commands</h2>
@@ -74,6 +75,10 @@
         resampleQuality:    parseInt(resampleQuality.value,10),     
         bitRate:            parseInt(bitRate.value,10),        
       });
+      
+      encodeWorker.postMessage({ 
+        command:'getHeaderPages'
+      });
 
       var typedArray = new Int16Array(arrayBuffer);
       for (i = 0; i < typedArray.length; i += bufferLength) {
@@ -95,7 +100,7 @@
       });
 
       encodeWorker.onmessage = function(e){
-        if (e.data == null) {
+        if (e.data.message === "done") {
           //finished encoding - save to audio tag
           var fileName = new Date().toISOString() + ".ogg";        
           var dataBlob = new Blob( [ self.totalArray ], { type: "audio/ogg" } );
@@ -117,8 +122,8 @@
           recordingslist.appendChild(li);
         }
 
-        else {
-          totalArray = concatTypedArrays(self.totalArray, e.data);
+        else if (e.data.message === "page") {
+          totalArray = concatTypedArrays(self.totalArray, e.data.page);
           self.totalArray = totalArray;
         }
       };
