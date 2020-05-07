@@ -46,7 +46,7 @@ $(LIBOPUS_DIR)/autogen.sh $(LIBSPEEXDSP_DIR)/autogen.sh:
 
 $(LIBOPUS_OBJ): $(LIBOPUS_DIR)/autogen.sh
 	cd $(LIBOPUS_DIR); ./autogen.sh
-	cd $(LIBOPUS_DIR); emconfigure ./configure --disable-extra-programs --disable-doc --disable-intrinsics --disable-rtcd
+	cd $(LIBOPUS_DIR); emconfigure ./configure --disable-extra-programs --disable-doc --disable-intrinsics --disable-rtcd 
 	cd $(LIBOPUS_DIR); emmake make
 
 $(LIBSPEEXDSP_OBJ): $(LIBSPEEXDSP_DIR)/autogen.sh
