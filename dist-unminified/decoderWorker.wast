@@ -39107,7 +39107,7 @@
    (call $_celt_fatal
     (i32.const 32175)
     (i32.const 32234)
-    (i32.const 334)
+    (i32.const 338)
    )
   )
   (if
@@ -39118,7 +39118,7 @@
    (call $_celt_fatal
     (i32.const 32244)
     (i32.const 32234)
-    (i32.const 335)
+    (i32.const 339)
    )
   )
   (local.set $10
@@ -39588,7 +39588,7 @@
    (call $_celt_fatal
     (i32.const 32308)
     (i32.const 32234)
-    (i32.const 367)
+    (i32.const 371)
    )
   )
   (if
@@ -39599,7 +39599,7 @@
    (call $_celt_fatal
     (i32.const 32369)
     (i32.const 32234)
-    (i32.const 368)
+    (i32.const 372)
    )
   )
   (local.set $15
