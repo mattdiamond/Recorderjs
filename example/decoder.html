@@ -40,8 +40,8 @@
     function decodeOgg(arrayBuffer){
 
       var typedArray = new Uint8Array(arrayBuffer);
-      var decoderWorker = new Worker('../dist-unminified/decoderWorker.js');
-      var wavWorker = new Worker('../dist-unminified/waveWorker.js');
+      var decoderWorker = new Worker('../dist/decoderWorker.min.js');
+      var wavWorker = new Worker('../dist/waveWorker.min.js');
       var desiredSampleRate = parseInt(sampleRate.value,10);
 
       decoderWorker.postMessage({ 
@@ -75,11 +75,10 @@
       };
 
       wavWorker.onmessage = function(e){
-        
-        // null signifies that no more data is expected and worker is closed. 
-        if (e.data !== null) {
+
+        if (e.data.message === "page") {
           var fileName = new Date().toISOString() + ".wav";
-          var dataBlob = new Blob( [ e.data ], { type: "audio/wav" } );
+          var dataBlob = new Blob( [ e.data.page ], { type: "audio/wav" } );
           var url = URL.createObjectURL( dataBlob );
 
           var audio = document.createElement('audio');
