@@ -346,15 +346,10 @@ OggOpusEncoder.prototype.segmentPacket = function( packetLength ) {
 // AudioWorklet
 if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
   class EncoderWorklet extends global['AudioWorkletProcessor'] {
-    constructor(options){
+    constructor(){
       super();
       this.port.onmessage = global['onmessage'];
-      global['postmessage'] = this.port.postmessage;
-      if ( encoder ) {
-        encoder.destroy();
-      }
-      encoder = new OggOpusEncoder( options, Module );
-      this.port.postMessage( {message: 'ready'} );
+      global['postMessage'] = this.port.postMessage;
     }
 
     process(inputs) {
