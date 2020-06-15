@@ -94,6 +94,7 @@ var OggOpusEncoder = function( config, Module ){
   this.segmentTableIndex = 0;
   this.framesInPage = 0;
 
+
   this.initChecksumTable();
   this.initCodec();
   this.initResampler();
@@ -340,6 +341,32 @@ OggOpusEncoder.prototype.segmentPacket = function( packetLength ) {
     this.headerType = 0;
   }
 };
+
+
+// AudioWorklet
+if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
+  class EncoderWorklet extends global['AudioWorkletProcessor'] {
+    constructor(options){
+      super();
+      this.port.onmessage = global['onmessage'];
+      global['postmessage'] = this.port.postmessage;
+      if ( encoder ) {
+        encoder.destroy();
+      }
+      encoder = new OggOpusEncoder( options, Module );
+      this.port.postMessage( {message: 'ready'} );
+    }
+
+    process(inputs) {
+      if (encoder){
+        encoder.encode( inputs );
+      }
+      return true;
+    }
+  }
+
+  global['registerProcessor']('encoderWorklet', EncoderWorklet);
+}
 
 
 if (!Module) {
