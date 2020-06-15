@@ -94,7 +94,6 @@ var OggOpusEncoder = function( config, Module ){
   this.segmentTableIndex = 0;
   this.framesInPage = 0;
 
-
   this.initChecksumTable();
   this.initCodec();
   this.initResampler();
