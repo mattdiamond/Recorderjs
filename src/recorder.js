@@ -99,11 +99,7 @@ Recorder.prototype.initAudioGraph = function(){
     delete this.encodeBuffers;
   };
 
-  this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
-  this.scriptProcessorNode.connect( this.audioContext.destination );
-  this.scriptProcessorNode.onaudioprocess = ( e ) => {
-    this.encodeBuffers( e.inputBuffer );
-  };
+  this.encoderNode.connect( this.audioContext.destination );
 
   this.monitorGainNode = this.audioContext.createGain();
   this.setMonitorGain( this.config.monitorGain );
@@ -111,7 +107,7 @@ Recorder.prototype.initAudioGraph = function(){
 
   this.recordingGainNode = this.audioContext.createGain();
   this.setRecordingGain( this.config.recordingGain );
-  this.recordingGainNode.connect( this.scriptProcessorNode );
+  this.recordingGainNode.connect( this.encoderNode );
 };
 
 Recorder.prototype.initSourceNode = function( sourceNode ){
@@ -127,8 +123,25 @@ Recorder.prototype.initSourceNode = function( sourceNode ){
 
 Recorder.prototype.loadWorker = function() {
   if ( !this.encoder ) {
-    this.encoder = new global.Worker(this.config.encoderPath);
+
+    if (this.audioContext.audioWorklet) {
+      return this.audioContext.audioWorklet.addModule(this.config.encoderPath).then(() => {
+        this.encoderNode = new AudioWorkletNode(this.audioContext, 'encoder-worklet');
+        this.encoder = this.encoderNode.port;
+      });
+    }
+
+    else {
+      console.warn('audioWorklet support not detected. Using deprecated scriptProcessor');
+      this.encoderNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
+      this.encoderNode.onaudioprocess = ( e ) => {
+        this.encodeBuffers( e.inputBuffer );
+      };
+      this.encoder = new global.Worker(this.config.encoderPath);
+    }
   }
+
+  return Promise.resolve();
 };
 
 Recorder.prototype.initWorker = function(){
@@ -136,17 +149,16 @@ Recorder.prototype.initWorker = function(){
 
   this.recordedPages = [];
   this.totalLength = 0;
-  this.loadWorker();
 
-  return new Promise((resolve, reject) => {
-    var callback = (e) => {
-      switch( e['data']['message'] ){
+  return this.loadWorker().then(() => new Promise(resolve => {
+    var callback = ({ data }) => {
+      switch( data['message'] ){
         case 'ready':
           resolve();
           break;
         case 'page':
-          this.encodedSamplePosition = e['data']['samplePosition'];
-          onPage(e['data']['page']);
+          this.encodedSamplePosition = data['samplePosition'];
+          onPage(data['page']);
           break;
         case 'done':
           this.encoder.removeEventListener( "message", callback );
@@ -156,29 +168,40 @@ Recorder.prototype.initWorker = function(){
     };
 
     this.encoder.addEventListener( "message", callback );
+
+    // must call start for messagePort messages
+    if( this.encoder.start ) {
+      this.encoder.start()
+    }
+
     this.encoder.postMessage( Object.assign({
       command: 'init',
       originalSampleRate: this.audioContext.sampleRate,
       wavSampleRate: this.audioContext.sampleRate
     }, this.config));
-  });
+  }));
 };
 
 Recorder.prototype.pause = function( flush ) {
   if ( this.state === "recording" ) {
     this.state = "paused";
     if ( flush && this.config.streamPages ) {
-      var encoder = this.encoder;
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         var callback = (e) => {
           if ( e["data"]["message"] === 'flushed' ) {
-            encoder.removeEventListener( "message", callback );
+            this.encoder.removeEventListener( "message", callback );
             this.onpause();
             resolve();
           }
         };
-        encoder.addEventListener( "message", callback );
-        encoder.postMessage( { command: "flush" } );
+        this.encoder.addEventListener( "message", callback );
+
+        // must call start for messagePort messages
+        if ( this.encoder.start ) {
+          this.encoder.start()
+        }
+
+        this.encoder.postMessage( { command: "flush" } );
       });
     }
     this.onpause();
@@ -212,11 +235,11 @@ Recorder.prototype.setMonitorGain = function( gain ){
 Recorder.prototype.start = function( sourceNode ){
   if ( this.state === "inactive" ) {
     this.initAudioContext( sourceNode );
-    this.initAudioGraph();
 
     this.encodedSamplePosition = 0;
 
-    return Promise.all([this.initSourceNode(sourceNode), this.initWorker()]).then((results) => {
+    return Promise.all([this.initSourceNode(sourceNode), this.initWorker()]).then(results => {
+      this.initAudioGraph();
       this.sourceNode = results[0];
       this.state = "recording";
       this.onstart();
@@ -231,23 +254,28 @@ Recorder.prototype.stop = function(){
   if ( this.state !== "inactive" ) {
     this.state = "inactive";
     this.monitorGainNode.disconnect();
-    this.scriptProcessorNode.disconnect();
+    this.encoderNode.disconnect();
     this.recordingGainNode.disconnect();
     this.sourceNode.disconnect();
     this.clearStream();
 
-    var encoder = this.encoder;
     return new Promise((resolve) => {
       var callback = (e) => {
         if ( e["data"]["message"] === 'done' ) {
-          encoder.removeEventListener( "message", callback );
+          this.encoder.removeEventListener( "message", callback );
           resolve();
         }
       };
-      encoder.addEventListener( "message", callback );
-      encoder.postMessage({ command: "done" });
+      this.encoder.addEventListener( "message", callback );
+
+      // must call start for messagePort messages
+      if( this.encoder.start ) {
+        this.encoder.start()
+      }
+
+      this.encoder.postMessage({ command: "done" });
       if ( !this.config.reuseWorker ) {
-        encoder.postMessage({ command: "close" });
+        this.encoder.postMessage({ command: "close" });
       }
     });
   }

@@ -110,7 +110,7 @@ rec.destroyWorker()
 rec.loadWorker()
 ```
 
-**loadWorker** triggers pre-loading of the worker. This can reduce the startup latency when calling `start`. Call `destroyWorker` to clean the worker when the recorder is stopped/not started, or it will be automatically cleaned up after stopping unless `reuseWorker` is true.
+**loadWorker** triggers pre-loading of the worker. This can reduce the startup latency when calling `start`. Call `destroyWorker` to clean the worker when the recorder is stopped/not started, or it will be automatically cleaned up after stopping unless `reuseWorker` is true. Returns a promise which resolves when the worker has been loaded.
 
 ---------
 #### Instance Fields
