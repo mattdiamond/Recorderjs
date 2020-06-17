@@ -36,7 +36,8 @@ var Recorder = function( config ){
 
 // Static Methods
 Recorder.isRecordingSupported = function(){
-  return AudioContext && global.navigator && global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia && global.WebAssembly;
+  const getUserMediaSupported = global.navigator && global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia;
+  return AudioContext && getUserMediaSupported && global.WebAssembly;
 };
 
 

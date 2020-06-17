@@ -342,6 +342,27 @@ OggOpusEncoder.prototype.segmentPacket = function( packetLength ) {
 };
 
 
+// AudioWorklet
+if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
+  class EncoderWorklet extends global['AudioWorkletProcessor'] {
+    constructor(){
+      super();
+      this.port.onmessage = global['onmessage'];
+      global['postMessage'] = this.port.postMessage;
+    }
+
+    process(inputs) {
+      if (encoder){
+        encoder.encode( inputs );
+      }
+      return true;
+    }
+  }
+
+  global['registerProcessor']('encoderWorklet', EncoderWorklet);
+}
+
+
 if (!Module) {
   Module = {};
 }
