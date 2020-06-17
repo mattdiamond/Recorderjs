@@ -32,11 +32,11 @@ default: $(LIBOPUS_ENCODER) $(LIBOPUS_ENCODER_MIN) $(LIBOPUS_DECODER) $(LIBOPUS_
 
 cleanDist:
 	rm -rf $(OUTPUT_DIR) $(OUTPUT_DIR_UNMINIFIED)
+	mkdir $(OUTPUT_DIR)
+	mkdir $(OUTPUT_DIR_UNMINIFIED)
 
 cleanAll: cleanDist
 	rm -rf $(LIBOPUS_DIR) $(LIBSPEEXDSP_DIR)
-	mkdir $(OUTPUT_DIR)
-	mkdir $(OUTPUT_DIR_UNMINIFIED)
 
 test:
 	# Tests need to run relative to `dist` folder for wasm file import
