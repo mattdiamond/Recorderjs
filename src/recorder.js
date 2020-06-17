@@ -152,7 +152,6 @@ Recorder.prototype.initWorker = function(){
 
   return this.loadWorker().then(() => new Promise(resolve => {
     var callback = ({ data }) => {
-      console.log('finished');
       switch( data['message'] ){
         case 'ready':
           resolve();
