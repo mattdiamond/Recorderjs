@@ -126,12 +126,13 @@ Recorder.prototype.loadWorker = function() {
 
     if (this.audioContext.audioWorklet) {
       return this.audioContext.audioWorklet.addModule(this.config.encoderPath).then(() => {
-        this.encoderNode = new AudioWorkletNode(this.audioContext, 'encoderWorklet');
-        this.encoder = encoderWorklet.port;
+        this.encoderNode = new AudioWorkletNode(this.audioContext, 'encoder-worklet');
+        this.encoder = this.encoderNode.port;
       });
     }
 
     else {
+      console.warn('audioWorklet support not detected. Using deprecated scriptProcessor');
       this.encoderNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
       this.encoderNode.onaudioprocess = ( e ) => {
         this.encodeBuffers( e.inputBuffer );
@@ -150,14 +151,15 @@ Recorder.prototype.initWorker = function(){
   this.totalLength = 0;
 
   return this.loadWorker().then(() => new Promise(resolve => {
-    var callback = (e) => {
-      switch( e['data']['message'] ){
+    var callback = ({ data }) => {
+      console.log('finished');
+      switch( data['message'] ){
         case 'ready':
           resolve();
           break;
         case 'page':
-          this.encodedSamplePosition = e['data']['samplePosition'];
-          onPage(e['data']['page']);
+          this.encodedSamplePosition = data['samplePosition'];
+          onPage(data['page']);
           break;
         case 'done':
           this.encoder.removeEventListener( "message", callback );
@@ -167,6 +169,12 @@ Recorder.prototype.initWorker = function(){
     };
 
     this.encoder.addEventListener( "message", callback );
+
+    // must call start for messagePort messages
+    if( this.encoder.start ) {
+      this.encoder.start()
+    }
+
     this.encoder.postMessage( Object.assign({
       command: 'init',
       originalSampleRate: this.audioContext.sampleRate,
@@ -188,6 +196,12 @@ Recorder.prototype.pause = function( flush ) {
           }
         };
         this.encoder.addEventListener( "message", callback );
+
+        // must call start for messagePort messages
+        if ( this.encoder.start ) {
+          this.encoder.start()
+        }
+
         this.encoder.postMessage( { command: "flush" } );
       });
     }
@@ -254,6 +268,12 @@ Recorder.prototype.stop = function(){
         }
       };
       this.encoder.addEventListener( "message", callback );
+
+      // must call start for messagePort messages
+      if( this.encoder.start ) {
+        this.encoder.start()
+      }
+
       this.encoder.postMessage({ command: "done" });
       if ( !this.config.reuseWorker ) {
         this.encoder.postMessage({ command: "close" });
