@@ -300,7 +300,7 @@ OggOpusEncoder.prototype.segmentPacket = function( packetLength ) {
 };
 
 
-// AudioWorklet
+// Run in AudioWorkletGlobal scope
 if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
 
   class EncoderWorklet extends global['AudioWorkletProcessor'] {
@@ -329,7 +329,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
 
             default:
               // Ignore any unknown commands and continue recieving commands
-
+          }
         }
 
         switch( data['command'] ){
@@ -342,7 +342,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
             if ( encoder ) {
               encoder.destroy();
             }
-            encoder = new OggOpusEncoder( data, Module, this.port.postMessage );
+            encoder = new OggOpusEncoder( data, Module );
             this.port.postMessage( {message: 'ready'} );
             break;
 
@@ -354,7 +354,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
 
     process(inputs) {
       if (encoder){
-        encoder.encode( inputs ).forEach(pageData => this.postPage(pageData));
+        encoder.encode( inputs[0] ).forEach(pageData => this.postPage(pageData));
       }
       return this.continueProcess;
     }
@@ -369,6 +369,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
   global['registerProcessor']('encoder-worklet', EncoderWorklet);
 }
 
+// run in scriptProcessor worker scope
 else {
   var postPageGlobal = (pageData) => {
     if (pageData) {
@@ -401,6 +402,7 @@ else {
 
         default:
           // Ignore any unknown commands and continue recieving commands
+      }
     }
 
     switch( data['command'] ){
@@ -408,7 +410,6 @@ else {
       case 'close':
         global['close']();
         break;
-
 
       case 'init':
         if ( encoder ) {
@@ -423,4 +424,3 @@ else {
     }
   };
 }
-
