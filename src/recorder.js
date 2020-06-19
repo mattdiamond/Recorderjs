@@ -259,9 +259,9 @@ Recorder.prototype.stop = function(){
     this.sourceNode.disconnect();
     this.clearStream();
 
-    return new Promise((resolve) => {
-      var callback = (e) => {
-        if ( e["data"]["message"] === 'done' ) {
+    return new Promise(resolve => {
+      var callback = ({ data }) => {
+        if ( data["message"] === 'done' ) {
           this.encoder.removeEventListener( "message", callback );
           resolve();
         }

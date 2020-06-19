@@ -87,10 +87,11 @@ describe('Recorder', function(){
     global.Worker.prototype.postMessage = sinon.spy(function( message ) {
       // run callbacks in next tick
       global.Promise.resolve().then(() => {
-        var handlers = messageHandlers.slice(0);
+        var handlers = messageHandlers.slice(0).reverse();
         function call(e) {
-          handlers.forEach( (h) => h(e) );
+          handlers.forEach(h => h(e));
         }
+
         switch (message['command']) {
           case 'init':
             return call({data: {message: 'ready'}});
