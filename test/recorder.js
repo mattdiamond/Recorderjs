@@ -312,7 +312,7 @@ describe('Recorder', function(){
       rec.stop();
       expect(rec.state).to.equal('inactive');
       expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
+      expect(rec.encoderNode.disconnect).to.have.been.calledOnce;
       expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
       expect(rec.sourceNode.disconnect).to.have.been.calledOnce;;
       expect(clearStreamSpy).to.have.been.calledOnce;
@@ -333,7 +333,7 @@ describe('Recorder', function(){
       }).then(function() {
         expect(rec.state).to.equal('inactive');
         expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-        expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
+        expect(rec.encoderNode.disconnect).to.have.been.calledOnce;
         expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
         expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
         expect(clearStreamSpy).to.have.been.calledOnce;
@@ -384,7 +384,7 @@ describe('Recorder', function(){
     }).then(function() {
       expect(rec.state).to.equal('inactive');
       expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
+      expect(rec.encoderNode.disconnect).to.have.been.calledOnce;
       expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
       expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
       expect(rec.stream).to.be.undefined;
@@ -400,7 +400,7 @@ describe('Recorder', function(){
     }).then(function() {
       expect(rec.state).to.equal('inactive');
       expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.scriptProcessorNode.disconnect).to.have.been.calledTwice; // mock is reused
+      expect(rec.encoderNode.disconnect).to.have.been.calledTwice; // mock is reused
       expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
       expect(rec.sourceNode.disconnect).to.have.been.calledTwice; // mock is reused
       expect(rec.stream).to.be.undefined;
