@@ -2,7 +2,9 @@
 
 var encoder;
 
-var OggOpusEncoder = function( config, Module ){
+
+export const EmsdkModule = Module;
+export const OggOpusEncoder = function( config, Module ){
 
   if ( !Module ) {
     throw new Error('Module with exports required to initialize an encoder instance');
@@ -353,7 +355,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
     }
 
     process(inputs) {
-      if (encoder){
+      if (encoder && inputs[0]){
         encoder.encode( inputs[0] ).forEach(pageData => this.postPage(pageData));
       }
       return this.continueProcess;
