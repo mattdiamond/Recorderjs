@@ -15,7 +15,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
 
           case 'done':
             if (recorder) {
-              this.postPage(this.recorder.requestData());
+              this.postPage(recorder.requestData());
               this.port.postMessage( {message: 'done'} );
               recorder = null;
             }
@@ -26,7 +26,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
             break;
 
           case 'init':
-            recorder = new WavePCM( e['data'] );
+            recorder = new WavePCM( data );
             this.port.postMessage( {message: 'ready'} );
             break;
 
