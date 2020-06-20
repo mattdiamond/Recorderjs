@@ -164,7 +164,7 @@ else {
 
     switch( data['command'] ){
 
-      case 'record':
+      case 'encode':
         if (recorder) {
           recorder.record( data['buffers'] );
         }

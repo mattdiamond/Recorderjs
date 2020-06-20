@@ -77,7 +77,7 @@
           recordingGain: parseInt(recordingGain.value, 10),
           numberOfChannels: parseInt(numberOfChannels.value, 10),
           wavBitDepth: parseInt(bitDepth.value,10),
-          encoderPath: "../dist/waveWorker.min.js"
+          encoderPath: "../dist-unminified/waveWorker.js"
         });
 
         pause.addEventListener( "click", function(){ recorder.pause(); });
