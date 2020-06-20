@@ -38,45 +38,15 @@ describe('Recorder', function(){
   };
 
   beforeEach(function(){
-    global.AudioContext = sinon.stub();
-    global.AudioContext.prototype.createGain = () => {
-      return {
-        connect: sinon.stub(),
-        disconnect: sinon.stub(),
-        gain: {
-          setTargetAtTime: sinon.stub()
-        }
-      };
-    };
-    global.AudioContext.prototype.createScriptProcessor = sinon.stub().returns({
-      connect: sinon.stub(),
-      disconnect: sinon.stub()
-    });
-    global.AudioContext.prototype.createMediaStreamSource = sinon.stub().returns({ 
-      connect: sinon.stub(),
-      disconnect: sinon.stub()
-    });
-    global.AudioContext.prototype.sampleRate = 44100;
-    global.AudioContext.prototype.close = sinon.stub();
-
-    global.Event = sinon.stub();
-    global.CustomEvent = sinon.stub();
-    global.ErrorEvent = sinon.stub();
-
-    global.navigator = {};
-    global.navigator.mediaDevices = {};
-    global.navigator.mediaDevices.getUserMedia = sinon.stub().resolves({
-      stop: sinon.stub()
-    });
-
-    global.Worker = sinon.stub();
     var messageHandlers = [];
-    global.Worker.prototype.addEventListener = sinon.spy(function( event, callback ) {
+
+    const nodeAddEventListener = sinon.spy(function( event, callback ) {
       if(event == 'message') {
         messageHandlers.push(callback);
       }
     });
-    global.Worker.prototype.removeEventListener = sinon.spy(function( event, callback ) {
+
+    const nodeRemoveEventListener = sinon.spy(function( event, callback ) {
       if ( event == 'message' ) {
         var index = messageHandlers.indexOf(callback);
         if ( index > -1 ) {
@@ -84,7 +54,8 @@ describe('Recorder', function(){
         }
       }
     });
-    global.Worker.prototype.postMessage = sinon.spy(function( message ) {
+
+    const nodePostMessage = sinon.spy(function( message ) {
       // run callbacks in next tick
       global.Promise.resolve().then(() => {
         var handlers = messageHandlers.slice(0).reverse();
@@ -102,6 +73,61 @@ describe('Recorder', function(){
         }
       });
     });
+
+
+    global.AudioContext = sinon.stub();
+
+    global.AudioContext.prototype.createGain = () => {
+      return {
+        connect: sinon.stub(),
+        disconnect: sinon.stub(),
+        gain: {
+          setTargetAtTime: sinon.stub()
+        }
+      };
+    };
+
+    global.AudioContext.prototype.createScriptProcessor = sinon.stub().returns({
+      connect: sinon.stub(),
+      disconnect: sinon.stub()
+    });
+
+    global.AudioContext.prototype.createMediaStreamSource = sinon.stub().returns({ 
+      connect: sinon.stub(),
+      disconnect: sinon.stub()
+    });
+
+    global.AudioContext.prototype.sampleRate = 44100;
+    global.AudioContext.prototype.close = sinon.stub();
+    global.AudioContext.prototype.audioWorklet = {
+      addModule: sinon.stub().resolves()
+    };
+
+    global.AudioWorkletNode = sinon.stub().returns({ 
+      connect: sinon.stub(),
+      disconnect: sinon.stub(),
+      port: {
+        addEventListener: nodeAddEventListener,
+        removeEventListener: nodeRemoveEventListener,
+        postMessage: nodePostMessage,
+        start: sinon.stub()
+      }
+    });
+
+    global.Event = sinon.stub();
+    global.CustomEvent = sinon.stub();
+    global.ErrorEvent = sinon.stub();
+
+    global.navigator = {};
+    global.navigator.mediaDevices = {};
+    global.navigator.mediaDevices.getUserMedia = sinon.stub().resolves({
+      stop: sinon.stub()
+    });
+
+    global.Worker = sinon.stub();
+    global.Worker.prototype.addEventListener = nodeAddEventListener;
+    global.Worker.prototype.removeEventListener = nodeRemoveEventListener;
+    global.Worker.prototype.postMessage = nodePostMessage;
 
     global.Promise = Promise;
 
@@ -217,6 +243,24 @@ describe('Recorder', function(){
   });
 
   it('should start recording', function(){
+    var rec = new Recorder();
+    return rec.start().then( function(){
+      expect(rec.audioContext.audioWorklet.addModule).to.have.been.calledOnce;
+      expect(global.AudioWorkletNode).to.have.been.calledWithNew;
+      expect(rec.encoder.addEventListener).to.have.been.calledOnce;
+      expect(rec.encoder.addEventListener).to.have.been.calledWith('message');
+      expect(rec.state).to.equal('recording');
+      expect(rec.sourceNode.connect).to.have.been.calledTwice;
+      expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ 
+        command: 'init',
+        wavSampleRate: 44100,
+        originalSampleRate: 44100
+      });
+    });
+  });
+
+  it('should start recording with createScriptProcessor', function(){
+    delete global.AudioContext.prototype.audioWorklet;
     var rec = new Recorder();
     return rec.start().then( function(){
       expect(global.Worker).to.have.been.calledWithNew;
