@@ -2,99 +2,7 @@
   
 var recorder;
 
-// Run in AudioWorkletGlobal scope
-if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
-
-  class EncoderWorklet extends global['AudioWorkletProcessor'] {
-
-    constructor(){
-      super();
-      this.continueProcess = true;
-      this.port.onmessage = ({ data }) => {
-        switch( data['command'] ){
-
-          case 'done':
-            if (recorder) {
-              this.postPage(recorder.requestData());
-              this.port.postMessage( {message: 'done'} );
-              recorder = null;
-            }
-            break;
-
-          case 'close':
-            this.continueProcess = false;
-            break;
-
-          case 'init':
-            recorder = new WavePCM( data );
-            this.port.postMessage( {message: 'ready'} );
-            break;
-
-          default:
-            // Ignore any unknown commands and continue recieving commands
-        }
-      }
-    }
-
-    process(inputs) {
-      if (recorder && inputs[0]){
-        recorder.record( inputs[0] );
-      }
-      return this.continueProcess;
-    }
-
-    postPage(pageData) {
-      if (pageData) {
-        this.port.postMessage( pageData, [pageData.page.buffer] );
-      }
-    }
-  }
-
-  global['registerProcessor']('encoder-worklet', EncoderWorklet);
-}
-
-// run in scriptProcessor worker scope
-else {
-  var postPageGlobal = (pageData) => {
-    if (pageData) {
-      global['postMessage']( pageData, [pageData.page.buffer] );
-    }
-  }
-
-  global['onmessage'] = ({ data }) => {
-
-    switch( data['command'] ){
-
-      case 'record':
-        if (recorder) {
-          recorder.record( data['buffers'] );
-        }
-        break;
-
-      case 'done':
-        if (recorder) {
-          postPageGlobal(recorder.requestData());
-          global['postMessage']( {message: 'done'} );
-          recorder = null;
-        }
-        break;
-
-      case 'close':
-        global['close']();
-        break;
-
-      case 'init':
-        recorder = new WavePCM( data );
-        global['postMessage']( {message: 'ready'} );
-        break;
-
-      default:
-        // Ignore any unknown commands and continue recieving commands
-    }
-  };
-}
-
-var WavePCM = function( config ){
+export const WavePCM = function( config ){
 
   var config = Object.assign({
     wavBitDepth: 16
@@ -192,4 +100,95 @@ WavePCM.prototype.requestData = function(){
   return {message: 'page', page: wav};
 };
 
-module.exports = WavePCM
+
+// Run in AudioWorkletGlobal scope
+if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
+
+  class EncoderWorklet extends global['AudioWorkletProcessor'] {
+
+    constructor(){
+      super();
+      this.continueProcess = true;
+      this.port.onmessage = ({ data }) => {
+        switch( data['command'] ){
+
+          case 'done':
+            if (recorder) {
+              this.postPage(recorder.requestData());
+              this.port.postMessage( {message: 'done'} );
+              recorder = null;
+            }
+            break;
+
+          case 'close':
+            this.continueProcess = false;
+            break;
+
+          case 'init':
+            recorder = new WavePCM( data );
+            this.port.postMessage( {message: 'ready'} );
+            break;
+
+          default:
+            // Ignore any unknown commands and continue recieving commands
+        }
+      }
+    }
+
+    process(inputs) {
+      if (recorder && inputs[0]){
+        recorder.record( inputs[0] );
+      }
+      return this.continueProcess;
+    }
+
+    postPage(pageData) {
+      if (pageData) {
+        this.port.postMessage( pageData, [pageData.page.buffer] );
+      }
+    }
+  }
+
+  global['registerProcessor']('encoder-worklet', EncoderWorklet);
+}
+
+// run in scriptProcessor worker scope
+else {
+  var postPageGlobal = (pageData) => {
+    if (pageData) {
+      global['postMessage']( pageData, [pageData.page.buffer] );
+    }
+  }
+
+  global['onmessage'] = ({ data }) => {
+
+    switch( data['command'] ){
+
+      case 'record':
+        if (recorder) {
+          recorder.record( data['buffers'] );
+        }
+        break;
+
+      case 'done':
+        if (recorder) {
+          postPageGlobal(recorder.requestData());
+          global['postMessage']( {message: 'done'} );
+          recorder = null;
+        }
+        break;
+
+      case 'close':
+        global['close']();
+        break;
+
+      case 'init':
+        recorder = new WavePCM( data );
+        global['postMessage']( {message: 'ready'} );
+        break;
+
+      default:
+        // Ignore any unknown commands and continue recieving commands
+    }
+  };
+}
