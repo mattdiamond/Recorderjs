@@ -1,7 +1,7 @@
 INPUT_DIR=./src
 OUTPUT_DIR=./dist
 OUTPUT_DIR_UNMINIFIED=./dist-unminified
-EMCC_OPTS=-O3 --llvm-lto 1 -s NO_DYNAMIC_EXECUTION=1 -s NO_FILESYSTEM=1 -s BINARYEN_ASYNC_COMPILATION=0 -s SINGLE_FILE=1
+EMCC_OPTS=-O3 --llvm-lto 1 -s NO_DYNAMIC_EXECUTION=1 -s NO_FILESYSTEM=1
 DEFAULT_EXPORTS:='_malloc','_free'
 
 LIBOPUS_ENCODER_SRC=$(INPUT_DIR)/encoderWorker.js
@@ -30,10 +30,13 @@ WAVE_WORKER_SRC=$(INPUT_DIR)/waveWorker.js
 
 default: $(LIBOPUS_ENCODER) $(LIBOPUS_ENCODER_MIN) $(LIBOPUS_DECODER) $(LIBOPUS_DECODER_MIN) $(RECORDER) $(RECORDER_MIN) $(WAVE_WORKER) $(WAVE_WORKER_MIN) test
 
-clean:
-	rm -rf $(OUTPUT_DIR) $(OUTPUT_DIR_UNMINIFIED) $(LIBOPUS_DIR) $(LIBSPEEXDSP_DIR)
+cleanDist:
+	rm -rf $(OUTPUT_DIR) $(OUTPUT_DIR_UNMINIFIED)
 	mkdir $(OUTPUT_DIR)
 	mkdir $(OUTPUT_DIR_UNMINIFIED)
+
+cleanAll: cleanDist
+	rm -rf $(LIBOPUS_DIR) $(LIBSPEEXDSP_DIR)
 
 test:
 	# Tests need to run relative to `dist` folder for wasm file import
@@ -55,12 +58,12 @@ $(LIBSPEEXDSP_OBJ): $(LIBSPEEXDSP_DIR)/autogen.sh
 	cd $(LIBSPEEXDSP_DIR); emmake make
 
 $(LIBOPUS_ENCODER): $(LIBOPUS_ENCODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
-	npm run webpack -- --config webpack.config.js -d --output-library EncoderWorker $(LIBOPUS_ENCODER_SRC) -o $@
-	emcc -o $@ $(EMCC_OPTS) -g3 -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_ENCODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --pre-js $@ $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
+	npm run webpack -- --config webpack.config.js -d $(LIBOPUS_ENCODER_SRC) -o $@
+	emcc -o $@ $(EMCC_OPTS) -s BINARYEN_ASYNC_COMPILATION=0 -s SINGLE_FILE=1 -g3 -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_ENCODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $@ $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 
 $(LIBOPUS_ENCODER_MIN): $(LIBOPUS_ENCODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
-	npm run webpack -- --config webpack.config.js -p --output-library EncoderWorker $(LIBOPUS_ENCODER_SRC) -o $@
-	emcc -o $@ $(EMCC_OPTS) -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_ENCODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --pre-js $@ $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
+	npm run webpack -- --config webpack.config.js -p $(LIBOPUS_ENCODER_SRC) -o $@
+	emcc -o $@ $(EMCC_OPTS) -s BINARYEN_ASYNC_COMPILATION=0 -s SINGLE_FILE=1 -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_ENCODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $@ $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 
 $(LIBOPUS_DECODER): $(LIBOPUS_DECODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 	npm run webpack -- --config webpack.config.js -d --output-library DecoderWorker $(LIBOPUS_DECODER_SRC) -o $@
