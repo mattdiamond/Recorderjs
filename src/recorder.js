@@ -187,8 +187,9 @@ Recorder.prototype.pause = function( flush ) {
     this.state = "paused";
     if ( flush && this.config.streamPages ) {
       return new Promise(resolve => {
-        var callback = (e) => {
-          if ( e["data"]["message"] === 'flushed' ) {
+
+        var callback = ({ data }) => {
+          if ( data["message"] === 'flushed' ) {
             this.encoder.removeEventListener( "message", callback );
             this.onpause();
             resolve();
@@ -262,7 +263,11 @@ Recorder.prototype.stop = function(){
     return new Promise(resolve => {
       var callback = ({ data }) => {
         if ( data["message"] === 'done' ) {
-          this.encoder.removeEventListener( "message", callback );
+
+          // The initWorker handler might destroyed the encoder
+          if (this.encoder) {
+            this.encoder.removeEventListener( "message", callback );
+          }
           resolve();
         }
       };
