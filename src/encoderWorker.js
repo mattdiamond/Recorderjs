@@ -7,7 +7,6 @@ const OggOpusEncoder = function( config, Module ){
   }
 
   this.config = Object.assign({ 
-    bufferLength: 4096, // Define size of incoming buffer
     encoderApplication: 2049, // 2048 = Voice (Lower fidelity)
                               // 2049 = Full Band Audio (Highest fidelity)
                               // 2051 = Restricted Low Delay (Lowest latency)
@@ -48,13 +47,16 @@ const OggOpusEncoder = function( config, Module ){
   if ( this.config.numberOfChannels === 1 ) {
     this.interleave = function( buffers ) { return buffers[0]; };
   }
-  else {
-    this.interleavedBuffers = new Float32Array( this.config.bufferLength * this.config.numberOfChannels );
-  }
-
 };
 
 OggOpusEncoder.prototype.encode = function( buffers ) {
+
+  // Determine bufferLength dynamically
+  if ( !this.bufferLength ) {
+    this.bufferLength = buffers[0].length;
+    this.interleavedBuffers = new Float32Array( this.bufferLength * this.config.numberOfChannels );
+  }
+
   var samples = this.interleave( buffers );
   var sampleIndex = 0;
   var exportPages = [];
@@ -112,15 +114,25 @@ OggOpusEncoder.prototype.flush = function() {
 };
 
 OggOpusEncoder.prototype.encodeFinalFrame = function() {
+  const exportPages = [];
+
+  // Encode the data remaining in the resample buffer.
   if ( this.resampleBufferIndex > 0 ) {
-    var finalFrameBuffers = [];
-    for ( var i = 0; i < this.config.numberOfChannels; ++i ) {
-      finalFrameBuffers.push( new Float32Array( this.config.bufferLength - (this.resampleBufferIndex / this.config.numberOfChannels) ));
+    const dataToFill = (this.resampleBufferLength - this.resampleBufferIndex) / this.config.numberOfChannels;
+    const numBuffers = Math.ceil(dataToFill / this.bufferLength);
+
+    for ( var i = 0; i < numBuffers; i++ ) { 
+      var finalFrameBuffers = [];
+      for ( var j = 0; j < this.config.numberOfChannels; j++ ) {
+        finalFrameBuffers.push( new Float32Array( this.bufferLength ));
+      }
+      exportPages.concat(this.encode( finalFrameBuffers ));
     }
-    this.encode( finalFrameBuffers );
   }
+
   this.headerType += 4;
-  return this.generatePage();
+  exportPages.push(this.generatePage());
+  return exportPages;
 };
 
 OggOpusEncoder.prototype.getChecksum = function( data ){
@@ -260,7 +272,7 @@ OggOpusEncoder.prototype.initResampler = function() {
 };
 
 OggOpusEncoder.prototype.interleave = function( buffers ) {
-  for ( var i = 0; i < this.config.bufferLength; i++ ) {
+  for ( var i = 0; i < this.bufferLength; i++ ) {
     for ( var channel = 0; channel < this.config.numberOfChannels; channel++ ) {
       this.interleavedBuffers[ i * this.config.numberOfChannels + channel ] = buffers[ channel ][ i ];
     }
@@ -316,7 +328,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
               break;
 
             case 'done':
-              this.postPage(this.encoder.encodeFinalFrame());
+              encoder.encodeFinalFrame().forEach(pageData => this.postPage(pageData));
               this.port.postMessage( {message: 'done'} );
               break;
 
@@ -390,7 +402,7 @@ else {
           break;
 
         case 'done':
-          postPageGlobal(encoder.encodeFinalFrame());
+          encoder.encodeFinalFrame().forEach(pageData => postPageGlobal(pageData));
           global['postMessage']( {message: 'done'} );
           break;
 
