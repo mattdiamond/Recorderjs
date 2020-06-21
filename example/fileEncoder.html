@@ -60,7 +60,7 @@
     }
     
     function encodeOgg(arrayBuffer){
-      var encodeWorker = new Worker('../dist/encoderWorker.min.js');
+      var encodeWorker = new Worker('../dist-unminified/encoderWorker.js');
       var bufferLength = 4096;
       
       encodeWorker.postMessage({ 
