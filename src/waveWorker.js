@@ -1,8 +1,6 @@
 "use strict";
-  
-var recorder;
 
-export const WavePCM = function( config ){
+const WavePCM = function( config ){
 
   var config = Object.assign({
     wavBitDepth: 16
@@ -113,10 +111,10 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
         switch( data['command'] ){
 
           case 'done':
-            if (recorder) {
-              this.postPage(recorder.requestData());
+            if (this.recorder) {
+              this.postPage(this.recorder.requestData());
               this.port.postMessage( {message: 'done'} );
-              recorder = null;
+              delete this.recorder;
             }
             break;
 
@@ -125,7 +123,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
             break;
 
           case 'init':
-            recorder = new WavePCM( data );
+            this.recorder = new WavePCM( data );
             this.port.postMessage( {message: 'ready'} );
             break;
 
@@ -136,8 +134,8 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
     }
 
     process(inputs) {
-      if (recorder && inputs[0]){
-        recorder.record( inputs[0] );
+      if (this.recorder && inputs[0]){
+        this.recorder.record( inputs[0] );
       }
       return this.continueProcess;
     }
@@ -154,6 +152,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
 
 // run in scriptProcessor worker scope
 else {
+  var recorder;
   var postPageGlobal = (pageData) => {
     if (pageData) {
       global['postMessage']( pageData, [pageData.page.buffer] );
@@ -191,4 +190,8 @@ else {
         // Ignore any unknown commands and continue recieving commands
     }
   };
+
+  // Exports for unit testing. Causes script error when interpreted in AudioWorklet Global scope
+  module.exports = WavePCM;
 }
+

@@ -1,10 +1,6 @@
 "use strict";
 
-var encoder;
-
-
-export const EmsdkModule = Module;
-export const OggOpusEncoder = function( config, Module ){
+const OggOpusEncoder = function( config, Module ){
 
   if ( !Module ) {
     throw new Error('Module with exports required to initialize an encoder instance');
@@ -311,21 +307,21 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
       super();
       this.continueProcess = true;
       this.port.onmessage = ({ data }) => {
-        if (encoder) {
+        if (this.encoder) {
           switch( data['command'] ){
 
             case 'getHeaderPages':
-              this.postPage(encoder.generateIdPage());
-              this.postPage(encoder.generateCommentPage());
+              this.postPage(this.encoder.generateIdPage());
+              this.postPage(this.encoder.generateCommentPage());
               break;
 
             case 'done':
-              this.postPage(encoder.encodeFinalFrame());
+              this.postPage(this.encoder.encodeFinalFrame());
               this.port.postMessage( {message: 'done'} );
               break;
 
             case 'flush':
-              this.postPage(encoder.flush());
+              this.postPage(this.encoder.flush());
               this.port.postMessage( {message: 'flushed'} );
               break;
 
@@ -341,10 +337,10 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
             break;
 
           case 'init':
-            if ( encoder ) {
-              encoder.destroy();
+            if ( this.encoder ) {
+              this.encoder.destroy();
             }
-            encoder = new OggOpusEncoder( data, Module );
+            this.encoder = new OggOpusEncoder( data, Module );
             this.port.postMessage( {message: 'ready'} );
             break;
 
@@ -355,8 +351,8 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
     }
 
     process(inputs) {
-      if (encoder && inputs[0]){
-        encoder.encode( inputs[0] ).forEach(pageData => this.postPage(pageData));
+      if (this.encoder && inputs[0]){
+        this.encoder.encode( inputs[0] ).forEach(pageData => this.postPage(pageData));
       }
       return this.continueProcess;
     }
@@ -373,6 +369,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
 
 // run in scriptProcessor worker scope
 else {
+  var encoder;
   var postPageGlobal = (pageData) => {
     if (pageData) {
       global['postMessage']( pageData, [pageData.page.buffer] );
@@ -425,4 +422,11 @@ else {
         // Ignore any unknown commands and continue recieving commands
     }
   };
+
+  // Exports for unit testing
+  module.exports = {
+    Module: Module,
+    OggOpusEncoder: OggOpusEncoder
+  };
 }
+

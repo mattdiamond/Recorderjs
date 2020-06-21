@@ -1,13 +1,11 @@
+var WavePCM = require('../src/waveWorker');
 var chai = require('chai');
 var sinon = require('sinon');
 
 var should = chai.should();
 var expect = chai.expect;
 
-
 describe('waveWorker', function() {
-
-  const { WavePCM } = require('../dist/waveWorker.min');
 
   it('should should throw an error if wavSampleRate is not defined', function () {
     expect(WavePCM).to.throw("wavSampleRate value is required to record. NOTE: Audio is not resampled!");
