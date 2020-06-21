@@ -423,7 +423,7 @@ else {
     }
   };
 
-  // Exports for unit testing
+  // Exports for unit testing. Causes script error when interpreted in AudioWorklet Global scope
   module.exports = {
     Module: Module,
     OggOpusEncoder: OggOpusEncoder
