@@ -58,7 +58,7 @@ describe('Recorder', function(){
     const nodePostMessage = sinon.spy(function( message ) {
       // run callbacks in next tick
       global.Promise.resolve().then(() => {
-        var handlers = messageHandlers.slice(0).reverse();
+        var handlers = messageHandlers.slice(0);
         function call(e) {
           handlers.forEach(h => h(e));
         }
