@@ -1,5 +1,7 @@
 "use strict";
 
+const { version } = require('../package.json');
+
 var AudioContext = global.AudioContext || global.webkitAudioContext;
 
 
@@ -39,6 +41,8 @@ Recorder.isRecordingSupported = function(){
   const getUserMediaSupported = global.navigator && global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia;
   return AudioContext && getUserMediaSupported && global.WebAssembly;
 };
+
+Recorder.version = version;
 
 
 // Instance Methods
