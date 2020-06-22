@@ -192,7 +192,7 @@ else {
   };
 }
 
+
 // Exports for unit testing.
 var module = module || {};
 module.exports = WavePCM;
-
