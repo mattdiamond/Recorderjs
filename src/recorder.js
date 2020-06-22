@@ -132,7 +132,7 @@ Recorder.prototype.loadWorker = function() {
     }
 
     else {
-      console.warn('audioWorklet support not detected. Using deprecated scriptProcessor');
+      console.log('audioWorklet support not detected. Falling back to scriptProcessor');
       this.encoderNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
       this.encoderNode.onaudioprocess = ( e ) => {
         this.encodeBuffers( e.inputBuffer );
@@ -259,9 +259,9 @@ Recorder.prototype.stop = function(){
     this.sourceNode.disconnect();
     this.clearStream();
 
-    return new Promise((resolve) => {
-      var callback = (e) => {
-        if ( e["data"]["message"] === 'done' ) {
+    return new Promise(resolve => {
+      var callback = ({ data }) => {
+        if ( data["message"] === 'done' ) {
           this.encoder.removeEventListener( "message", callback );
           resolve();
         }
