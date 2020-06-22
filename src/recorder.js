@@ -272,9 +272,11 @@ Recorder.prototype.stop = function(){
           if (this.encoder) {
             this.encoder.removeEventListener( "message", callback );
           }
+
           resolve();
         }
       };
+
       this.encoder.addEventListener( "message", callback );
 
       // must call start for messagePort messages
