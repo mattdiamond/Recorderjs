@@ -80,7 +80,7 @@ $(RECORDER_MIN): $(RECORDER_SRC)
 	npm run webpack -- --config webpack.config.js -p --output-library Recorder $(RECORDER_SRC) -o $@
 
 $(WAVE_WORKER): $(WAVE_WORKER_SRC)
-	npm run webpack -- --config webpack.config.js -d --output-library WaveWorker $(WAVE_WORKER_SRC) -o $@
+	npm run webpack -- --config webpack.config.js -d $(WAVE_WORKER_SRC) -o $@
 
 $(WAVE_WORKER_MIN): $(WAVE_WORKER_SRC)
-	npm run webpack -- --config webpack.config.js -p --output-library WaveWorker $(WAVE_WORKER_SRC) -o $@
+	npm run webpack -- --config webpack.config.js -p $(WAVE_WORKER_SRC) -o $@

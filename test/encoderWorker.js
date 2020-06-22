@@ -1,7 +1,7 @@
 var chai = require('chai');
 var sinon = require('sinon');
 var sinonChai = require("sinon-chai");
-var { EmsdkModule, OggOpusEncoder } = require('../dist/encoderWorker.min');
+var { Module, OggOpusEncoder } = require('../dist/encoderWorker.min');
 
 chai.use(sinonChai);
 var should = chai.should();
@@ -21,16 +21,16 @@ describe('encoderWorker', function() {
   var _free_spy;
 
   function getEncoder(config){
-    _opus_encoder_create_spy = sinon.spy(EmsdkModule, '_opus_encoder_create');
-    _opus_encoder_destroy_spy = sinon.spy(EmsdkModule, '_opus_encoder_destroy');
-    _opus_encoder_ctl_spy = sinon.spy(EmsdkModule, '_opus_encoder_ctl');
-    _speex_resampler_process_interleaved_float_spy = sinon.spy(EmsdkModule, '_speex_resampler_process_interleaved_float');
-    _speex_resampler_init_spy = sinon.spy(EmsdkModule, '_speex_resampler_init');
-    _speex_resampler_destroy_spy = sinon.spy(EmsdkModule, '_speex_resampler_destroy');
-    _opus_encode_float_spy = sinon.spy(EmsdkModule, '_opus_encode_float');
-    _malloc_spy = sinon.spy(EmsdkModule, '_malloc');
-    _free_spy = sinon.spy(EmsdkModule, '_free');
-    const encoder = new OggOpusEncoder(config, EmsdkModule);
+    _opus_encoder_create_spy = sinon.spy(Module, '_opus_encoder_create');
+    _opus_encoder_destroy_spy = sinon.spy(Module, '_opus_encoder_destroy');
+    _opus_encoder_ctl_spy = sinon.spy(Module, '_opus_encoder_ctl');
+    _speex_resampler_process_interleaved_float_spy = sinon.spy(Module, '_speex_resampler_process_interleaved_float');
+    _speex_resampler_init_spy = sinon.spy(Module, '_speex_resampler_init');
+    _speex_resampler_destroy_spy = sinon.spy(Module, '_speex_resampler_destroy');
+    _opus_encode_float_spy = sinon.spy(Module, '_opus_encode_float');
+    _malloc_spy = sinon.spy(Module, '_malloc');
+    _free_spy = sinon.spy(Module, '_free');
+    const encoder = new OggOpusEncoder(config, Module);
     return encoder;
   };
 

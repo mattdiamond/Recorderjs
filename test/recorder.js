@@ -38,7 +38,45 @@ describe('Recorder', function(){
   };
 
   beforeEach(function(){
+    var messageHandlers = [];
+
+    const nodeAddEventListener = sinon.spy(function( event, callback ) {
+      if(event == 'message') {
+        messageHandlers.push(callback);
+      }
+    });
+
+    const nodeRemoveEventListener = sinon.spy(function( event, callback ) {
+      if ( event == 'message' ) {
+        var index = messageHandlers.indexOf(callback);
+        if ( index > -1 ) {
+          messageHandlers.splice(index, 1);
+        }
+      }
+    });
+
+    const nodePostMessage = sinon.spy(function( message ) {
+      // run callbacks in next tick
+      global.Promise.resolve().then(() => {
+        var handlers = messageHandlers.slice(0);
+        function call(e) {
+          handlers.forEach(h => h(e));
+        }
+
+        switch (message['command']) {
+          case 'init':
+            return call({data: {message: 'ready'}});
+          case 'done':
+            return call({data: {message: 'done'}});
+          case 'flush':
+            return call({data: {message: 'flushed'}});
+        }
+      });
+    });
+
+
     global.AudioContext = sinon.stub();
+
     global.AudioContext.prototype.createGain = () => {
       return {
         connect: sinon.stub(),
@@ -48,16 +86,33 @@ describe('Recorder', function(){
         }
       };
     };
+
     global.AudioContext.prototype.createScriptProcessor = sinon.stub().returns({
       connect: sinon.stub(),
       disconnect: sinon.stub()
     });
+
     global.AudioContext.prototype.createMediaStreamSource = sinon.stub().returns({ 
       connect: sinon.stub(),
       disconnect: sinon.stub()
     });
+
     global.AudioContext.prototype.sampleRate = 44100;
     global.AudioContext.prototype.close = sinon.stub();
+    global.AudioContext.prototype.audioWorklet = {
+      addModule: sinon.stub().resolves()
+    };
+
+    global.AudioWorkletNode = sinon.stub().returns({ 
+      connect: sinon.stub(),
+      disconnect: sinon.stub(),
+      port: {
+        addEventListener: nodeAddEventListener,
+        removeEventListener: nodeRemoveEventListener,
+        postMessage: nodePostMessage,
+        start: sinon.stub()
+      }
+    });
 
     global.Event = sinon.stub();
     global.CustomEvent = sinon.stub();
@@ -70,37 +125,9 @@ describe('Recorder', function(){
     });
 
     global.Worker = sinon.stub();
-    var messageHandlers = [];
-    global.Worker.prototype.addEventListener = sinon.spy(function( event, callback ) {
-      if(event == 'message') {
-        messageHandlers.push(callback);
-      }
-    });
-    global.Worker.prototype.removeEventListener = sinon.spy(function( event, callback ) {
-      if ( event == 'message' ) {
-        var index = messageHandlers.indexOf(callback);
-        if ( index > -1 ) {
-          messageHandlers.splice(index, 1);
-        }
-      }
-    });
-    global.Worker.prototype.postMessage = sinon.spy(function( message ) {
-      // run callbacks in next tick
-      global.Promise.resolve().then(() => {
-        var handlers = messageHandlers.slice(0);
-        function call(e) {
-          handlers.forEach( (h) => h(e) );
-        }
-        switch (message['command']) {
-          case 'init':
-            return call({data: {message: 'ready'}});
-          case 'done':
-            return call({data: {message: 'done'}});
-          case 'flush':
-            return call({data: {message: 'flushed'}});
-        }
-      });
-    });
+    global.Worker.prototype.addEventListener = nodeAddEventListener;
+    global.Worker.prototype.removeEventListener = nodeRemoveEventListener;
+    global.Worker.prototype.postMessage = nodePostMessage;
 
     global.Promise = Promise;
 
@@ -218,6 +245,24 @@ describe('Recorder', function(){
   it('should start recording', function(){
     var rec = new Recorder();
     return rec.start().then( function(){
+      expect(rec.audioContext.audioWorklet.addModule).to.have.been.calledOnce;
+      expect(global.AudioWorkletNode).to.have.been.calledWithNew;
+      expect(rec.encoder.addEventListener).to.have.been.calledOnce;
+      expect(rec.encoder.addEventListener).to.have.been.calledWith('message');
+      expect(rec.state).to.equal('recording');
+      expect(rec.sourceNode.connect).to.have.been.calledTwice;
+      expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ 
+        command: 'init',
+        wavSampleRate: 44100,
+        originalSampleRate: 44100
+      });
+    });
+  });
+
+  it('should start recording with createScriptProcessor', function(){
+    delete global.AudioContext.prototype.audioWorklet;
+    var rec = new Recorder();
+    return rec.start().then( function(){
       expect(global.Worker).to.have.been.calledWithNew;
       expect(rec.encoder.addEventListener).to.have.been.calledOnce;
       expect(rec.encoder.addEventListener).to.have.been.calledWith('message');
@@ -312,7 +357,7 @@ describe('Recorder', function(){
       rec.stop();
       expect(rec.state).to.equal('inactive');
       expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
+      expect(rec.encoderNode.disconnect).to.have.been.calledOnce;
       expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
       expect(rec.sourceNode.disconnect).to.have.been.calledOnce;;
       expect(clearStreamSpy).to.have.been.calledOnce;
@@ -333,7 +378,7 @@ describe('Recorder', function(){
       }).then(function() {
         expect(rec.state).to.equal('inactive');
         expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-        expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
+        expect(rec.encoderNode.disconnect).to.have.been.calledOnce;
         expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
         expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
         expect(clearStreamSpy).to.have.been.calledOnce;
@@ -384,7 +429,7 @@ describe('Recorder', function(){
     }).then(function() {
       expect(rec.state).to.equal('inactive');
       expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.scriptProcessorNode.disconnect).to.have.been.calledOnce;
+      expect(rec.encoderNode.disconnect).to.have.been.calledOnce;
       expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
       expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
       expect(rec.stream).to.be.undefined;
@@ -400,7 +445,7 @@ describe('Recorder', function(){
     }).then(function() {
       expect(rec.state).to.equal('inactive');
       expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.scriptProcessorNode.disconnect).to.have.been.calledTwice; // mock is reused
+      expect(rec.encoderNode.disconnect).to.have.been.calledTwice; // mock is reused
       expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
       expect(rec.sourceNode.disconnect).to.have.been.calledTwice; // mock is reused
       expect(rec.stream).to.be.undefined;

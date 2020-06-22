@@ -1,5 +1,7 @@
 "use strict";
 
+const { version } = require('../package.json');
+
 var AudioContext = global.AudioContext || global.webkitAudioContext;
 
 
@@ -39,6 +41,8 @@ Recorder.isRecordingSupported = function(){
   const getUserMediaSupported = global.navigator && global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia;
   return AudioContext && getUserMediaSupported && global.WebAssembly;
 };
+
+Recorder.version = version;
 
 
 // Instance Methods
@@ -132,7 +136,7 @@ Recorder.prototype.loadWorker = function() {
     }
 
     else {
-      console.warn('audioWorklet support not detected. Using deprecated scriptProcessor');
+      console.log('audioWorklet support not detected. Falling back to scriptProcessor');
       this.encoderNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
       this.encoderNode.onaudioprocess = ( e ) => {
         this.encodeBuffers( e.inputBuffer );
@@ -187,8 +191,9 @@ Recorder.prototype.pause = function( flush ) {
     this.state = "paused";
     if ( flush && this.config.streamPages ) {
       return new Promise(resolve => {
-        var callback = (e) => {
-          if ( e["data"]["message"] === 'flushed' ) {
+
+        var callback = ({ data }) => {
+          if ( data["message"] === 'flushed' ) {
             this.encoder.removeEventListener( "message", callback );
             this.onpause();
             resolve();
@@ -259,10 +264,15 @@ Recorder.prototype.stop = function(){
     this.sourceNode.disconnect();
     this.clearStream();
 
-    return new Promise((resolve) => {
-      var callback = (e) => {
-        if ( e["data"]["message"] === 'done' ) {
-          this.encoder.removeEventListener( "message", callback );
+    return new Promise(resolve => {
+      var callback = ({ data }) => {
+        if ( data["message"] === 'done' ) {
+
+          // The initWorker handler might destroyed the encoder
+          if (this.encoder) {
+            this.encoder.removeEventListener( "message", callback );
+          }
+
           resolve();
         }
       };

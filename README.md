@@ -131,6 +131,15 @@ Recorder.isRecordingSupported()
 Returns a truthy value indicating if the browser supports recording.
 
 
+#### Static Properties
+
+```js
+Recorder.version
+```
+
+The version of the library.
+
+
 ---------
 #### Callback Handlers
 
