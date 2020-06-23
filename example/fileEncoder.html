@@ -13,24 +13,14 @@
 </head>
 <body>
   <h1>File Encoder Example</h1>
-  <p>Choose a monophonic PCM file from disk.</p>
+  <p>Choose a 16bit monophonic Wave file from disk.</p>
   <p>File is encoded from pcm to ogg</p>
 
   <h2>Options</h2>
 
   <div>
     <label>File Input sample rate (smp/sec)</label>
-    <input id="sampleRate" type="number" value="22050" min="0" />
-  </div>
-
-  <div>
-    <label>Encoder bitRate (bit/sec)</label>
-    <input id="bitRate" type="number" value="32000" min="0" />
-  </div>
-
-  <div>
-    <label>Encoder sample rate</label>
-    <input id="encoderSampleRate" type="number" value="16000" min="8000" max="48000" />
+    <input id="sampleRate" type="number" value="44100" min="0" />
   </div>
   
   <div>
@@ -50,60 +40,67 @@
   <ul id="recordingslist"></ul>
 
   <script>
-    var totalArray = new Uint8Array(0);
+    var completeOggData = new Uint8Array(0);
    
-    function concatTypedArrays(a, b) { // a, b TypedArray of same type
-      var c = new (a.constructor)(a.length + b.length);
-      c.set(a, 0);
+    function concatUint8Arrays(a, b) {
+      var c = new Uint8Array(a.length + b.length);
+      c.set(a);
       c.set(b, a.length);
       return c;
     }
+
+    function chunkBuffers(arrayBuffer, chunkLength){
+      var chunkedBuffers = [];
+
+      var totalFile = new Int16Array(arrayBuffer);
+      // Skip wave header; 44 bytes
+      for (i = 22; i < totalFile.length; i += chunkLength) {
+
+        // Convert 16 bit signed int to 32bit float
+        var bufferChunk = new Float32Array(chunkLength);
+        for (j = 0 ; j < chunkLength ; j++) {
+          bufferChunk[j] = (totalFile[i + j]+ 0.5) / 32767.5;
+        }
+
+        chunkedBuffers.push([bufferChunk]) ;
+      };
+
+      return chunkedBuffers 
+    };
     
     function encodeOgg(arrayBuffer){
-      var encodeWorker = new Worker('../dist-unminified/encoderWorker.js');
+      var encoderWorker = new Worker('../dist-unminified/encoderWorker.js');
       var bufferLength = 4096;
       
-      encodeWorker.postMessage({ 
-        command:'init',
-        encoderSampleRate:  parseInt(encoderSampleRate.value,10),
-        bufferLength:       bufferLength, 
-        originalSampleRate: parseInt(sampleRate.value,10), 
-        maxFramesPerPage:  40,
-        encoderApplication: 2049, 
-        encoderFrameSize:   20,
-        encoderComplexity:  parseInt(encoderComplexity.value,10),  
-        resampleQuality:    parseInt(resampleQuality.value,10),     
-        bitRate:            parseInt(bitRate.value,10),        
+      encoderWorker.postMessage({
+        command:            'init',
+        encoderSampleRate:  48000,
+        bufferLength:       bufferLength,
+        originalSampleRate: parseInt(sampleRate.value,10),
+        encoderApplication: 2049,
+        encoderComplexity:  parseInt(encoderComplexity.value,10),
+        resampleQuality:    parseInt(resampleQuality.value,10),
+        numberOfChannels:   1
       });
       
-      encodeWorker.postMessage({ 
+      encoderWorker.postMessage({ 
         command:'getHeaderPages'
       });
 
-      var typedArray = new Int16Array(arrayBuffer);
-      for (i = 0; i < typedArray.length; i += bufferLength) {
-        var tmpBuffer = new Float32Array(bufferLength);
-        var tmpBufferList = [];
-        for (j = 0 ; j < bufferLength ; j++) {
-          tmpBuffer[j] = typedArray[i + j] / 32768;    
-        }
-        tmpBufferList.push(tmpBuffer) ;
+      chunkBuffers(arrayBuffer, bufferLength).forEach(bufferChunk => encoderWorker.postMessage({
+        command:'encode',
+        buffers: bufferChunk
+      }));
 
-        encodeWorker.postMessage({
-          command:'encode',
-          buffers: tmpBufferList
-        });
-      };
-
-      encodeWorker.postMessage({
+      encoderWorker.postMessage({
         command:'done'
       });
 
-      encodeWorker.onmessage = function(e){
-        if (e.data.message === "done") {
+      encoderWorker.onmessage = ({ data }) => {
+        if (data.message === "done") {
           //finished encoding - save to audio tag
           var fileName = new Date().toISOString() + ".ogg";        
-          var dataBlob = new Blob( [ self.totalArray ], { type: "audio/ogg" } );
+          var dataBlob = new Blob( [ completeOggData ], { type: "audio/ogg" } );
           var url = URL.createObjectURL( dataBlob );
 
           var audio = document.createElement('audio');
@@ -122,12 +119,11 @@
           recordingslist.appendChild(li);
         }
 
-        else if (e.data.message === "page") {
-          totalArray = concatTypedArrays(self.totalArray, e.data.page);
-          self.totalArray = totalArray;
+        else if (data.message === "page") {
+          completeOggData = concatUint8Arrays(completeOggData, data.page);
         }
       };
-    }
+    };
 
     fileInput.onchange = function(e){
       var fileReader = new FileReader();
