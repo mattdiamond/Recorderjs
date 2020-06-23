@@ -276,6 +276,7 @@ Recorder.prototype.stop = function(){
           resolve();
         }
       };
+
       this.encoder.addEventListener( "message", callback );
 
       // must call start for messagePort messages

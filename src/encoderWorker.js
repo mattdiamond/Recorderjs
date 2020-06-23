@@ -311,9 +311,9 @@ OggOpusEncoder.prototype.segmentPacket = function( packetLength ) {
 
 
 // Run in AudioWorkletGlobal scope
-if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
+if (typeof registerProcessor === 'function') {
 
-  class EncoderWorklet extends global['AudioWorkletProcessor'] {
+  class EncoderWorklet extends AudioWorkletProcessor {
 
     constructor(){
       super();
@@ -328,7 +328,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
               break;
 
             case 'done':
-              encoder.encodeFinalFrame().forEach(pageData => this.postPage(pageData));
+              this.encoder.encodeFinalFrame().forEach(pageData => this.postPage(pageData));
               this.port.postMessage( {message: 'done'} );
               break;
 
@@ -363,7 +363,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
     }
 
     process(inputs) {
-      if (this.encoder && inputs[0]){
+      if (this.encoder && inputs[0] && inputs[0].length){
         this.encoder.encode( inputs[0] ).forEach(pageData => this.postPage(pageData));
       }
       return this.continueProcess;
@@ -376,7 +376,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
     }
   }
 
-  global['registerProcessor']('encoder-worklet', EncoderWorklet);
+  registerProcessor('encoder-worklet', EncoderWorklet);
 }
 
 // run in scriptProcessor worker scope
@@ -384,11 +384,11 @@ else {
   var encoder;
   var postPageGlobal = (pageData) => {
     if (pageData) {
-      global['postMessage']( pageData, [pageData.page.buffer] );
+      postMessage( pageData, [pageData.page.buffer] );
     }
   }
 
-  global['onmessage'] = ({ data }) => {
+  onmessage = ({ data }) => {
     if (encoder) {
       switch( data['command'] ){
 
@@ -403,12 +403,12 @@ else {
 
         case 'done':
           encoder.encodeFinalFrame().forEach(pageData => postPageGlobal(pageData));
-          global['postMessage']( {message: 'done'} );
+          postMessage( {message: 'done'} );
           break;
 
         case 'flush':
           postPageGlobal(encoder.flush());
-          global['postMessage']( {message: 'flushed'} );
+          postMessage( {message: 'flushed'} );
           break;
 
         default:
@@ -419,26 +419,27 @@ else {
     switch( data['command'] ){
 
       case 'close':
-        global['close']();
+        close();
         break;
 
       case 'init':
         if ( encoder ) {
           encoder.destroy();
         }
-        encoder = new OggOpusEncoder( data, Module, global['postMessage'] );
-        global['postMessage']( {message: 'ready'} );
+        encoder = new OggOpusEncoder( data, Module );
+        postMessage( {message: 'ready'} );
         break;
 
       default:
         // Ignore any unknown commands and continue recieving commands
     }
   };
-
-  // Exports for unit testing. Causes script error when interpreted in AudioWorklet Global scope
-  module.exports = {
-    Module: Module,
-    OggOpusEncoder: OggOpusEncoder
-  };
 }
 
+
+// Exports for unit testing.
+var module = module || {};
+module.exports = {
+  Module: Module,
+  OggOpusEncoder: OggOpusEncoder
+};

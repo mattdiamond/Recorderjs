@@ -58,12 +58,10 @@ $(LIBSPEEXDSP_OBJ): $(LIBSPEEXDSP_DIR)/autogen.sh
 	cd $(LIBSPEEXDSP_DIR); emmake make
 
 $(LIBOPUS_ENCODER): $(LIBOPUS_ENCODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
-	npm run webpack -- --config webpack.config.js -d $(LIBOPUS_ENCODER_SRC) -o $@
-	emcc -o $@ $(EMCC_OPTS) -s BINARYEN_ASYNC_COMPILATION=0 -s SINGLE_FILE=1 -g3 -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_ENCODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $@ $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
+	emcc -o $@ $(EMCC_OPTS) -s BINARYEN_ASYNC_COMPILATION=0 -s SINGLE_FILE=1 -g3 -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_ENCODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $(LIBOPUS_ENCODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 
 $(LIBOPUS_ENCODER_MIN): $(LIBOPUS_ENCODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
-	npm run webpack -- --config webpack.config.js -p $(LIBOPUS_ENCODER_SRC) -o $@
-	emcc -o $@ $(EMCC_OPTS) -s BINARYEN_ASYNC_COMPILATION=0 -s SINGLE_FILE=1 -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_ENCODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $@ $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
+	emcc -o $@ $(EMCC_OPTS) -s BINARYEN_ASYNC_COMPILATION=0 -s SINGLE_FILE=1 -s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_ENCODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS)]" --post-js $(LIBOPUS_ENCODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 
 $(LIBOPUS_DECODER): $(LIBOPUS_DECODER_SRC) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ)
 	npm run webpack -- --config webpack.config.js -d --output-library DecoderWorker $(LIBOPUS_DECODER_SRC) -o $@
@@ -80,7 +78,7 @@ $(RECORDER_MIN): $(RECORDER_SRC)
 	npm run webpack -- --config webpack.config.js -p --output-library Recorder $(RECORDER_SRC) -o $@
 
 $(WAVE_WORKER): $(WAVE_WORKER_SRC)
-	npm run webpack -- --config webpack.config.js -d $(WAVE_WORKER_SRC) -o $@
+	npm run webpack -- -d $(WAVE_WORKER_SRC) -o $@
 
 $(WAVE_WORKER_MIN): $(WAVE_WORKER_SRC)
-	npm run webpack -- --config webpack.config.js -p $(WAVE_WORKER_SRC) -o $@
+	npm run webpack -- -p $(WAVE_WORKER_SRC) -o $@

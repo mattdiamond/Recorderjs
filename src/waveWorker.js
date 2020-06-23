@@ -100,9 +100,9 @@ WavePCM.prototype.requestData = function(){
 
 
 // Run in AudioWorkletGlobal scope
-if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
+if (typeof registerProcessor === 'function') {
 
-  class EncoderWorklet extends global['AudioWorkletProcessor'] {
+  class EncoderWorklet extends AudioWorkletProcessor {
 
     constructor(){
       super();
@@ -134,7 +134,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
     }
 
     process(inputs) {
-      if (this.recorder && inputs[0]){
+      if (this.recorder && inputs[0] && inputs[0].length){
         this.recorder.record( inputs[0] );
       }
       return this.continueProcess;
@@ -147,7 +147,7 @@ if (global['registerProcessor'] && global['AudioWorkletProcessor']) {
     }
   }
 
-  global['registerProcessor']('encoder-worklet', EncoderWorklet);
+  registerProcessor('encoder-worklet', EncoderWorklet);
 }
 
 // run in scriptProcessor worker scope
@@ -155,11 +155,11 @@ else {
   var recorder;
   var postPageGlobal = (pageData) => {
     if (pageData) {
-      global['postMessage']( pageData, [pageData.page.buffer] );
+      postMessage( pageData, [pageData.page.buffer] );
     }
   }
 
-  global['onmessage'] = ({ data }) => {
+  onmessage = ({ data }) => {
 
     switch( data['command'] ){
 
@@ -172,26 +172,27 @@ else {
       case 'done':
         if (recorder) {
           postPageGlobal(recorder.requestData());
-          global['postMessage']( {message: 'done'} );
+          postMessage( {message: 'done'} );
           recorder = null;
         }
         break;
 
       case 'close':
-        global['close']();
+        close();
         break;
 
       case 'init':
         recorder = new WavePCM( data );
-        global['postMessage']( {message: 'ready'} );
+        postMessage( {message: 'ready'} );
         break;
 
       default:
         // Ignore any unknown commands and continue recieving commands
     }
   };
-
-  // Exports for unit testing. Causes script error when interpreted in AudioWorklet Global scope
-  module.exports = WavePCM;
 }
 
+
+// Exports for unit testing.
+var module = module || {};
+module.exports = WavePCM;
