@@ -26,17 +26,20 @@ describe('waveWorker', function() {
     expect(wavPCM).to.have.property('sampleRate', 44100);
     expect(wavPCM).to.have.property('bitDepth', 16);
     expect(wavPCM).to.have.property('bytesPerSample', 2);
+    expect(wavPCM).to.have.property('numberOfChannels', 1);
   });
 
   it('should initialize custom config', function () {
     var wavPCM = new WavePCM({
       wavSampleRate: 44100,
-      wavBitDepth: 8
+      wavBitDepth: 8,
+      numberOfChannels: 2,
     });
 
     expect(wavPCM).to.have.property('sampleRate', 44100);
     expect(wavPCM).to.have.property('bitDepth', 8);
     expect(wavPCM).to.have.property('bytesPerSample', 1);
+    expect(wavPCM).to.have.property('numberOfChannels', 2);
   });
 
   it('should clamp float values to [-1,1]', function () {

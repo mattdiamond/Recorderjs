@@ -3,7 +3,8 @@
 const WavePCM = function( config ){
 
   var config = Object.assign({
-    wavBitDepth: 16
+    wavBitDepth: 16,
+    numberOfChannels: 1,
   }, config);
 
   if ( !config['wavSampleRate'] ) {
@@ -14,6 +15,7 @@ const WavePCM = function( config ){
     throw new Error("Only 8, 16, 24 and 32 bits per sample are supported");
   }
 
+  this.numberOfChannels = config['numberOfChannels'];
   this.bitDepth = config['wavBitDepth'];
   this.sampleRate = config['wavSampleRate'];
   this.recordedBuffers = [];
@@ -21,7 +23,6 @@ const WavePCM = function( config ){
 };
 
 WavePCM.prototype.record = function( buffers ){
-  this.numberOfChannels = this.numberOfChannels || buffers.length;
   var bufferLength = buffers[0].length;
   var reducedData = new Uint8Array( bufferLength * this.numberOfChannels * this.bytesPerSample );
 
