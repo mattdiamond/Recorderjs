@@ -103,15 +103,12 @@ Recorder.prototype.initAudioGraph = function(){
     delete this.encodeBuffers;
   };
 
-  this.encoderNode.connect( this.audioContext.destination );
-
   this.monitorGainNode = this.audioContext.createGain();
   this.setMonitorGain( this.config.monitorGain );
   this.monitorGainNode.connect( this.audioContext.destination );
 
   this.recordingGainNode = this.audioContext.createGain();
   this.setRecordingGain( this.config.recordingGain );
-  this.recordingGainNode.connect( this.encoderNode );
 };
 
 Recorder.prototype.initSourceNode = function( sourceNode ){
@@ -188,7 +185,10 @@ Recorder.prototype.initWorker = function(){
 
 Recorder.prototype.pause = function( flush ) {
   if ( this.state === "recording" ) {
+
     this.state = "paused";
+    this.recordingGainNode.disconnect();
+
     if ( flush && this.config.streamPages ) {
       return new Promise(resolve => {
 
@@ -217,6 +217,7 @@ Recorder.prototype.pause = function( flush ) {
 Recorder.prototype.resume = function() {
   if ( this.state === "paused" ) {
     this.state = "recording";
+    this.recordingGainNode.connect(this.encoderNode);
     this.onresume();
   }
 };
@@ -240,17 +241,21 @@ Recorder.prototype.setMonitorGain = function( gain ){
 Recorder.prototype.start = function( sourceNode ){
   if ( this.state === "inactive" ) {
     this.initAudioContext( sourceNode );
+    this.initAudioGraph();
 
     this.encodedSamplePosition = 0;
 
     return Promise.all([this.initSourceNode(sourceNode), this.initWorker()]).then(results => {
-      this.initAudioGraph();
-      this.sourceNode = results[0];
-      this.state = "recording";
-      this.onstart();
       this.encoder.postMessage({ command: 'getHeaderPages' });
+
+      this.sourceNode = results[0];
       this.sourceNode.connect( this.monitorGainNode );
       this.sourceNode.connect( this.recordingGainNode );
+      this.recordingGainNode.connect( this.encoderNode );
+      this.encoderNode.connect( this.audioContext.destination );
+
+      this.state = "recording";
+      this.onstart();
     });
   }
 };
