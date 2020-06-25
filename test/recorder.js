@@ -396,11 +396,13 @@ describe('Recorder', function(){
       return rec.pause();
     }).then(function() {
       expect(rec.state).to.equal('paused');
+      expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
       expect(rec.onpause).to.have.been.calledOnce;
       expect(rec.encoder.postMessage).not.to.have.been.calledWithMatch({ command: 'flush' });
 
       rec.resume();
       expect(rec.state).to.equal('recording');
+      expect(rec.recordingGainNode.connect).to.have.been.calledTwice;
     });
   });
 
