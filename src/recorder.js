@@ -127,7 +127,7 @@ Recorder.prototype.loadWorker = function() {
 
     if (this.audioContext.audioWorklet) {
       return this.audioContext.audioWorklet.addModule(this.config.encoderPath).then(() => {
-        this.encoderNode = new AudioWorkletNode(this.audioContext, 'encoder-worklet');
+        this.encoderNode = new AudioWorkletNode(this.audioContext, 'encoder-worklet', { numberOfOutputs: 0 });
         this.encoder = this.encoderNode.port;
       });
     }
@@ -135,9 +135,10 @@ Recorder.prototype.loadWorker = function() {
     else {
       console.log('audioWorklet support not detected. Falling back to scriptProcessor');
       this.encoderNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
-      this.encoderNode.onaudioprocess = ( e ) => {
-        this.encodeBuffers( e.inputBuffer );
-      };
+      this.encoderNode.onaudioprocess = ({ inputBuffer }) => this.encodeBuffers( inputBuffer );
+
+      // Script processor needs to be connected to destination to work
+      this.encoderNode.connect( this.audioContext.destination );
       this.encoder = new global.Worker(this.config.encoderPath);
     }
   }
@@ -246,15 +247,14 @@ Recorder.prototype.start = function( sourceNode ){
     this.encodedSamplePosition = 0;
 
     return Promise.all([this.initSourceNode(sourceNode), this.initWorker()]).then(results => {
+      this.state = "recording";
       this.encoder.postMessage({ command: 'getHeaderPages' });
 
       this.sourceNode = results[0];
       this.sourceNode.connect( this.monitorGainNode );
       this.sourceNode.connect( this.recordingGainNode );
       this.recordingGainNode.connect( this.encoderNode );
-      this.encoderNode.connect( this.audioContext.destination );
 
-      this.state = "recording";
       this.onstart();
     });
   }
