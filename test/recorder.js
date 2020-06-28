@@ -423,42 +423,6 @@ describe('Recorder', function(){
     });
   });
 
-  it('It should support worker reuse and destruction', function () {
-    var rec = new Recorder({ reuseWorker: true });
-    var encoder;
-    return rec.start().then(function() {
-      return rec.stop();
-    }).then(function() {
-      expect(rec.state).to.equal('inactive');
-      expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.encoderNode.disconnect).to.have.been.calledOnce;
-      expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
-      expect(rec.stream).to.be.undefined;
-      expect(rec.audioContext).to.be.undefined;
-      encoder = rec.encoder;
-      expect(rec.encoder.postMessage).to.have.been.calledWithMatch({command: 'done'});
-      return rec.start();
-    }).then(function() {
-      expect(rec.state).to.equal('recording');
-      expect(rec.stream).not.to.be.undefined;
-      expect(rec.encoder).to.equal(encoder);
-      return rec.stop();
-    }).then(function() {
-      expect(rec.state).to.equal('inactive');
-      expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.encoderNode.disconnect).to.have.been.calledTwice; // mock is reused
-      expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.sourceNode.disconnect).to.have.been.calledTwice; // mock is reused
-      expect(rec.stream).to.be.undefined;
-      expect(rec.audioContext).to.be.undefined;
-      var encoder = rec.encoder;
-      rec.destroyWorker();
-      expect(encoder.postMessage).to.have.been.calledWithMatch({command: 'done'});
-      expect(rec.encoder).to.be.undefined;
-    });
-  });
-
   it('should set the recording gain', function () {
     var rec = new Recorder();
     return rec.start().then(function() {
