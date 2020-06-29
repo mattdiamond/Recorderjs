@@ -47,9 +47,7 @@ Recorder.prototype.clearStream = function(){
   if ( this.stream ){
 
     if ( this.stream.getTracks ) {
-      this.stream.getTracks().forEach( function( track ){
-        track.stop();
-      });
+      this.stream.getTracks().forEach(track => track.stop());
     }
 
     else {
@@ -89,8 +87,6 @@ Recorder.prototype.initAudioContext = function( sourceNode ){
     this.audioContext = new AudioContext();
     this.closeAudioContext = true;
   }
-
-  return this.audioContext;
 };
 
 Recorder.prototype.initAudioGraph = function(){
