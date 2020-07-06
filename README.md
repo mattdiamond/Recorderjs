@@ -206,7 +206,6 @@ const rec = new Recorder({ encoderPath });
 - iOS Safari requires `rec.start()` to be called from a user initiated event
 - macOS Safari v11 native opus playback is not yet supported
 - iOS Safari v11 native opus playback is not yet supported
-- Microsoft Edge native opus playback is not yet supported
 
 
 ---------
