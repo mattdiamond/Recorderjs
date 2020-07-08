@@ -190,9 +190,8 @@ const rec = new Recorder({ encoderPath });
 ---------
 ### Gotchas
 - To be able to read the mic stream, the page must be served over https
-- iOS Safari requires `rec.start()` to be called from a user initiated event
-- macOS Safari v11 native opus playback is not yet supported
-- iOS Safari v11 native opus playback is not yet supported
+- macOS and iOS Safari requires `rec.start()` to be called from a user initiated event. Otherwise the mic stream will be empty with no logged errors
+- macOS and iOS Safari native opus playback is not yet supported
 
 
 ---------
