@@ -128,7 +128,7 @@ Recorder.prototype.loadWorker = function() {
     else {
       console.log('audioWorklet support not detected. Falling back to scriptProcessor');
       this.encoderNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
-      this.encoderNode.onaudioprocess = ({ inputBuffer }) => this.encodeBuffers( e.inputBuffer );
+      this.encoderNode.onaudioprocess = ({ inputBuffer }) => this.encodeBuffers( inputBuffer );
       this.encoder = new global.Worker(this.config.encoderPath);
     }
   }
