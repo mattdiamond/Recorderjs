@@ -1,16 +1,16 @@
 "use strict";
 
+const { version } = require('../package.json');
+
 var AudioContext = global.AudioContext || global.webkitAudioContext;
 
 
 // Constructor
-var Recorder = function( config ){
+var Recorder = function( config = {} ){
 
   if ( !Recorder.isRecordingSupported() ) {
     throw new Error("Recording is not supported in this browser");
   }
-
-  if ( !config ) config = {};
 
   this.state = "inactive";
   this.config = Object.assign({
@@ -26,7 +26,6 @@ var Recorder = function( config ){
     recordingGain: 1,
     resampleQuality: 3,
     streamPages: false,
-    reuseWorker: false,
     wavBitDepth: 16,
   }, config );
 
@@ -36,8 +35,11 @@ var Recorder = function( config ){
 
 // Static Methods
 Recorder.isRecordingSupported = function(){
-  return AudioContext && global.navigator && global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia && global.WebAssembly;
+  const getUserMediaSupported = global.navigator && global.navigator.mediaDevices && global.navigator.mediaDevices.getUserMedia;
+  return AudioContext && getUserMediaSupported && global.WebAssembly;
 };
+
+Recorder.version = version;
 
 
 // Instance Methods
@@ -45,9 +47,7 @@ Recorder.prototype.clearStream = function(){
   if ( this.stream ){
 
     if ( this.stream.getTracks ) {
-      this.stream.getTracks().forEach( function( track ){
-        track.stop();
-      });
+      this.stream.getTracks().forEach(track => track.stop());
     }
 
     else {
@@ -87,8 +87,6 @@ Recorder.prototype.initAudioContext = function( sourceNode ){
     this.audioContext = new AudioContext();
     this.closeAudioContext = true;
   }
-
-  return this.audioContext;
 };
 
 Recorder.prototype.initAudioGraph = function(){
@@ -98,19 +96,12 @@ Recorder.prototype.initAudioGraph = function(){
     delete this.encodeBuffers;
   };
 
-  this.scriptProcessorNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
-  this.scriptProcessorNode.connect( this.audioContext.destination );
-  this.scriptProcessorNode.onaudioprocess = ( e ) => {
-    this.encodeBuffers( e.inputBuffer );
-  };
-
   this.monitorGainNode = this.audioContext.createGain();
   this.setMonitorGain( this.config.monitorGain );
   this.monitorGainNode.connect( this.audioContext.destination );
 
   this.recordingGainNode = this.audioContext.createGain();
   this.setRecordingGain( this.config.recordingGain );
-  this.recordingGainNode.connect( this.scriptProcessorNode );
 };
 
 Recorder.prototype.initSourceNode = function( sourceNode ){
@@ -126,8 +117,23 @@ Recorder.prototype.initSourceNode = function( sourceNode ){
 
 Recorder.prototype.loadWorker = function() {
   if ( !this.encoder ) {
-    this.encoder = new global.Worker(this.config.encoderPath);
+
+    if (this.audioContext.audioWorklet) {
+      return this.audioContext.audioWorklet.addModule(this.config.encoderPath).then(() => {
+        this.encoderNode = new AudioWorkletNode(this.audioContext, 'encoder-worklet', { numberOfOutputs: 0 });
+        this.encoder = this.encoderNode.port;
+      });
+    }
+
+    else {
+      console.log('audioWorklet support not detected. Falling back to scriptProcessor');
+      this.encoderNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
+      this.encoderNode.onaudioprocess = ({ inputBuffer }) => this.encodeBuffers( inputBuffer );
+      this.encoder = new global.Worker(this.config.encoderPath);
+    }
   }
+
+  return Promise.resolve();
 };
 
 Recorder.prototype.initWorker = function(){
@@ -135,17 +141,16 @@ Recorder.prototype.initWorker = function(){
 
   this.recordedPages = [];
   this.totalLength = 0;
-  this.loadWorker();
 
-  return new Promise((resolve, reject) => {
-    var callback = (e) => {
-      switch( e['data']['message'] ){
+  return this.loadWorker().then(() => new Promise(resolve => {
+    var callback = ({ data }) => {
+      switch( data['message'] ){
         case 'ready':
           resolve();
           break;
         case 'page':
-          this.encodedSamplePosition = e['data']['samplePosition'];
-          onPage(e['data']['page']);
+          this.encodedSamplePosition = data['samplePosition'];
+          onPage(data['page']);
           break;
         case 'done':
           this.encoder.removeEventListener( "message", callback );
@@ -155,29 +160,44 @@ Recorder.prototype.initWorker = function(){
     };
 
     this.encoder.addEventListener( "message", callback );
+
+    // must call start for messagePort messages
+    if( this.encoder.start ) {
+      this.encoder.start()
+    }
+
     this.encoder.postMessage( Object.assign({
       command: 'init',
       originalSampleRate: this.audioContext.sampleRate,
       wavSampleRate: this.audioContext.sampleRate
     }, this.config));
-  });
+  }));
 };
 
 Recorder.prototype.pause = function( flush ) {
   if ( this.state === "recording" ) {
+
     this.state = "paused";
+    this.recordingGainNode.disconnect();
+
     if ( flush && this.config.streamPages ) {
-      var encoder = this.encoder;
-      return new Promise((resolve, reject) => {
-        var callback = (e) => {
-          if ( e["data"]["message"] === 'flushed' ) {
-            encoder.removeEventListener( "message", callback );
+      return new Promise(resolve => {
+
+        var callback = ({ data }) => {
+          if ( data["message"] === 'flushed' ) {
+            this.encoder.removeEventListener( "message", callback );
             this.onpause();
             resolve();
           }
         };
-        encoder.addEventListener( "message", callback );
-        encoder.postMessage( { command: "flush" } );
+        this.encoder.addEventListener( "message", callback );
+
+        // must call start for messagePort messages
+        if ( this.encoder.start ) {
+          this.encoder.start()
+        }
+
+        this.encoder.postMessage( { command: "flush" } );
       });
     }
     this.onpause();
@@ -188,6 +208,7 @@ Recorder.prototype.pause = function( flush ) {
 Recorder.prototype.resume = function() {
   if ( this.state === "paused" ) {
     this.state = "recording";
+    this.recordingGainNode.connect(this.encoderNode);
     this.onresume();
   }
 };
@@ -215,13 +236,21 @@ Recorder.prototype.start = function( sourceNode ){
 
     this.encodedSamplePosition = 0;
 
-    return Promise.all([this.initSourceNode(sourceNode), this.initWorker()]).then((results) => {
-      this.sourceNode = results[0];
+    return Promise.all([this.initSourceNode(sourceNode), this.initWorker()]).then(results => {
       this.state = "recording";
-      this.onstart();
       this.encoder.postMessage({ command: 'getHeaderPages' });
+
+      this.sourceNode = results[0];
       this.sourceNode.connect( this.monitorGainNode );
       this.sourceNode.connect( this.recordingGainNode );
+      this.recordingGainNode.connect( this.encoderNode );
+
+      // Script processor needs to be connected to destination to work
+      if (this.encoderNode.onaudioprocess) {
+        this.encoderNode.connect( this.audioContext.destination );
+      }
+
+      this.onstart();
     });
   }
 };
@@ -230,36 +259,36 @@ Recorder.prototype.stop = function(){
   if ( this.state !== "inactive" ) {
     this.state = "inactive";
     this.monitorGainNode.disconnect();
-    this.scriptProcessorNode.disconnect();
+    this.encoderNode.disconnect();
     this.recordingGainNode.disconnect();
     this.sourceNode.disconnect();
     this.clearStream();
 
-    var encoder = this.encoder;
-    return new Promise((resolve) => {
-      var callback = (e) => {
-        if ( e["data"]["message"] === 'done' ) {
-          encoder.removeEventListener( "message", callback );
+    return new Promise(resolve => {
+      var callback = ({ data }) => {
+        if ( data["message"] === 'done' ) {
+
+          // The initWorker handler might destroyed the encoder
+          if (this.encoder) {
+            this.encoder.removeEventListener( "message", callback );
+          }
+
           resolve();
         }
       };
-      encoder.addEventListener( "message", callback );
-      encoder.postMessage({ command: "done" });
-      if ( !this.config.reuseWorker ) {
-        encoder.postMessage({ command: "close" });
+
+      this.encoder.addEventListener( "message", callback );
+
+      // must call start for messagePort messages
+      if( this.encoder.start ) {
+        this.encoder.start()
       }
+
+      this.encoder.postMessage({ command: "done" });
+      this.encoder.postMessage({ command: "close" });
     });
   }
   return Promise.resolve();
-};
-
-Recorder.prototype.destroyWorker = function(){
-  if ( this.state === "inactive" ) {
-    if ( this.encoder ) {
-      this.encoder.postMessage({ command: "close" });
-      delete this.encoder;
-    }
-  }
 };
 
 Recorder.prototype.storePage = function( page ) {
@@ -282,9 +311,7 @@ Recorder.prototype.finish = function() {
     this.ondataavailable( outputData );
   }
   this.onstop();
-  if ( !this.config.reuseWorker ) {
-    delete this.encoder;
-  }
+  delete this.encoder;
 };
 
 

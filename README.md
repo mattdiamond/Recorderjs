@@ -33,8 +33,8 @@ Creates a recorder instance.
 ---------
 #### General Config options
 
-- **bufferLength**                - (*optional*) The length of the buffer that the internal JavaScriptNode uses to capture the audio. Can be tweaked if experiencing performance issues. Defaults to `4096`.
-- **encoderPath**                 - (*optional*) Path to `encoderWorker.min.js` or `waveWorker.min.js` worker script. Defaults to `encoderWorker.min.js`
+- **bufferLength**                - (*optional*) The length of the buffer that the scriptProcessorNode uses to capture the audio. Defaults to `4096`.
+- **encoderPath**                 - (*optional*) Path to desired worker script. Defaults to `encoderWorker.min.js`
 - **mediaTrackConstraints**       - (*optional*) Object to specify [media track constraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints). Defaults to `true`.
 - **monitorGain**                 - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between `0` and `1`. Defaults to `0`
 - **numberOfChannels**            - (*optional*) The number of channels to record. `1` = mono, `2` = stereo. Defaults to `1`. Maximum `2` channels are supported.
@@ -52,7 +52,6 @@ Creates a recorder instance.
 - **originalSampleRateOverride**  - (*optional*) Override the ogg opus 'input sample rate' field. Google Speech API requires this field to be `16000`.
 - **resampleQuality**             - (*optional*) Value between 0 and 10 which determines latency and processing for resampling. `0` is fastest with lowest quality. `10` is slowest with highest quality. Defaults to `3`.
 - **streamPages**                 - (*optional*) `dataAvailable` event will fire after each encoded page. Defaults to `false`.
-- **reuseWorker**                 - (*optional*) If true, the worker is not automatically destroyed when `stop` is called. Instead, it is reused for subsequent `start` calls and must be explicitly destroyed after stopping by calling `destroyWorker`. Defaults to `false`. 
 
 
 #### Config options for WAV recorder
@@ -100,18 +99,6 @@ rec.stop()
 
 **stop** will cease capturing audio and disable the monitoring and mic input stream. Will request the recorded data and then terminate the worker once the final data has been published. Will call the `onstop` callback when stopped.
 
-```js
-rec.destroyWorker()
-```
-
-**destroyWorker** will destroy the worker freeing up the browser resources. If the recorder is re-started, a new worker will be created. Note that `destroyWorker` is automatically called when stopping unless `reuseWorker` is true.
-
-```js
-rec.loadWorker()
-```
-
-**loadWorker** triggers pre-loading of the worker. This can reduce the startup latency when calling `start`. Call `destroyWorker` to clean the worker when the recorder is stopped/not started, or it will be automatically cleaned up after stopping unless `reuseWorker` is true.
-
 ---------
 #### Instance Fields
 
@@ -129,6 +116,15 @@ Recorder.isRecordingSupported()
 ```
 
 Returns a truthy value indicating if the browser supports recording.
+
+
+#### Static Properties
+
+```js
+Recorder.version
+```
+
+The version of the library.
 
 
 ---------
@@ -164,14 +160,38 @@ rec.onstop()
 
 A callback which occurs when media recording ends.
 
+---------
+### Getting started with webpack
+- To use in a web-app built with webpack, be sure to load the worker files as a chunk. This can be done with file-loader plugin.
+
+Add to your webpack.config.js before all other loaders.
+```js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /encoderWorker\.min\.js$/,
+        use: [{ loader: 'file-loader' }]
+      }
+    ]
+  }
+};
+```
+
+Then get the encoderPath using an import
+```js
+import Recorder from 'opus-recorder';
+import encoderPath from 'opus-recorder/dist/encoderWorker.min.js';
+
+const rec = new Recorder({ encoderPath });
+```
+
 
 ---------
 ### Gotchas
 - To be able to read the mic stream, the page must be served over https
-- iOS Safari requires `rec.start()` to be called from a user initiated event
-- macOS Safari v11 native opus playback is not yet supported
-- iOS Safari v11 native opus playback is not yet supported
-- Microsoft Edge native opus playback is not yet supported
+- macOS and iOS Safari requires `rec.start()` to be called from a user initiated event. Otherwise the mic stream will be empty with no logged errors
+- macOS and iOS Safari native opus playback is not yet supported
 
 
 ---------

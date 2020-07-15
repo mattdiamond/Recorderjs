@@ -1,66 +1,12 @@
 "use strict";
 
-var encoder;
-var mainReadyResolve;
-var mainReady = new Promise(function(resolve){ mainReadyResolve = resolve; });
-
-global['onmessage'] = function( e ){
-  mainReady.then(function(){
-    switch( e['data']['command'] ){
-
-      case 'encode':
-        if (encoder){
-          encoder.encode( e['data']['buffers'] );
-        }
-        break;
-
-      case 'getHeaderPages':
-        if (encoder){
-          encoder.generateIdPage();
-          encoder.generateCommentPage();
-        }
-        break;
-
-      case 'done':
-        if (encoder) {
-          encoder.encodeFinalFrame();
-          global['postMessage']( {message: 'done'} );
-        }
-        break;
-
-      case 'close':
-        global['close']();
-        break;
-
-      case 'flush':
-        if (encoder) {
-          encoder.flush();
-        }
-        break;
-
-      case 'init':
-        if ( encoder ) {
-          encoder.destroy();
-        }
-        encoder = new OggOpusEncoder( e['data'], Module );
-        global['postMessage']( {message: 'ready'} );
-        break;
-
-      default:
-        // Ignore any unknown commands and continue recieving commands
-    }
-  });
-};
-
-
-var OggOpusEncoder = function( config, Module ){
+const OggOpusEncoder = function( config, Module ){
 
   if ( !Module ) {
     throw new Error('Module with exports required to initialize an encoder instance');
   }
 
   this.config = Object.assign({ 
-    bufferLength: 4096, // Define size of incoming buffer
     encoderApplication: 2049, // 2048 = Voice (Lower fidelity)
                               // 2049 = Full Band Audio (Highest fidelity)
                               // 2051 = Restricted Low Delay (Lowest latency)
@@ -101,15 +47,19 @@ var OggOpusEncoder = function( config, Module ){
   if ( this.config.numberOfChannels === 1 ) {
     this.interleave = function( buffers ) { return buffers[0]; };
   }
-  else {
-    this.interleavedBuffers = new Float32Array( this.config.bufferLength * this.config.numberOfChannels );
-  }
-
 };
 
 OggOpusEncoder.prototype.encode = function( buffers ) {
+
+  // Determine bufferLength dynamically
+  if ( !this.bufferLength ) {
+    this.bufferLength = buffers[0].length;
+    this.interleavedBuffers = new Float32Array( this.bufferLength * this.config.numberOfChannels );
+  }
+
   var samples = this.interleave( buffers );
   var sampleIndex = 0;
+  var exportPages = [];
 
   while ( sampleIndex < samples.length ) {
 
@@ -121,15 +71,17 @@ OggOpusEncoder.prototype.encode = function( buffers ) {
     if ( this.resampleBufferIndex === this.resampleBufferLength ) {
       this._speex_resampler_process_interleaved_float( this.resampler, this.resampleBufferPointer, this.resampleSamplesPerChannelPointer, this.encoderBufferPointer, this.encoderSamplesPerChannelPointer );
       var packetLength = this._opus_encode_float( this.encoder, this.encoderBufferPointer, this.encoderSamplesPerChannel, this.encoderOutputPointer, this.encoderOutputMaxLength );
-      this.segmentPacket( packetLength );
+      exportPages.concat(this.segmentPacket( packetLength ));
       this.resampleBufferIndex = 0;
 
       this.framesInPage++;
       if ( this.framesInPage >= this.config.maxFramesPerPage ) {
-        this.generatePage();
+        exportPages.push( this.generatePage() );
       }
     }
   }
+
+  return exportPages;
 };
 
 OggOpusEncoder.prototype.destroy = function() {
@@ -152,24 +104,35 @@ OggOpusEncoder.prototype.destroy = function() {
 };
 
 OggOpusEncoder.prototype.flush = function() {
+  var exportPage;
   if ( this.framesInPage ) {
-    this.generatePage();
+    exportPage = this.generatePage();
   }
   // discard any pending data in resample buffer (only a few ms worth)
   this.resampleBufferIndex = 0;
-  global['postMessage']( {message: 'flushed'} );
+  return exportPage;
 };
 
 OggOpusEncoder.prototype.encodeFinalFrame = function() {
+  const exportPages = [];
+
+  // Encode the data remaining in the resample buffer.
   if ( this.resampleBufferIndex > 0 ) {
-    var finalFrameBuffers = [];
-    for ( var i = 0; i < this.config.numberOfChannels; ++i ) {
-      finalFrameBuffers.push( new Float32Array( this.config.bufferLength - (this.resampleBufferIndex / this.config.numberOfChannels) ));
+    const dataToFill = (this.resampleBufferLength - this.resampleBufferIndex) / this.config.numberOfChannels;
+    const numBuffers = Math.ceil(dataToFill / this.bufferLength);
+
+    for ( var i = 0; i < numBuffers; i++ ) { 
+      var finalFrameBuffers = [];
+      for ( var j = 0; j < this.config.numberOfChannels; j++ ) {
+        finalFrameBuffers.push( new Float32Array( this.bufferLength ));
+      }
+      exportPages.concat(this.encode( finalFrameBuffers ));
     }
-    this.encode( finalFrameBuffers );
   }
+
   this.headerType += 4;
-  this.generatePage();
+  exportPages.push(this.generatePage());
+  return exportPages;
 };
 
 OggOpusEncoder.prototype.getChecksum = function( data ){
@@ -192,7 +155,7 @@ OggOpusEncoder.prototype.generateCommentPage = function(){
   this.segmentTableIndex = 1;
   this.segmentDataIndex = this.segmentTable[0] = 26;
   this.headerType = 0;
-  this.generatePage();
+  return this.generatePage();
 };
 
 OggOpusEncoder.prototype.generateIdPage = function(){
@@ -208,7 +171,7 @@ OggOpusEncoder.prototype.generateIdPage = function(){
   this.segmentTableIndex = 1;
   this.segmentDataIndex = this.segmentTable[0] = 19;
   this.headerType = 2;
-  this.generatePage();
+  return this.generatePage();
 };
 
 OggOpusEncoder.prototype.generatePage = function(){
@@ -238,13 +201,15 @@ OggOpusEncoder.prototype.generatePage = function(){
   page.set( this.segmentData.subarray(0, this.segmentDataIndex), 27 + this.segmentTableIndex ); // Segment Data
   pageBufferView.setUint32( 22, this.getChecksum( page ), true ); // Checksum
 
-  global['postMessage']( {message: 'page', page: page, samplePosition: this.granulePosition}, [page.buffer] );
+  var exportPage = { message: 'page', page: page, samplePosition: this.granulePosition };
   this.segmentTableIndex = 0;
   this.segmentDataIndex = 0;
   this.framesInPage = 0;
   if ( granulePosition > 0 ) {
     this.lastPositiveGranulePosition = granulePosition;
   }
+
+  return exportPage;
 };
 
 OggOpusEncoder.prototype.initChecksumTable = function(){
@@ -307,7 +272,7 @@ OggOpusEncoder.prototype.initResampler = function() {
 };
 
 OggOpusEncoder.prototype.interleave = function( buffers ) {
-  for ( var i = 0; i < this.config.bufferLength; i++ ) {
+  for ( var i = 0; i < this.bufferLength; i++ ) {
     for ( var channel = 0; channel < this.config.numberOfChannels; channel++ ) {
       this.interleavedBuffers[ i * this.config.numberOfChannels + channel ] = buffers[ channel ][ i ];
     }
@@ -318,11 +283,12 @@ OggOpusEncoder.prototype.interleave = function( buffers ) {
 
 OggOpusEncoder.prototype.segmentPacket = function( packetLength ) {
   var packetIndex = 0;
+  var exportPages = [];
 
   while ( packetLength >= 0 ) {
 
     if ( this.segmentTableIndex === 255 ) {
-      this.generatePage();
+      exportPages.push( this.generatePage() );
       this.headerType = 1;
     }
 
@@ -336,18 +302,144 @@ OggOpusEncoder.prototype.segmentPacket = function( packetLength ) {
 
   this.granulePosition += ( 48 * this.config.encoderFrameSize );
   if ( this.segmentTableIndex === 255 ) {
-    this.generatePage();
+    exportPages.push( this.generatePage() );
     this.headerType = 0;
   }
+
+  return exportPages;
 };
 
 
-if (!Module) {
-  Module = {};
+// Run in AudioWorkletGlobal scope
+if (typeof registerProcessor === 'function') {
+
+  class EncoderWorklet extends AudioWorkletProcessor {
+
+    constructor(){
+      super();
+      this.continueProcess = true;
+      this.port.onmessage = ({ data }) => {
+        if (this.encoder) {
+          switch( data['command'] ){
+
+            case 'getHeaderPages':
+              this.postPage(this.encoder.generateIdPage());
+              this.postPage(this.encoder.generateCommentPage());
+              break;
+
+            case 'done':
+              this.encoder.encodeFinalFrame().forEach(pageData => this.postPage(pageData));
+              this.port.postMessage( {message: 'done'} );
+              break;
+
+            case 'flush':
+              this.postPage(this.encoder.flush());
+              this.port.postMessage( {message: 'flushed'} );
+              break;
+
+            default:
+              // Ignore any unknown commands and continue recieving commands
+          }
+        }
+
+        switch( data['command'] ){
+
+          case 'close':
+            this.continueProcess = false;
+            break;
+
+          case 'init':
+            if ( this.encoder ) {
+              this.encoder.destroy();
+            }
+            this.encoder = new OggOpusEncoder( data, Module );
+            this.port.postMessage( {message: 'ready'} );
+            break;
+
+          default:
+            // Ignore any unknown commands and continue recieving commands
+        }
+      }
+    }
+
+    process(inputs) {
+      if (this.encoder && inputs[0] && inputs[0].length){
+        this.encoder.encode( inputs[0] ).forEach(pageData => this.postPage(pageData));
+      }
+      return this.continueProcess;
+    }
+
+    postPage(pageData) {
+      if (pageData) {
+        this.port.postMessage( pageData, [pageData.page.buffer] );
+      }
+    }
+  }
+
+  registerProcessor('encoder-worklet', EncoderWorklet);
 }
 
-Module['mainReady'] = mainReady;
-Module['OggOpusEncoder'] = OggOpusEncoder;
-Module['onRuntimeInitialized'] = mainReadyResolve;
+// run in scriptProcessor worker scope
+else {
+  var encoder;
+  var postPageGlobal = (pageData) => {
+    if (pageData) {
+      postMessage( pageData, [pageData.page.buffer] );
+    }
+  }
 
-module.exports = Module;
+  onmessage = ({ data }) => {
+    if (encoder) {
+      switch( data['command'] ){
+
+        case 'encode':
+          encoder.encode( data['buffers'] ).forEach(pageData => postPageGlobal(pageData));
+          break;
+
+        case 'getHeaderPages':
+          postPageGlobal(encoder.generateIdPage());
+          postPageGlobal(encoder.generateCommentPage());
+          break;
+
+        case 'done':
+          encoder.encodeFinalFrame().forEach(pageData => postPageGlobal(pageData));
+          postMessage( {message: 'done'} );
+          break;
+
+        case 'flush':
+          postPageGlobal(encoder.flush());
+          postMessage( {message: 'flushed'} );
+          break;
+
+        default:
+          // Ignore any unknown commands and continue recieving commands
+      }
+    }
+
+    switch( data['command'] ){
+
+      case 'close':
+        close();
+        break;
+
+      case 'init':
+        if ( encoder ) {
+          encoder.destroy();
+        }
+        encoder = new OggOpusEncoder( data, Module );
+        postMessage( {message: 'ready'} );
+        break;
+
+      default:
+        // Ignore any unknown commands and continue recieving commands
+    }
+  };
+}
+
+
+// Exports for unit testing.
+var module = module || {};
+module.exports = {
+  Module: Module,
+  OggOpusEncoder: OggOpusEncoder
+};

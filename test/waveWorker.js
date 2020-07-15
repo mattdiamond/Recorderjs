@@ -1,13 +1,11 @@
+var WavePCM = require('../src/waveWorker');
 var chai = require('chai');
 var sinon = require('sinon');
 
 var should = chai.should();
 var expect = chai.expect;
 
-
 describe('waveWorker', function() {
-
-  var WavePCM = require('../dist/waveWorker.min');
 
   it('should should throw an error if wavSampleRate is not defined', function () {
     expect(WavePCM).to.throw("wavSampleRate value is required to record. NOTE: Audio is not resampled!");
@@ -28,17 +26,20 @@ describe('waveWorker', function() {
     expect(wavPCM).to.have.property('sampleRate', 44100);
     expect(wavPCM).to.have.property('bitDepth', 16);
     expect(wavPCM).to.have.property('bytesPerSample', 2);
+    expect(wavPCM).to.have.property('numberOfChannels', 1);
   });
 
   it('should initialize custom config', function () {
     var wavPCM = new WavePCM({
       wavSampleRate: 44100,
-      wavBitDepth: 8
+      wavBitDepth: 8,
+      numberOfChannels: 2,
     });
 
     expect(wavPCM).to.have.property('sampleRate', 44100);
     expect(wavPCM).to.have.property('bitDepth', 8);
     expect(wavPCM).to.have.property('bytesPerSample', 1);
+    expect(wavPCM).to.have.property('numberOfChannels', 2);
   });
 
   it('should clamp float values to [-1,1]', function () {

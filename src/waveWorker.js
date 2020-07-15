@@ -1,41 +1,10 @@
 "use strict";
-  
-var recorder;
 
-global['onmessage'] = function( e ){
-  switch( e['data']['command'] ){
-
-    case 'encode':
-      if (recorder) {
-        recorder.record( e['data']['buffers'] );
-      }
-      break;
-
-    case 'done':
-      if (recorder) {
-        recorder.requestData();
-        recorder = null;
-      }
-      break;
-
-    case 'close':
-      global['close']();
-      break;
-
-    case 'init':
-      recorder = new WavePCM( e['data'] );
-      global['postMessage']( {message: 'ready'} );
-      break;
-
-    default:
-      // Ignore any unknown commands and continue recieving commands
-  }
-};
-
-var WavePCM = function( config ){
+const WavePCM = function( config ){
 
   var config = Object.assign({
-    wavBitDepth: 16
+    wavBitDepth: 16,
+    numberOfChannels: 1,
   }, config);
 
   if ( !config['wavSampleRate'] ) {
@@ -46,6 +15,7 @@ var WavePCM = function( config ){
     throw new Error("Only 8, 16, 24 and 32 bits per sample are supported");
   }
 
+  this.numberOfChannels = config['numberOfChannels'];
   this.bitDepth = config['wavBitDepth'];
   this.sampleRate = config['wavSampleRate'];
   this.recordedBuffers = [];
@@ -53,7 +23,6 @@ var WavePCM = function( config ){
 };
 
 WavePCM.prototype.record = function( buffers ){
-  this.numberOfChannels = this.numberOfChannels || buffers.length;
   var bufferLength = buffers[0].length;
   var reducedData = new Uint8Array( bufferLength * this.numberOfChannels * this.bytesPerSample );
 
@@ -127,8 +96,104 @@ WavePCM.prototype.requestData = function(){
     wav.set( this.recordedBuffers[i], i * bufferLength + headerLength );
   }
 
-  global['postMessage']( {message: 'page', page: wav}, [wav.buffer] );
-  global['postMessage']( {message: 'done'} );
+  return {message: 'page', page: wav};
 };
 
-module.exports = WavePCM
+
+// Run in AudioWorkletGlobal scope
+if (typeof registerProcessor === 'function') {
+
+  class EncoderWorklet extends AudioWorkletProcessor {
+
+    constructor(){
+      super();
+      this.continueProcess = true;
+      this.port.onmessage = ({ data }) => {
+        switch( data['command'] ){
+
+          case 'done':
+            if (this.recorder) {
+              this.postPage(this.recorder.requestData());
+              this.port.postMessage( {message: 'done'} );
+              delete this.recorder;
+            }
+            break;
+
+          case 'close':
+            this.continueProcess = false;
+            break;
+
+          case 'init':
+            this.recorder = new WavePCM( data );
+            this.port.postMessage( {message: 'ready'} );
+            break;
+
+          default:
+            // Ignore any unknown commands and continue recieving commands
+        }
+      }
+    }
+
+    process(inputs) {
+      if (this.recorder && inputs[0] && inputs[0].length){
+        this.recorder.record( inputs[0] );
+      }
+      return this.continueProcess;
+    }
+
+    postPage(pageData) {
+      if (pageData) {
+        this.port.postMessage( pageData, [pageData.page.buffer] );
+      }
+    }
+  }
+
+  registerProcessor('encoder-worklet', EncoderWorklet);
+}
+
+// run in scriptProcessor worker scope
+else {
+  var recorder;
+  var postPageGlobal = (pageData) => {
+    if (pageData) {
+      postMessage( pageData, [pageData.page.buffer] );
+    }
+  }
+
+  onmessage = ({ data }) => {
+
+    switch( data['command'] ){
+
+      case 'encode':
+        if (recorder) {
+          recorder.record( data['buffers'] );
+        }
+        break;
+
+      case 'done':
+        if (recorder) {
+          postPageGlobal(recorder.requestData());
+          postMessage( {message: 'done'} );
+          recorder = null;
+        }
+        break;
+
+      case 'close':
+        close();
+        break;
+
+      case 'init':
+        recorder = new WavePCM( data );
+        postMessage( {message: 'ready'} );
+        break;
+
+      default:
+        // Ignore any unknown commands and continue recieving commands
+    }
+  };
+}
+
+
+// Exports for unit testing.
+var module = module || {};
+module.exports = WavePCM;
