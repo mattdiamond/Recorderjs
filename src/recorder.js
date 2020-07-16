@@ -63,6 +63,7 @@ Recorder.prototype.clearStream = function(){
 
 Recorder.prototype.close = function() {
   this.clearStream();
+
   if (this.encoder) {
     this.encoder.postMessage({ command: "close" });
   }

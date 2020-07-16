@@ -77,6 +77,8 @@ describe('Recorder', function(){
 
     global.AudioContext = sinon.stub();
 
+    global.AudioContext.prototype.resume = sinon.stub().resolves();
+
     global.AudioContext.prototype.createGain = () => {
       return {
         connect: sinon.stub(),
@@ -98,7 +100,7 @@ describe('Recorder', function(){
     });
 
     global.AudioContext.prototype.sampleRate = 44100;
-    global.AudioContext.prototype.close = sinon.stub();
+    global.AudioContext.prototype.close = sinon.stub().resolves();
     global.AudioContext.prototype.audioWorklet = {
       addModule: sinon.stub().resolves()
     };
@@ -245,6 +247,7 @@ describe('Recorder', function(){
   it('should start recording', function(){
     var rec = new Recorder();
     return rec.start().then( function(){
+      expect(rec.audioContext.resume).to.have.been.calledOnce;
       expect(rec.audioContext.audioWorklet.addModule).to.have.been.calledOnce;
       expect(global.AudioWorkletNode).to.have.been.calledWithNew;
       expect(rec.encoder.addEventListener).to.have.been.calledOnce;
@@ -298,34 +301,32 @@ describe('Recorder', function(){
 
   it('should close the audio context', function () {
     var rec = new Recorder();
-    return rec.start().then(function(){
-      expect(rec.audioContext).to.not.be.undefined;
-      rec.stop();
-      expect(rec.audioContext).to.be.undefined;
-      expect(global.AudioContext.prototype.close).to.have.been.calledOnce;
+    return rec.close().then(function(){
+      expect(rec.stream).to.be.undefined;
+      expect(rec.audioContext.close).to.have.been.calledOnce;
     });
   });
 
   it('should start recording with a supplied audio stream', function(){
-    var rec = new Recorder();
     var context = new AudioContext();
     var stream = context.createMediaStreamSource();
     stream.context = context;
-    return rec.start(stream).then( function(){
+
+    var rec = new Recorder({sourceNode: stream});
+    return rec.start().then( function(){
       expect(rec.stream).to.be.undefined;
-      expect(rec.sourceNode).not.to.be.undefined;
+      expect(rec.config.sourceNode).not.to.be.undefined;
     });
   });
 
   it('should not close the audio context with supplied audio stream', function () {
-    var rec = new Recorder();
     var context = new AudioContext();
     var stream = context.createMediaStreamSource();
     stream.context = context;
-    return rec.start(stream).then(function(){
-      expect(rec.audioContext).to.not.be.undefined;
-      rec.stop();
-      expect(rec.audioContext).not.to.be.undefined;
+
+    var rec = new Recorder({sourceNode: stream});
+    return rec.close().then(function(){
+      expect(rec.stream).to.be.undefined;
       expect(global.AudioContext.prototype.close).not.to.have.been.called;
     });
   });
@@ -362,7 +363,6 @@ describe('Recorder', function(){
       expect(rec.sourceNode.disconnect).to.have.been.calledOnce;;
       expect(clearStreamSpy).to.have.been.calledOnce;
       expect(rec.stream).to.be.undefined;
-      expect(rec.audioContext).to.be.undefined;
       expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
     });
   });
@@ -384,7 +384,6 @@ describe('Recorder', function(){
         expect(clearStreamSpy).to.have.been.calledOnce;
         expect(finishSpy).to.have.been.calledOnce;
         expect(rec.stream).to.be.undefined;
-        expect(rec.audioContext).to.be.undefined;
         expect(rec.onstop).to.have.been.calledOnce;
         expect(encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
       });
