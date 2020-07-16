@@ -32,7 +32,6 @@ var Recorder = function( config = {} ){
 
   this.encodedSamplePosition = 0;
   this.initAudioContext();
-  this.initGainNodes();
   this.initialize = this.initWorklet().then(() => this.initEncoder());
 };
 
@@ -68,7 +67,7 @@ Recorder.prototype.close = function() {
     this.encoder.postMessage({ command: "close" });
   }
 
-  if ( this.closeAudioContext ){
+  if ( !this.config.sourceNode.context ){
     return this.audioContext.close();
   }
 
@@ -91,9 +90,6 @@ Recorder.prototype.encodeBuffers = function( inputBuffer ){
 
 Recorder.prototype.initAudioContext = function(){
   this.audioContext = this.config.sourceNode.context ? this.config.sourceNode.context : new AudioContext();
-};
-
-Recorder.prototype.initGainNodes = function(){
 
   this.monitorGainNode = this.audioContext.createGain();
   this.setMonitorGain( this.config.monitorGain );
