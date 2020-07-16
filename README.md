@@ -68,7 +68,7 @@ Creates a recorder instance.
 rec.close()
 ```
 
-**close** will close the audioContext and destroy the workers. A new Recorder instance will be required for additional recordings.
+**close** will close the audioContext and destroy the workers and clear the stream. A new Recorder instance will be required for additional recordings. if a sourceNode was provided in the initial config, then the implementation will need to close the audioContext and clear the stream.
 
 ```js
 rec.pause([flush])

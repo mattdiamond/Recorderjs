@@ -125,7 +125,7 @@ Recorder.prototype.initSourceNode = function(){
       return global.Promise.resolve( this.config.sourceNode );
     }
 
-    return global.navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( ( stream ) => {
+    return global.navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( stream => {
       this.stream = stream;
       return this.audioContext.createMediaStreamSource( stream );
     });
@@ -162,11 +162,14 @@ Recorder.prototype.initWorker = function(){
       this.encoder.start()
     }
 
+    // exclude sourceNode
+    const {sourceNode, ...config} = this.config;
+
     this.encoder.postMessage( Object.assign({
       command: 'init',
       originalSampleRate: this.audioContext.sampleRate,
       wavSampleRate: this.audioContext.sampleRate
-    }, this.config));
+    }, config));
   });
 };
 
