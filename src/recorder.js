@@ -63,8 +63,10 @@ Recorder.prototype.clearStream = function(){
 };
 
 Recorder.prototype.close = function() {
-  this.encoder.postMessage({ command: "close" });
   this.clearStream();
+  if (this.encoder) {
+    this.encoder.postMessage({ command: "close" });
+  }
 
   if ( this.closeAudioContext ){
     return this.audioContext.close();
@@ -167,7 +169,7 @@ Recorder.prototype.initWorker = function(){
       originalSampleRate: this.audioContext.sampleRate,
       wavSampleRate: this.audioContext.sampleRate
     }, this.config));
-  };
+  });
 };
 
 Recorder.prototype.initWorklet = function() {

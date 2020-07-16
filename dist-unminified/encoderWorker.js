@@ -2592,7 +2592,10 @@ if (typeof registerProcessor === 'function') {
               break;
 
             case 'done':
+              this.continueProcess = false;
               this.encoder.encodeFinalFrame().forEach(pageData => this.postPage(pageData));
+              this.encoder.destroy();
+              delete this.encoder;
               this.port.postMessage( {message: 'done'} );
               break;
 
@@ -2613,9 +2616,6 @@ if (typeof registerProcessor === 'function') {
             break;
 
           case 'init':
-            if ( this.encoder ) {
-              this.encoder.destroy();
-            }
             this.encoder = new OggOpusEncoder( data, Module );
             this.port.postMessage( {message: 'ready'} );
             break;
@@ -2667,6 +2667,8 @@ else {
 
         case 'done':
           encoder.encodeFinalFrame().forEach(pageData => postPageGlobal(pageData));
+          encoder.destroy();
+          encoder = null;
           postMessage( {message: 'done'} );
           break;
 
@@ -2687,9 +2689,6 @@ else {
         break;
 
       case 'init':
-        if ( encoder ) {
-          encoder.destroy();
-        }
         encoder = new OggOpusEncoder( data, Module );
         postMessage( {message: 'ready'} );
         break;
