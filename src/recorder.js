@@ -119,15 +119,16 @@ Recorder.prototype.initEncoder = function() {
 };
 
 Recorder.prototype.initSourceNode = function(){
-  if ( this.config.sourceNode.context ) {
-    return global.Promise.resolve( this.config.sourceNode );
-  }
+  return this.audioContext.resume().then(() => {
+    if ( this.config.sourceNode.context ) {
+      return global.Promise.resolve( this.config.sourceNode );
+    }
 
-  return global.navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( ( stream ) => {
-    this.stream = stream;
-    return this.audioContext.createMediaStreamSource( stream );
+    return global.navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( ( stream ) => {
+      this.stream = stream;
+      return this.audioContext.createMediaStreamSource( stream );
+    });
   });
-
 };
 
 Recorder.prototype.initWorker = function(){

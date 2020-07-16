@@ -328,7 +328,6 @@ if (typeof registerProcessor === 'function') {
               break;
 
             case 'done':
-              this.continueProcess = false;
               this.encoder.encodeFinalFrame().forEach(pageData => this.postPage(pageData));
               this.encoder.destroy();
               delete this.encoder;
@@ -363,7 +362,7 @@ if (typeof registerProcessor === 'function') {
     }
 
     process(inputs) {
-      if (this.encoder && inputs[0] && inputs[0].length){
+      if (this.encoder && inputs[0] && inputs[0].length && inputs[0][0] && inputs[0][0].length){
         this.encoder.encode( inputs[0] ).forEach(pageData => this.postPage(pageData));
       }
       return this.continueProcess;

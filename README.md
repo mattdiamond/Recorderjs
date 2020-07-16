@@ -95,10 +95,10 @@ rec.setMonitorGain( gain )
 **setMonitorGain** will set the volume on what will be passed to the monitor. Monitor level does not affect the recording volume. Gain is an a-weighted value between `0` and `1`.
 
 ```js
-rec.start( [sourceNode] )
+rec.start()
 ```
 
-**start** Initalizes the worker, audio context, and an audio stream and begin capturing audio. Returns a promise which resolves when recording is started. Will callback `onstart` when started. Optionally accepts a source node which can be used in place of initializing the microphone stream. For iOS support, `start` needs to be initiated from a user action.
+**start** resumes the audio context, and will begin capturing audio. Returns a promise which resolves when recording is started. Will callback `onstart` when started. `start` needs to be initiated from a user action (click) so that the audioContext can be resumed and the stream can have audio data.
 
 ```js
 rec.stop()
