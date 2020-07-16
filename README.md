@@ -39,6 +39,7 @@ Creates a recorder instance.
 - **monitorGain**                 - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between `0` and `1`. Defaults to `0`
 - **numberOfChannels**            - (*optional*) The number of channels to record. `1` = mono, `2` = stereo. Defaults to `1`. Maximum `2` channels are supported.
 - **recordingGain**               - (*optional*) Sets the gain of the recording input. Gain is an a-weighted value between `0` and `1`. Defaults to `1`
+- **sourceNode**                  - (*optional*) An Instance of MediaStreamAudioSourceNode to use. If a sourceNode is provided, then the stream and audioContext will need to be managed by the implementation.
 
 
 #### Config options for OGG OPUS encoder
@@ -62,6 +63,12 @@ Creates a recorder instance.
 ---------
 #### Instance Methods
 
+
+```js
+rec.close()
+```
+
+**close** will close the audioContext and destroy the workers. A new Recorder instance will be required for additional recordings.
 
 ```js
 rec.pause([flush])
@@ -91,7 +98,7 @@ rec.setMonitorGain( gain )
 rec.start( [sourceNode] )
 ```
 
-**start** Initalizes the worker, audio context, and an audio stream and begin capturing audio. Returns a promise which resolves when recording is started. Will callback `onstart` when started. Optionally accepts a source node which can be used in place of initializing the microphone stream. For iOS support, `start` needs to be initiated from a user action. If a sourceNode is provided, then the stream and audioContext will need to be managed by the implementation.
+**start** Initalizes the worker, audio context, and an audio stream and begin capturing audio. Returns a promise which resolves when recording is started. Will callback `onstart` when started. Optionally accepts a source node which can be used in place of initializing the microphone stream. For iOS support, `start` needs to be initiated from a user action.
 
 ```js
 rec.stop()
