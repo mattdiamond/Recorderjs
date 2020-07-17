@@ -2573,7 +2573,6 @@ OggOpusEncoder.prototype.segmentPacket = function( packetLength ) {
   return exportPages;
 };
 
-
 // Run in AudioWorkletGlobal scope
 if (typeof registerProcessor === 'function') {
 
@@ -2652,6 +2651,7 @@ else {
   }
 
   onmessage = ({ data }) => {
+    console.log(data);
     if (encoder) {
       switch( data['command'] ){
 

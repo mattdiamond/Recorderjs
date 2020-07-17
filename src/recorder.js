@@ -120,15 +120,13 @@ Recorder.prototype.initEncoder = function() {
 };
 
 Recorder.prototype.initSourceNode = function(){
-  return this.audioContext.resume().then(() => {
-    if ( this.config.sourceNode.context ) {
-      return global.Promise.resolve( this.config.sourceNode );
-    }
+  if ( this.config.sourceNode.context ) {
+    return Promise.resolve( this.config.sourceNode );
+  }
 
-    return global.navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( stream => {
-      this.stream = stream;
-      return this.audioContext.createMediaStreamSource( stream );
-    });
+  return navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( stream => {
+    this.stream = stream;
+    return this.audioContext.createMediaStreamSource( stream );
   });
 };
 
@@ -240,9 +238,11 @@ Recorder.prototype.start = function(){
   if ( this.state === "inactive" ) {
     this.encodedSamplePosition = 0;
 
-    return this.initialize
+    return this.audioContext.resume()
+      .then(() => this.initialize)
       .then(() => Promise.all([this.initSourceNode(), this.initWorker()]))
       .then(([sourceNode]) => {
+        console.log(this.audioContext);
         this.state = "recording";
         this.encoder.postMessage({ command: 'getHeaderPages' });
 
