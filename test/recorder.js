@@ -290,15 +290,6 @@ describe('Recorder', function(){
     });
   });
 
-  it('should clear the audio stream', function () {
-    var rec = new Recorder();
-    return rec.start().then(function(){
-      expect(rec.stream).to.not.be.undefined;
-      rec.stop();
-      expect(rec.stream).to.be.undefined;
-    });
-  });
-
   it('should close the audio context', function () {
     var rec = new Recorder();
     return rec.close().then(function(){
@@ -347,7 +338,6 @@ describe('Recorder', function(){
       rec.stop();
       expect(stopTrack1).to.have.been.calledOnce;
       expect(stopTrack2).to.have.been.calledOnce;
-      expect(rec.stream).to.be.undefined;
     });
   });
 
@@ -358,11 +348,8 @@ describe('Recorder', function(){
       rec.stop();
       expect(rec.state).to.equal('inactive');
       expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.encoderNode.disconnect).to.have.been.calledOnce;
       expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.sourceNode.disconnect).to.have.been.calledOnce;;
       expect(clearStreamSpy).to.have.been.calledOnce;
-      expect(rec.stream).to.be.undefined;
       expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
     });
   });
@@ -378,12 +365,9 @@ describe('Recorder', function(){
       }).then(function() {
         expect(rec.state).to.equal('inactive');
         expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-        expect(rec.encoderNode.disconnect).to.have.been.calledOnce;
         expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
-        expect(rec.sourceNode.disconnect).to.have.been.calledOnce;
         expect(clearStreamSpy).to.have.been.calledOnce;
         expect(finishSpy).to.have.been.calledOnce;
-        expect(rec.stream).to.be.undefined;
         expect(rec.onstop).to.have.been.calledOnce;
         expect(encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
       });

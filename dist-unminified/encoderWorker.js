@@ -2651,7 +2651,6 @@ else {
   }
 
   onmessage = ({ data }) => {
-    console.log(data);
     if (encoder) {
       switch( data['command'] ){
 

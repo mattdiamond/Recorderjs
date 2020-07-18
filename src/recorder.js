@@ -56,15 +56,21 @@ Recorder.prototype.clearStream = function(){
     else {
       this.stream.stop();
     }
-
-    delete this.stream;
   }
 };
 
 Recorder.prototype.close = function() {
+  this.monitorGainNode.disconnect();
+  this.recordingGainNode.disconnect();
+
+  if (this.sourceNode) {
+    this.sourceNode.disconnect();
+  }
+
   this.clearStream();
 
   if (this.encoder) {
+    this.encoderNode.disconnect();
     this.encoder.postMessage({ command: "close" });
   }
 
@@ -116,17 +122,19 @@ Recorder.prototype.initEncoder = function() {
     this.encoderNode.onaudioprocess = ({ inputBuffer }) => this.encodeBuffers( inputBuffer );
     this.encoder = new global.Worker(this.config.encoderPath);
   }
-
 };
 
 Recorder.prototype.initSourceNode = function(){
   if ( this.config.sourceNode.context ) {
-    return Promise.resolve( this.config.sourceNode );
+    if ( !this.sourceNode ) {
+      this.sourceNode = this.config.sourceNode;
+    }
+    return Promise.resolve();
   }
 
-  return navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( stream => {
+  return global.navigator.mediaDevices.getUserMedia({ audio : this.config.mediaTrackConstraints }).then( stream => {
     this.stream = stream;
-    return this.audioContext.createMediaStreamSource( stream );
+    this.sourceNode = this.audioContext.createMediaStreamSource( stream );
   });
 };
 
@@ -241,12 +249,10 @@ Recorder.prototype.start = function(){
     return this.audioContext.resume()
       .then(() => this.initialize)
       .then(() => Promise.all([this.initSourceNode(), this.initWorker()]))
-      .then(([sourceNode]) => {
-        console.log(this.audioContext);
+      .then(() => {
         this.state = "recording";
         this.encoder.postMessage({ command: 'getHeaderPages' });
 
-        this.sourceNode = sourceNode;
         this.sourceNode.connect( this.monitorGainNode );
         this.sourceNode.connect( this.recordingGainNode );
         this.monitorGainNode.connect( this.audioContext.destination );
@@ -267,9 +273,7 @@ Recorder.prototype.stop = function(){
   if ( this.state !== "inactive" ) {
     this.state = "inactive";
     this.monitorGainNode.disconnect();
-    this.encoderNode.disconnect();
     this.recordingGainNode.disconnect();
-    this.sourceNode.disconnect();
     this.clearStream();
 
     return new Promise(resolve => {
