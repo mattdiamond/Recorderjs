@@ -348,7 +348,7 @@ describe('Recorder', function(){
       rec.stop();
       expect(rec.state).to.equal('inactive');
       expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-      expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
+      expect(rec.recordingGainNode.connect).to.have.been.calledTwice;
       expect(clearStreamSpy).to.have.been.calledOnce;
       expect(rec.encoder.postMessage).to.have.been.calledWithMatch({ command: 'done' });
     });
@@ -365,7 +365,7 @@ describe('Recorder', function(){
       }).then(function() {
         expect(rec.state).to.equal('inactive');
         expect(rec.monitorGainNode.disconnect).to.have.been.calledOnce;
-        expect(rec.recordingGainNode.disconnect).to.have.been.calledOnce;
+        expect(rec.recordingGainNode.connect).to.have.been.calledTwice;
         expect(clearStreamSpy).to.have.been.calledOnce;
         expect(finishSpy).to.have.been.calledOnce;
         expect(rec.onstop).to.have.been.calledOnce;
