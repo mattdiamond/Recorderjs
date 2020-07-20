@@ -81,8 +81,8 @@
     }
 
     else {
-      // init.addEventListener( "click", function(){
-      (async function test() {
+      init.addEventListener( "click", function(){
+      // (async function test() {
         init.disabled = true;
         start.disabled = false;
         monitorGain.disabled = true;
@@ -94,19 +94,19 @@
         encoderApplication.disabled = true;
         encoderComplexity.disabled = true;
 
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const sourceNode = await navigator.mediaDevices.getUserMedia({ audio : true }).then( ( stream ) => {
-          const context = new AudioContext();
-          return context.createMediaStreamSource( stream );
-        });
+        // const AudioContext = window.AudioContext || window.webkitAudioContext;
+        // const sourceNode = await navigator.mediaDevices.getUserMedia({ audio : true }).then( ( stream ) => {
+        //   const context = new AudioContext();
+        //   return context.createMediaStreamSource( stream );
+        // });
 
         var options = {
           monitorGain: parseInt(monitorGain.value, 10),
           recordingGain: parseInt(recordingGain.value, 10),
           numberOfChannels: parseInt(numberOfChannels.value, 10),
           encoderSampleRate: parseInt(encoderSampleRate.value, 10),
-          encoderPath: "../dist-unminified/encoderWorker.js",
-          sourceNode: sourceNode
+          encoderPath: "../dist-unminified/encoderWorker.js"
+          // sourceNode: sourceNode
         };
 
         if (encoderBitRate.value) {
@@ -207,8 +207,8 @@
 
           recordingslist.appendChild(li);
         };
-      // });
-      })();
+      });
+      // })();
     }
 
   </script>

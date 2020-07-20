@@ -120,15 +120,14 @@ Recorder.prototype.initEncoder = function() {
 
     this.encoderNode = this.audioContext.createScriptProcessor( this.config.bufferLength, this.config.numberOfChannels, this.config.numberOfChannels );
     this.encoderNode.onaudioprocess = ({ inputBuffer }) => this.encodeBuffers( inputBuffer );
+    this.encoderNode.connect( this.audioContext.destination ); // Requires connection to destination to process audio
     this.encoder = new global.Worker(this.config.encoderPath);
   }
 };
 
 Recorder.prototype.initSourceNode = function(){
   if ( this.config.sourceNode.context ) {
-    if ( !this.sourceNode ) {
-      this.sourceNode = this.config.sourceNode;
-    }
+    this.sourceNode = this.config.sourceNode;
     return Promise.resolve();
   }
 
@@ -252,17 +251,10 @@ Recorder.prototype.start = function(){
       .then(() => {
         this.state = "recording";
         this.encoder.postMessage({ command: 'getHeaderPages' });
-
         this.sourceNode.connect( this.monitorGainNode );
         this.sourceNode.connect( this.recordingGainNode );
         this.monitorGainNode.connect( this.audioContext.destination );
         this.recordingGainNode.connect( this.encoderNode );
-
-        // scriptProcessor requires connection to the destination
-        if (!this.audioContext.audioWorklet) {
-          this.encoderNode.connect( this.audioContext.destination );
-        }
-
         this.onstart();
       });
   }
@@ -272,8 +264,11 @@ Recorder.prototype.start = function(){
 Recorder.prototype.stop = function(){
   if ( this.state !== "inactive" ) {
     this.state = "inactive";
+
+    // macOS and iOS requires the source to remain connected (in case stopped while paused)
+    this.recordingGainNode.connect( this.encoderNode ); 
+
     this.monitorGainNode.disconnect();
-    this.recordingGainNode.disconnect();
     this.clearStream();
 
     return new Promise(resolve => {
