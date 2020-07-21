@@ -241,6 +241,7 @@ Recorder.prototype.setMonitorGain = function( gain ){
 
 Recorder.prototype.start = function(){
   if ( this.state === "inactive" ) {
+    this.state = 'loading';
     this.encodedSamplePosition = 0;
 
     return this.audioContext.resume()
@@ -254,13 +255,17 @@ Recorder.prototype.start = function(){
         this.monitorGainNode.connect( this.audioContext.destination );
         this.recordingGainNode.connect( this.encoderNode );
         this.onstart();
+      })
+      .catch(error => {
+        this.state = 'inactive';
+        throw error;
       });
   }
   return Promise.resolve();
 };
 
 Recorder.prototype.stop = function(){
-  if ( this.state !== "inactive" ) {
+  if ( this.state === "paused" || this.state === "recording" ) {
     this.state = "inactive";
 
     // macOS and iOS requires the source to remain connected (in case stopped while paused)
