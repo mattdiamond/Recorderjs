@@ -168,6 +168,11 @@ describe('Recorder', function(){
     expect(Recorder.isRecordingSupported()).to.be.ok;
   });
 
+  it('should have version', function () {
+    const { version } = require('../package.json');
+    expect(Recorder.version).to.equal(version);
+  });
+
   it('should create an instance without config', function () {
     var rec = new Recorder();
     expect(rec.state).to.equal('inactive');
