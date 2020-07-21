@@ -1,7 +1,7 @@
 INPUT_DIR=./src
 OUTPUT_DIR=./dist
 OUTPUT_DIR_UNMINIFIED=./dist-unminified
-EMCC_OPTS=-O3 --llvm-lto 1 -s NO_DYNAMIC_EXECUTION=1 -s NO_FILESYSTEM=1
+EMCC_OPTS=-O3 -s NO_DYNAMIC_EXECUTION=1 -s NO_FILESYSTEM=1
 DEFAULT_EXPORTS:='_malloc','_free'
 
 LIBOPUS_ENCODER_SRC=$(INPUT_DIR)/encoderWorker.js
@@ -49,7 +49,7 @@ $(LIBOPUS_DIR)/autogen.sh $(LIBSPEEXDSP_DIR)/autogen.sh:
 
 $(LIBOPUS_OBJ): $(LIBOPUS_DIR)/autogen.sh
 	cd $(LIBOPUS_DIR); ./autogen.sh
-	cd $(LIBOPUS_DIR); emconfigure ./configure --disable-extra-programs --disable-doc --disable-intrinsics --disable-rtcd 
+	cd $(LIBOPUS_DIR); emconfigure ./configure --disable-extra-programs --disable-doc --disable-intrinsics --disable-rtcd --disable-stack-protector
 	cd $(LIBOPUS_DIR); emmake make
 
 $(LIBSPEEXDSP_OBJ): $(LIBSPEEXDSP_DIR)/autogen.sh
