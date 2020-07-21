@@ -2573,7 +2573,6 @@ OggOpusEncoder.prototype.segmentPacket = function( packetLength ) {
   return exportPages;
 };
 
-
 // Run in AudioWorkletGlobal scope
 if (typeof registerProcessor === 'function') {
 
@@ -2593,6 +2592,8 @@ if (typeof registerProcessor === 'function') {
 
             case 'done':
               this.encoder.encodeFinalFrame().forEach(pageData => this.postPage(pageData));
+              this.encoder.destroy();
+              delete this.encoder;
               this.port.postMessage( {message: 'done'} );
               break;
 
@@ -2613,9 +2614,6 @@ if (typeof registerProcessor === 'function') {
             break;
 
           case 'init':
-            if ( this.encoder ) {
-              this.encoder.destroy();
-            }
             this.encoder = new OggOpusEncoder( data, Module );
             this.port.postMessage( {message: 'ready'} );
             break;
@@ -2627,7 +2625,7 @@ if (typeof registerProcessor === 'function') {
     }
 
     process(inputs) {
-      if (this.encoder && inputs[0] && inputs[0].length){
+      if (this.encoder && inputs[0] && inputs[0].length && inputs[0][0] && inputs[0][0].length){
         this.encoder.encode( inputs[0] ).forEach(pageData => this.postPage(pageData));
       }
       return this.continueProcess;
@@ -2667,6 +2665,8 @@ else {
 
         case 'done':
           encoder.encodeFinalFrame().forEach(pageData => postPageGlobal(pageData));
+          encoder.destroy();
+          encoder = null;
           postMessage( {message: 'done'} );
           break;
 
@@ -2687,9 +2687,6 @@ else {
         break;
 
       case 'init':
-        if ( encoder ) {
-          encoder.destroy();
-        }
         encoder = new OggOpusEncoder( data, Module );
         postMessage( {message: 'ready'} );
         break;

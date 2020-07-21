@@ -4,7 +4,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Ogg Opus Encoder Example</title>
-  <script src="../dist/recorder.min.js"></script>
+  <script src="../dist-unminified/recorder.js"></script>
   <style type='text/css'>
     ul { list-style: none; }
     li { margin: 1em; }
@@ -63,6 +63,7 @@
   <button id="pause" disabled>Pause</button>
   <button id="resume" disabled>Resume</button>
   <button id="stopButton" disabled>Stop</button>
+  <button id="closeButton" disabled>Close</button>
 
   <h2>Recordings</h2>
   <ul id="recordingslist"></ul>
@@ -81,6 +82,7 @@
 
     else {
       init.addEventListener( "click", function(){
+      // (async function test() {
         init.disabled = true;
         start.disabled = false;
         monitorGain.disabled = true;
@@ -88,13 +90,23 @@
         numberOfChannels.disabled = true;
         encoderBitRate.disabled = true;
         encoderSampleRate.disabled = true;
+        closeButton.disabled = false;
+        encoderApplication.disabled = true;
+        encoderComplexity.disabled = true;
+
+        // const AudioContext = window.AudioContext || window.webkitAudioContext;
+        // const sourceNode = await navigator.mediaDevices.getUserMedia({ audio : true }).then( ( stream ) => {
+        //   const context = new AudioContext();
+        //   return context.createMediaStreamSource( stream );
+        // });
 
         var options = {
           monitorGain: parseInt(monitorGain.value, 10),
           recordingGain: parseInt(recordingGain.value, 10),
           numberOfChannels: parseInt(numberOfChannels.value, 10),
           encoderSampleRate: parseInt(encoderSampleRate.value, 10),
-          encoderPath: "../dist/encoderWorker.min.js"
+          encoderPath: "../dist-unminified/encoderWorker.js"
+          // sourceNode: sourceNode
         };
 
         if (encoderBitRate.value) {
@@ -111,14 +123,44 @@
 
         var recorder = new Recorder(options);
 
-        pause.addEventListener( "click", function(){ recorder.pause(); });
-        resume.addEventListener( "click", function(){ recorder.resume(); });
-        stopButton.addEventListener( "click", function(){ recorder.stop(); });
-        start.addEventListener( "click", function(){ 
+        var recorderPause = function(){ recorder.pause(); };
+        var recorderStop = function(){ recorder.stop(); };
+        var recorderResume = function(){ recorder.resume(); };
+        var recorderStart = function(){ 
           recorder.start().catch(function(e){
             screenLogger('Error encountered:', e.message );
           });
-        });
+        };
+        var recorderClose = function(){ 
+          screenLogger('Recorder is closed');
+          recorder.close();
+          init.disabled = false;
+
+          start.disabled = true;
+          pause.disabled = true;
+          stopButton.disabled = true;
+          closeButton.disabled = true;
+
+          monitorGain.disabled = false;
+          recordingGain.disabled = false;
+          numberOfChannels.disabled = false;
+          encoderBitRate.disabled = false;
+          encoderSampleRate.disabled = false
+          encoderApplication.disabled = false;
+          encoderComplexity.disabled = false;
+
+          resume.removeEventListener("click", recorderResume);
+          stopButton.removeEventListener("click", recorderStop);
+          pause.removeEventListener("click", recorderPause);
+          start.removeEventListener("click", recorderStart);
+          closeButton.removeEventListener("click", recorderClose);
+        }
+
+        pause.addEventListener( "click", recorderPause);
+        resume.addEventListener( "click", recorderResume);
+        stopButton.addEventListener( "click", recorderStop);
+        start.addEventListener( "click", recorderStart);
+        closeButton.addEventListener( "click", recorderClose);
 
         recorder.onstart = function(e){
           screenLogger('Recorder is started');
@@ -166,6 +208,7 @@
           recordingslist.appendChild(li);
         };
       });
+      // })();
     }
 
   </script>

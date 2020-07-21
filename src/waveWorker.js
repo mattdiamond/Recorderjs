@@ -135,7 +135,7 @@ if (typeof registerProcessor === 'function') {
     }
 
     process(inputs) {
-      if (this.recorder && inputs[0] && inputs[0].length){
+      if (this.recorder && inputs[0] && inputs[0].length && inputs[0][0] && inputs[0][0].length){
         this.recorder.record( inputs[0] );
       }
       return this.continueProcess;

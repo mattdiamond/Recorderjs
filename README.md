@@ -39,6 +39,7 @@ Creates a recorder instance.
 - **monitorGain**                 - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between `0` and `1`. Defaults to `0`
 - **numberOfChannels**            - (*optional*) The number of channels to record. `1` = mono, `2` = stereo. Defaults to `1`. Maximum `2` channels are supported.
 - **recordingGain**               - (*optional*) Sets the gain of the recording input. Gain is an a-weighted value between `0` and `1`. Defaults to `1`
+- **sourceNode**                  - (*optional*) An Instance of MediaStreamAudioSourceNode to use. If a sourceNode is provided, then closing the stream and audioContext will need to be managed by the implementation.
 
 
 #### Config options for OGG OPUS encoder
@@ -62,6 +63,12 @@ Creates a recorder instance.
 ---------
 #### Instance Methods
 
+
+```js
+rec.close()
+```
+
+**close** will close the audioContext, destroy the workers, disconnect the audio nodes and close the mic stream. A new Recorder instance will be required for additional recordings. if a `sourceNode` was provided in the initial config, then the implementation will need to close the audioContext and close the mic stream.
 
 ```js
 rec.pause([flush])
@@ -88,10 +95,10 @@ rec.setMonitorGain( gain )
 **setMonitorGain** will set the volume on what will be passed to the monitor. Monitor level does not affect the recording volume. Gain is an a-weighted value between `0` and `1`.
 
 ```js
-rec.start( [sourceNode] )
+rec.start()
 ```
 
-**start** Initalizes the worker, audio context, and an audio stream and begin capturing audio. Returns a promise which resolves when recording is started. Will callback `onstart` when started. Optionally accepts a source node which can be used in place of initializing the microphone stream. For iOS support, `start` needs to be initiated from a user action. If a sourceNode is provided, then the stream and audioContext will need to be managed by the implementation.
+**start** Begins a new recording. Returns a promise which resolves when recording is started. Will callback `onstart` when started. `start` ***needs to be initiated from a user action*** (click or touch) so that the audioContext can be resumed and the stream can have audio data.
 
 ```js
 rec.stop()
@@ -189,8 +196,8 @@ const rec = new Recorder({ encoderPath });
 
 ---------
 ### Gotchas
-- To be able to read the mic stream, the page must be served over https
-- macOS and iOS Safari requires `rec.start()` to be called from a user initiated event. Otherwise the mic stream will be empty with no logged errors
+- To be able to read the mic stream, the page must be served over https. Use ngrok for local development with https.
+- All browsers require that `rec.start()` to be called from a user initiated event. In iOS and macOS Safari, the mic stream will be empty with no logged errors. In Chrome and Firefox the audioContext could be suspended.
 - macOS and iOS Safari native opus playback is not yet supported
 
 
