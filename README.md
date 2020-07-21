@@ -199,6 +199,7 @@ const rec = new Recorder({ encoderPath });
 - To be able to read the mic stream, the page must be served over https. Use ngrok for local development with https.
 - All browsers require that `rec.start()` to be called from a user initiated event. In iOS and macOS Safari, the mic stream will be empty with no logged errors. In Chrome and Firefox the audioContext could be suspended.
 - macOS and iOS Safari native opus playback is not yet supported
+- The worker files need to be hosted on the same domain as the page recording as cross-domain workers and worklets are not supported.
 
 
 ---------
