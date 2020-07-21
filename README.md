@@ -39,7 +39,7 @@ Creates a recorder instance.
 - **monitorGain**                 - (*optional*) Sets the gain of the monitoring output. Gain is an a-weighted value between `0` and `1`. Defaults to `0`
 - **numberOfChannels**            - (*optional*) The number of channels to record. `1` = mono, `2` = stereo. Defaults to `1`. Maximum `2` channels are supported.
 - **recordingGain**               - (*optional*) Sets the gain of the recording input. Gain is an a-weighted value between `0` and `1`. Defaults to `1`
-- **sourceNode**                  - (*optional*) An Instance of MediaStreamAudioSourceNode to use. If a sourceNode is provided, then the stream and audioContext will need to be managed by the implementation.
+- **sourceNode**                  - (*optional*) An Instance of MediaStreamAudioSourceNode to use. If a sourceNode is provided, then closing the stream and audioContext will need to be managed by the implementation.
 
 
 #### Config options for OGG OPUS encoder
@@ -68,7 +68,7 @@ Creates a recorder instance.
 rec.close()
 ```
 
-**close** will close the audioContext and destroy the workers and clear the stream. A new Recorder instance will be required for additional recordings. if a sourceNode was provided in the initial config, then the implementation will need to close the audioContext and clear the stream.
+**close** will close the audioContext, destroy the workers, disconnect the audio nodes and close the stream. A new Recorder instance will be required for additional recordings. if a `sourceNode` was provided in the initial config, then the implementation will need to close the audioContext and clear the stream.
 
 ```js
 rec.pause([flush])
@@ -98,7 +98,7 @@ rec.setMonitorGain( gain )
 rec.start()
 ```
 
-**start** resumes the audio context, and will begin capturing audio. Returns a promise which resolves when recording is started. Will callback `onstart` when started. `start` needs to be initiated from a user action (click) so that the audioContext can be resumed and the stream can have audio data.
+**start** Begins a new recording. Returns a promise which resolves when recording is started. Will callback `onstart` when started. `start` ***needs to be initiated from a user action*** (click or touch) so that the audioContext can be resumed and the stream can have audio data.
 
 ```js
 rec.stop()
