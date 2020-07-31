@@ -18,8 +18,8 @@ export class Recorder {
         Object.assign(this.config, cfg);
         this.context = source.context;
         this.node = (this.context.createScriptProcessor ||
-        this.context.createJavaScriptNode).call(this.context,
-            this.config.bufferLen, this.config.numChannels, this.config.numChannels);
+            this.context.createJavaScriptNode).call(this.context,
+                this.config.bufferLen, this.config.numChannels, this.config.numChannels);
 
         this.node.onaudioprocess = (e) => {
             if (!this.recording) return;
@@ -88,10 +88,13 @@ export class Recorder {
                 } else {
                     interleaved = buffers[0];
                 }
-                let dataview = encodeWAV(interleaved);
-                let audioBlob = new Blob([dataview], {type: type});
 
-                this.postMessage({command: 'exportWAV', data: audioBlob});
+                var downsampledBuffer = downsampleBuffer(interleaved, targetRate);
+                var dataview = encodeWAV(downsampledBuffer);
+                // let dataview = encodeWAV(interleaved);
+                let audioBlob = new Blob([dataview], { type: type });
+
+                this.postMessage({ command: 'exportWAV', data: audioBlob });
             }
 
             function getBuffer() {
@@ -99,7 +102,7 @@ export class Recorder {
                 for (let channel = 0; channel < numChannels; channel++) {
                     buffers.push(mergeBuffers(recBuffers[channel], recLength));
                 }
-                this.postMessage({command: 'getBuffer', data: buffers});
+                this.postMessage({ command: 'getBuffer', data: buffers });
             }
 
             function clear() {
@@ -152,6 +155,35 @@ export class Recorder {
                 }
             }
 
+            function downsampleBuffer(buffer, rate) {
+                if (rate == sampleRate) {
+                    return buffer;
+                }
+                if (rate > sampleRate) {
+                    throw "downsampling rate show be smaller than original sample rate";
+                }
+                var sampleRateRatio = sampleRate / rate;
+                var newLength = Math.round(buffer.length / sampleRateRatio);
+                var result = new Float32Array(newLength);
+                var offsetResult = 0;
+                var offsetBuffer = 0;
+                while (offsetResult < result.length) {
+                    var nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+                    // Use average value of skipped samples
+                    var accum = 0, count = 0;
+                    for (var i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
+                        accum += buffer[i];
+                        count++;
+                    }
+                    result[offsetResult] = accum / count;
+                    // Or you can simply get rid of the skipped samples:
+                    // result[offsetResult] = buffer[nextOffsetBuffer];
+                    offsetResult++;
+                    offsetBuffer = nextOffsetBuffer;
+                }
+                return result;
+            }
+
             function encodeWAV(samples) {
                 let buffer = new ArrayBuffer(44 + samples.length * 2);
                 let view = new DataView(buffer);
@@ -170,10 +202,14 @@ export class Recorder {
                 view.setUint16(20, 1, true);
                 /* channel count */
                 view.setUint16(22, numChannels, true);
+                // /* sample rate */
+                // view.setUint32(24, sampleRate, true);
+                // /* byte rate (sample rate * block align) */
+                // view.setUint32(28, sampleRate * 4, true);
                 /* sample rate */
-                view.setUint32(24, sampleRate, true);
+                view.setUint32(24, 8000, true);
                 /* byte rate (sample rate * block align) */
-                view.setUint32(28, sampleRate * 4, true);
+                view.setUint32(28, 8000 * 4, true);
                 /* block align (channel count * bytes per sample) */
                 view.setUint16(32, numChannels * 2, true);
                 /* bits per sample */
@@ -215,7 +251,7 @@ export class Recorder {
     }
 
     clear() {
-        this.worker.postMessage({command: 'clear'});
+        this.worker.postMessage({ command: 'clear' });
     }
 
     getBuffer(cb) {
@@ -224,7 +260,7 @@ export class Recorder {
 
         this.callbacks.getBuffer.push(cb);
 
-        this.worker.postMessage({command: 'getBuffer'});
+        this.worker.postMessage({ command: 'getBuffer' });
     }
 
     exportWAV(cb, mimeType) {
@@ -241,7 +277,7 @@ export class Recorder {
     }
 
     static
-    forceDownload(blob, filename) {
+        forceDownload(blob, filename) {
         let url = (window.URL || window.webkitURL).createObjectURL(blob);
         let link = window.document.createElement('a');
         link.href = url;
