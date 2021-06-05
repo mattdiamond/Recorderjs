@@ -71,7 +71,7 @@ OggOpusEncoder.prototype.encode = function( buffers ) {
     if ( this.resampleBufferIndex === this.resampleBufferLength ) {
       this._speex_resampler_process_interleaved_float( this.resampler, this.resampleBufferPointer, this.resampleSamplesPerChannelPointer, this.encoderBufferPointer, this.encoderSamplesPerChannelPointer );
       var packetLength = this._opus_encode_float( this.encoder, this.encoderBufferPointer, this.encoderSamplesPerChannel, this.encoderOutputPointer, this.encoderOutputMaxLength );
-      exportPages.concat(this.segmentPacket( packetLength ));
+      exportPages = exportPages.concat(this.segmentPacket( packetLength ));
       this.resampleBufferIndex = 0;
 
       this.framesInPage++;
@@ -114,7 +114,7 @@ OggOpusEncoder.prototype.flush = function() {
 };
 
 OggOpusEncoder.prototype.encodeFinalFrame = function() {
-  const exportPages = [];
+  var exportPages = [];
 
   // Encode the data remaining in the resample buffer.
   if ( this.resampleBufferIndex > 0 ) {
@@ -126,7 +126,7 @@ OggOpusEncoder.prototype.encodeFinalFrame = function() {
       for ( var j = 0; j < this.config.numberOfChannels; j++ ) {
         finalFrameBuffers.push( new Float32Array( this.bufferLength ));
       }
-      exportPages.concat(this.encode( finalFrameBuffers ));
+      exportPages = exportPages.concat(this.encode( finalFrameBuffers ));
     }
   }
 
