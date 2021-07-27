@@ -1,6 +1,6 @@
 {
   "name": "opus-recorder",
-  "version": "8.0.3",
+  "version": "8.0.4",
   "description": "A library for recording opus encoded audio",
   "homepage": "https://github.com/chris-rudmin/opus-recorder",
   "author": "Chris Rudmin",
