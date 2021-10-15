@@ -40,7 +40,7 @@
     function decodeOgg(arrayBuffer){
 
       var typedArray = new Uint8Array(arrayBuffer);
-      var decoderWorker = new Worker('../dist-unminified/decoderWorker.js');
+      var decoderWorker = new Worker('../dist/decoderWorker.min.js');
       var wavWorker = new Worker('../dist/waveWorker.min.js');
       var desiredSampleRate = parseInt(sampleRate.value,10);
 
@@ -57,8 +57,6 @@
       });
 
       decoderWorker.onmessage = function(e){
-
-        console.log(e.data[0]);
 
         // null means decoder is finished
         if (e.data === null) {
