@@ -105,7 +105,7 @@ OggOpusDecoder.prototype.decode = function( typedArray ) {
 OggOpusDecoder.prototype.getPageBoundaries = function( dataView ){
   var pageBoundaries = [];
 
-  for ( var i = 0; i < dataView.byteLength - 32; i++ ) {
+  for ( var i = 0; i < dataView.byteLength - 4; i++ ) {
     if ( dataView.getUint32( i, true ) == 1399285583 ) {
       pageBoundaries.push( i );
     }
