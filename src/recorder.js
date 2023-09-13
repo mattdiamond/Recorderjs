@@ -53,7 +53,7 @@ export class Recorder {
                         record(e.data.buffer);
                         break;
                     case 'exportWAV':
-                        exportWAV(e.data.type);
+                        exportWAV(e.data.type, e.data.config);
                         break;
                     case 'getBuffer':
                         getBuffer();
@@ -77,7 +77,39 @@ export class Recorder {
                 recLength += inputBuffer[0].length;
             }
 
-            function exportWAV(type) {
+            // sampleRate changer
+            // https://github.com/mattdiamond/Recorderjs/issues/186
+            function downsampleBuffer(buffer, newSampleRate) {
+                if (newSampleRate == sampleRate) {
+                    return buffer;
+                }
+                if (newSampleRate > sampleRate) {
+                    throw "downsampling rate show be smaller than original sample rate";
+                }
+                let sampleRateRatio = sampleRate / newSampleRate;
+                let newLength = Math.round(buffer.length / sampleRateRatio);
+                let result = new Float32Array(newLength);
+                let offsetResult = 0;
+                let offsetBuffer = 0;
+                while (offsetResult < result.length) {
+                    let nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+                     // Use average value of skipped samples
+                    let accum = 0, count = 0;
+                    for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
+                        accum += buffer[i];
+                        count++;
+                    }
+                    result[offsetResult] = accum / count;
+                    // Or you can simply get rid of the skipped samples:
+                    // result[offsetResult] = buffer[nextOffsetBuffer];
+                    offsetResult++;
+                    offsetBuffer = nextOffsetBuffer;
+                }
+                return result;
+            }
+
+            function exportWAV(type, config) {
+                let newSampleRate = config.sampleRate || sampleRate;
                 let buffers = [];
                 for (let channel = 0; channel < numChannels; channel++) {
                     buffers.push(mergeBuffers(recBuffers[channel], recLength));
@@ -88,7 +120,8 @@ export class Recorder {
                 } else {
                     interleaved = buffers[0];
                 }
-                let dataview = encodeWAV(interleaved);
+                let downsampledBuffer = downsampleBuffer(interleaved, newSampleRate);
+                let dataview = encodeWAV(downsampledBuffer, newSampleRate);
                 let audioBlob = new Blob([dataview], {type: type});
 
                 this.postMessage({command: 'exportWAV', data: audioBlob});
@@ -152,7 +185,7 @@ export class Recorder {
                 }
             }
 
-            function encodeWAV(samples) {
+            function encodeWAV(samples, newSampleRate) {
                 let buffer = new ArrayBuffer(44 + samples.length * 2);
                 let view = new DataView(buffer);
 
@@ -171,9 +204,9 @@ export class Recorder {
                 /* channel count */
                 view.setUint16(22, numChannels, true);
                 /* sample rate */
-                view.setUint32(24, sampleRate, true);
+                view.setUint32(24, newSampleRate, true);
                 /* byte rate (sample rate * block align) */
-                view.setUint32(28, sampleRate * 4, true);
+                view.setUint32(28, newSampleRate * 4, true);
                 /* block align (channel count * bytes per sample) */
                 view.setUint16(32, numChannels * 2, true);
                 /* bits per sample */
@@ -227,7 +260,8 @@ export class Recorder {
         this.worker.postMessage({command: 'getBuffer'});
     }
 
-    exportWAV(cb, mimeType) {
+    exportWAV(cb, mimeType, config) {
+        config = config || {}
         mimeType = mimeType || this.config.mimeType;
         cb = cb || this.config.callback;
         if (!cb) throw new Error('Callback not set');
@@ -236,7 +270,8 @@ export class Recorder {
 
         this.worker.postMessage({
             command: 'exportWAV',
-            type: mimeType
+            type: mimeType,
+            config: config
         });
     }
 
