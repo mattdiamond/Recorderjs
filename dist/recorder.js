@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Recorder = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Recorder = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 
 module.exports = require("./recorder").Recorder;
@@ -6,7 +6,12 @@ module.exports = require("./recorder").Recorder;
 },{"./recorder":2}],2:[function(require,module,exports){
 'use strict';
 
-var _createClass = (function () {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Recorder = undefined;
+
+var _createClass = function () {
     function defineProperties(target, props) {
         for (var i = 0; i < props.length; i++) {
             var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
@@ -14,12 +19,7 @@ var _createClass = (function () {
     }return function (Constructor, protoProps, staticProps) {
         if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
     };
-})();
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.Recorder = undefined;
+}();
 
 var _inlineWorker = require('inline-worker');
 
@@ -35,7 +35,7 @@ function _classCallCheck(instance, Constructor) {
     }
 }
 
-var Recorder = exports.Recorder = (function () {
+var Recorder = exports.Recorder = function () {
     function Recorder(source, cfg) {
         var _this = this;
 
@@ -76,10 +76,10 @@ var Recorder = exports.Recorder = (function () {
         this.worker = new _inlineWorker2.default(function () {
             var recLength = 0,
                 recBuffers = [],
-                sampleRate = undefined,
-                numChannels = undefined;
+                sampleRate = void 0,
+                numChannels = void 0;
 
-            self.onmessage = function (e) {
+            this.onmessage = function (e) {
                 switch (e.data.command) {
                     case 'init':
                         init(e.data.config);
@@ -117,7 +117,7 @@ var Recorder = exports.Recorder = (function () {
                 for (var channel = 0; channel < numChannels; channel++) {
                     buffers.push(mergeBuffers(recBuffers[channel], recLength));
                 }
-                var interleaved = undefined;
+                var interleaved = void 0;
                 if (numChannels === 2) {
                     interleaved = interleave(buffers[0], buffers[1]);
                 } else {
@@ -126,7 +126,7 @@ var Recorder = exports.Recorder = (function () {
                 var dataview = encodeWAV(interleaved);
                 var audioBlob = new Blob([dataview], { type: type });
 
-                self.postMessage({ command: 'exportWAV', data: audioBlob });
+                this.postMessage({ command: 'exportWAV', data: audioBlob });
             }
 
             function getBuffer() {
@@ -134,7 +134,7 @@ var Recorder = exports.Recorder = (function () {
                 for (var channel = 0; channel < numChannels; channel++) {
                     buffers.push(mergeBuffers(recBuffers[channel], recLength));
                 }
-                self.postMessage({ command: 'getBuffer', data: buffers });
+                this.postMessage({ command: 'getBuffer', data: buffers });
             }
 
             function clear() {
@@ -293,7 +293,7 @@ var Recorder = exports.Recorder = (function () {
     }]);
 
     return Recorder;
-})();
+}();
 
 exports.default = Recorder;
 
@@ -302,7 +302,7 @@ exports.default = Recorder;
 
 module.exports = require("./inline-worker");
 },{"./inline-worker":4}],4:[function(require,module,exports){
-(function (global){
+(function (global){(function (){
 "use strict";
 
 var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -352,6 +352,6 @@ var InlineWorker = (function () {
 })();
 
 module.exports = InlineWorker;
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}]},{},[1])(1)
 });
